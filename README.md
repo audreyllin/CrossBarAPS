@@ -7,3 +7,6 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 3. Company
 
 Style reference: https://business.x.com/en
+
+My Design Page:
+https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?node-id=1-2896&t=IxHPbtuy9dw7gxfp-0
