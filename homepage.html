@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/main.css">
+    <title>AI Profile Search</title>
+
+</head>
+
+<body>
+
+    <a href="#main-content" class="skip-link" tabindex="1">Skip to main content</a>
+
+
+
+    <header class="main-header">
+
+        <div class="logo-container">
+
+            <img src="logo.png" alt="AI Profile Search Logo" class="logo" tabindex="2">
+
+            <h1 class="header-title" tabindex="3">AI Profile Search</h1>
+
+        </div>
+
+        <div class="header-actions">
+
+
+
+            <div class="expander" tabindex="5" aria-label="Menu expander">≡</div>
+
+        </div>
+
+    </header>
+
+
+
+    <main id="main-content">
+
+        <h2 tabindex="6">Enhance Sales with APS</h2>
+
+        <div class="tagline" tabindex="7">Foster efficient, informative exchange.</div>
+
+        <div class="cta-buttons">
+
+            <a href="/register" class="btn btn-primary" tabindex="8">Get Started</a>
+
+            <a href="/trial" class="btn btn-secondary" tabindex="9">Talk to Your Role Model</a>
+
+        </div>
+
+    </main>
+
+
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Get Started button in header 
+
+            const headerBtn = document.querySelector('.header-actions .btn-primary');
+
+            headerBtn.addEventListener('click', function () {
+
+                window.location.href = '/register';
+
+            });
+
+
+
+            // Get Started button in main 
+
+            const mainBtn = document.querySelector('.cta-buttons .btn-primary');
+
+            mainBtn.addEventListener('click', function () {
+
+                window.location.href = '/register';
+
+            });
+
+
+
+            // Trial button 
+
+            const trialBtn = document.querySelector('.btn-secondary');
+
+            trialBtn.addEventListener('click', function () {
+
+                window.location.href = '/trial';
+
+            });
+
+
+
+            // Expander button 
+
+            const expander = document.querySelector('.expander');
+
+            expander.addEventListener('click', function () {
+
+                // Menu functionality would go here 
+
+                alert('Menu expanded');
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
