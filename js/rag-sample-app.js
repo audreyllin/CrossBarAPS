@@ -1,52 +1,54 @@
-// Jennifer Aniston RAG System - Complete Frontend Implementation
+// Jennifer Aniston RAG System - Complete Implementation
 class JenniferAnistonRAGSystem {
     static knowledgeBase = {
-        timeline: {
-            2021: [
-                "Back injury led to Pvolve discovery",
-                "Became regular user of Pvolve streaming and in-person classes"
-            ],
-            "2022-2023": [
-                "Reached out to founder Rachel Katzman after positive results",
-                "Became strategic advisor contributing to: Marketing, Product Development, Class Programming"
-            ],
-            2023: [
-                "October: Matthew Perry's death affected Friends cast",
-                "Continued Pvolve promotion while balancing Pilates, hiking, and sustainable fitness"
-            ],
-            2024: [
-                "May 13-June 9: Launched 'Jen's Spring Challenge' (12 classes/month)",
-                "Released limited-edition Pvolve equipment bundle"
-            ]
-        },
-        clarifications: {
-            age: {
-                birthdate: "February 11, 1969",
-                ages: {
-                    2023: 54,
-                    2024: 55
-                }
-            },
-            partnership: {
-                timeline: [
-                    "2021: Initial contact post-injury",
-                    "2022-2023: Gradual collaboration",
-                    "Early 2023: Official announcement"
-                ]
-            },
-            friends: {
-                premiere: 1994,
-                anniversary: {
-                    year: 2024,
-                    comments: "Emotional interview in 2024 Variety"
+        // Reorganized knowledge base with clearer structure
+        events: {
+            professional: {
+                2021: {
+                    injury: {
+                        description: "Back injury led to Pvolve discovery",
+                        impact: "Became regular user of Pvolve streaming and in-person classes"
+                    }
                 },
-                perry: {
-                    death: "October 2023",
-                    events: [
-                        "Joint cast statement released within days",
-                        "December 2023: Autopsy confirmed ketamine-related death"
-                    ]
+                "2022-2023": {
+                    partnership: {
+                        description: "Collaboration with Pvolve founder Rachel Katzman",
+                        roles: [
+                            "Marketing contributions",
+                            "Product development",
+                            "Class programming"
+                        ]
+                    }
+                },
+                2024: {
+                    spring_challenge: {
+                        description: "Launched 'Jen's Spring Challenge' (12 classes/month)",
+                        duration: "May 13-June 9, 2024",
+                        products: "Released limited-edition Pvolve equipment bundle"
+                    }
                 }
+            },
+            personal: {
+                2023: {
+                    matthew_perry: {
+                        type: "bereavement",
+                        date: "October 2023",
+                        relationship: "Friends co-star",
+                        cause_of_death: "Ketamine-related complications (confirmed December 2023)",
+                        reactions: {
+                            immediate: "Joint cast statement released within days",
+                            subsequent: "Emotional interview in 2024 Variety during Friends 30th anniversary"
+                        },
+                        impact: "Deeply affected Jennifer and the Friends cast"
+                    }
+                }
+            }
+        },
+        personal_details: {
+            birthdate: "February 11, 1969",
+            ages: {
+                2023: 54,
+                2024: 55
             },
             fitness: {
                 pre2021: ["CrossFit", "Long cardio sessions"],
@@ -56,7 +58,8 @@ class JenniferAnistonRAGSystem {
                         "Pilates (2x weekly)",
                         "Hiking (weekends)",
                         "Includes scheduled cheat days"
-                    ]
+                    ],
+                    philosophy: "Sustainable fitness approach"
                 }
             }
         }
@@ -102,6 +105,16 @@ class JenniferAnistonRAGSystem {
         const q = question.toLowerCase().trim();
 
         const questionPatterns = [
+            // Enhanced mortality detection
+            {
+                type: 'mortality',
+                pattern: /(die|died|death|pass away|passed away|still alive|living status|deceased)/
+            },
+            {
+                type: 'mortality_verification',
+                pattern: /^(is|was|are|were)\s+[^ ]+\s+(alive|dead|deceased|no longer with us)/i
+            },
+            // Existing patterns
             { type: 'temporal', pattern: /^(when|date|time|year|period)/ },
             { type: 'definition', pattern: /^(what|define|explain|meaning)/ },
             { type: 'person', pattern: /^(who|person|individual)/ },
@@ -119,24 +132,94 @@ class JenniferAnistonRAGSystem {
 
     static generateAnswer(question, questionType) {
         const q = question.toLowerCase();
-        let answer = "According to the Jennifer Aniston/Pvolve documents:";
+        let answer = "Based on the Jennifer Aniston/Pvolve documents:";
         let contexts = [];
+        let sources = [
+            { filename: "jennifer_aniston_pvolve_timeline.pdf", page: 8 },
+            { filename: "personal_events_2023.docx" },
+            { filename: "fitness_partnership_agreement.pdf", page: 12 }
+        ];
+
+        // Mortality-specific questions
+        if (questionType === 'mortality' || questionType === 'mortality_verification') {
+            const perryInfo = this.knowledgeBase.events.personal[2023].matthew_perry;
+
+            // Handle all Matthew Perry death-related questions
+            if (q.includes('matthew') || q.includes('perry') ||
+                q.includes('friends cast') || q.includes('who died')) {
+
+                if (q.includes('still alive') || q.includes('is he alive')) {
+                    answer = `No, Matthew Perry passed away in ${perryInfo.date}.`;
+                    contexts = [
+                        `Death occurred: ${perryInfo.date}`,
+                        `Relationship: ${perryInfo.relationship}`
+                    ];
+                }
+                else if (q.includes('cause') || q.includes('how did he die')) {
+                    answer = `Matthew Perry's death in ${perryInfo.date} was caused by ${perryInfo.cause_of_death}.`;
+                    contexts = [
+                        `Autopsy confirmed: ${perryInfo.cause_of_death}`,
+                        `Official confirmation came in December 2023`
+                    ];
+                }
+                else if (q.includes('affected') || q.includes('impact')) {
+                    answer = `Matthew Perry's death ${perryInfo.impact}. ` +
+                        `The Friends cast released a joint statement shortly after, ` +
+                        `and Jennifer discussed it emotionally during the 2024 Friends anniversary.`;
+                    contexts = [
+                        perryInfo.reactions.immediate,
+                        perryInfo.reactions.subsequent
+                    ];
+                }
+                else {
+                    // Default mortality response
+                    answer = `Matthew Perry (${perryInfo.relationship}) passed away in ${perryInfo.date}. ` +
+                        `Cause: ${perryInfo.cause_of_death}. ${perryInfo.reactions.immediate}`;
+                    contexts = [
+                        perryInfo.date,
+                        perryInfo.relationship,
+                        perryInfo.reactions.immediate
+                    ];
+                }
+
+                return { answer, contexts, sources };
+            }
+
+            // Handle negative cases for mortality questions
+            if (!q.includes('matthew') && !q.includes('perry')) {
+                return {
+                    answer: "The documents only reference Matthew Perry's passing in October 2023. " +
+                        "No other deaths are mentioned in relation to Jennifer Aniston.",
+                    contexts: [],
+                    sources: []
+                };
+            }
+        }
 
         // Temporal questions
         if (questionType === 'temporal') {
             if (q.includes('back injury')) {
-                answer = "Jennifer discovered Pvolve after her back injury in 2021.";
-                contexts = this.knowledgeBase.timeline[2021].filter(x => x.includes('injury'));
+                const injury = this.knowledgeBase.events.professional[2021].injury;
+                answer = `Jennifer discovered Pvolve after ${injury.description.toLowerCase()} in 2021.`;
+                contexts = [
+                    injury.description,
+                    injury.impact
+                ];
             }
             else if (q.includes('spring challenge')) {
-                answer = "'Jen's Spring Challenge' ran from May 13 to June 9, 2024.";
-                contexts = this.knowledgeBase.timeline[2024].filter(x => x.includes('Spring'));
+                const challenge = this.knowledgeBase.events.professional[2024].spring_challenge;
+                answer = `"${challenge.description}" ran from ${challenge.duration}.`;
+                contexts = [
+                    challenge.description,
+                    `Associated product: ${challenge.products}`
+                ];
             }
             else if (q.includes('matthew perry') || q.includes('death')) {
-                answer = "Matthew Perry passed away in October 2023. The Friends cast released a joint statement shortly after.";
+                const perryInfo = this.knowledgeBase.events.personal[2023].matthew_perry;
+                answer = `Matthew Perry passed away in ${perryInfo.date}. The Friends cast released a joint statement shortly after.`;
                 contexts = [
-                    ...this.knowledgeBase.timeline[2023].filter(x => x.includes('Matthew')),
-                    ...this.knowledgeBase.clarifications.friends.perry.events
+                    perryInfo.date,
+                    perryInfo.reactions.immediate
                 ];
             }
         }
@@ -144,41 +227,46 @@ class JenniferAnistonRAGSystem {
         // Person questions
         else if (questionType === 'person') {
             if (q.includes('founder') || q.includes('katzman')) {
-                answer = "Rachel Katzman is the founder of Pvolve who Jennifer collaborated with.";
-                contexts = this.knowledgeBase.timeline['2022-2023'].filter(x => x.includes('Rachel'));
+                const partnership = this.knowledgeBase.events.professional['2022-2023'].partnership;
+                answer = `Rachel Katzman is the Pvolve founder who Jennifer collaborated with, ` +
+                    `contributing to ${partnership.roles.join(', ')}.`;
+                contexts = partnership.roles;
+            }
+            else if (q.includes('matthew') || q.includes('perry')) {
+                const perryInfo = this.knowledgeBase.events.personal[2023].matthew_perry;
+                answer = `Matthew Perry was Jennifer's ${perryInfo.relationship} who passed away in ${perryInfo.date}.`;
+                contexts = [
+                    perryInfo.relationship,
+                    `Death date: ${perryInfo.date}`
+                ];
             }
         }
 
         // Process questions
         else if (questionType === 'process') {
             if (q.includes('fitness routine') || q.includes('workout')) {
-                answer = "Jennifer's current fitness regimen includes: " +
-                    this.knowledgeBase.clarifications.fitness.post2021.routine.join(', ');
-                contexts = [
-                    ...this.knowledgeBase.timeline[2023].filter(x => x.includes('fitness')),
-                    ...this.knowledgeBase.clarifications.fitness.post2021.routine
-                ];
+                const routine = this.knowledgeBase.personal_details.fitness.post2021;
+                answer = `Jennifer's current fitness regimen (${routine.philosophy}) includes: ` +
+                    `${routine.routine.join(', ')}.`;
+                contexts = routine.routine;
             }
         }
 
-        // Default response
-        if (answer === "According to the Jennifer Aniston/Pvolve documents:") {
-            answer = "Here's relevant information: " +
-                Object.entries(this.knowledgeBase.timeline)
-                    .map(([year, events]) => `${year}: ${events.join('; ')}`)
-                    .join('. ');
-            contexts = Object.values(this.knowledgeBase.timeline).flat();
+        // Default response for unmatched questions
+        if (answer === "Based on the Jennifer Aniston/Pvolve documents:") {
+            answer = "Here's the available information: ";
+            const professionalEvents = Object.entries(this.knowledgeBase.events.professional)
+                .map(([year, events]) => `${year}: ${Object.values(events).map(e => e.description).join('; ')}`);
+
+            const personalEvents = Object.entries(this.knowledgeBase.events.personal)
+                .map(([year, events]) => `${year}: ${Object.values(events).map(e => e.type === 'bereavement' ?
+                    `Loss of ${e.relationship} (${e.date})` : '').join('')}`);
+
+            answer += professionalEvents.join('. ') + '. ' + personalEvents.join('. ');
+            contexts = [...professionalEvents, ...personalEvents];
         }
 
-        return {
-            answer,
-            contexts,
-            sources: [
-                { filename: "jennifer_aniston_pvolve_timeline.pdf", page: Math.floor(Math.random() * 10) + 1 },
-                { filename: "fitness_evolution_notes.docx" },
-                { filename: "partnership_agreement.pdf", page: Math.floor(Math.random() * 20) + 1 }
-            ]
-        };
+        return { answer, contexts, sources };
     }
 
     static async askQuestion(question) {
