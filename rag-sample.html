@@ -15,20 +15,22 @@
         <h2>Upload Documents</h2>
         <p>Supported formats: PDF, TXT, DOCX</p>
         <input type="file" id="fileInput" multiple accept=".pdf,.txt,.docx">
-        <button onclick="uploadDocuments()">Process Documents</button>
+        <button id="uploadBtn">Process Documents</button>
         <div id="uploadStatus"></div>
     </div>
 
     <div class="section">
         <h2>Ask a Question</h2>
-        <textarea id="questionInput" placeholder="Enter your question about the documents..."></textarea>
-        <button onclick="askQuestion()">Get Answer</button>
+        <textarea id="questionInput"
+            placeholder="Enter your question about Jennifer Aniston's Pvolve partnership..."></textarea>
+        <button id="askBtn" disabled>Get Answer</button>
     </div>
 
     <div class="section result-section">
         <h2>Results</h2>
-        <div id="answer" style="margin-bottom: 20px;"></div>
+        <div id="answer"></div>
         <div id="contexts"></div>
+        <div id="sources"></div>
     </div>
 
     <script src="js/rag-sample-app.js"></script>
