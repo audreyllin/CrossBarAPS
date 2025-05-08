@@ -1,10 +1,50 @@
-const API_BASE_URL = 'http://localhost:8001'; // Match FastAPI default port
+// Mock API simulator for GitHub Pages deployment
+class MockRAGSystem {
+    static async processFiles(files) {
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const fileTypes = Array.from(files).reduce((acc, file) => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            acc[ext] = (acc[ext] || 0) + 1;
+            return acc;
+        }, {});
 
+        return {
+            success: true,
+            count: files.length,
+            fileTypes
+        };
+    }
+
+    static async askQuestion(question) {
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const mockContexts = [
+            "This is a simulated context from the uploaded documents.",
+            "Another example context that might be relevant to the question.",
+            "The system found 3 chunks of information that could answer your question."
+        ];
+
+        return {
+            answer: `Mock response to: "${question}" (this is simulated data)`,
+            contexts: mockContexts,
+            sources: [
+                { filename: "example.pdf", page: 1 },
+                { filename: "notes.txt" }
+            ]
+        };
+    }
+}
+
+// Main application functions
 async function uploadDocuments() {
     const fileInput = document.getElementById('fileInput');
     const statusDiv = document.getElementById('uploadStatus');
+    const files = Array.from(fileInput.files);
     
-    if (!fileInput.files.length) {
+    if (!files.length) {
         statusDiv.textContent = "Please select files first";
         return;
     }
@@ -12,8 +52,7 @@ async function uploadDocuments() {
     // Validate file types
     const allowedTypes = ['application/pdf', 'text/plain', 
                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    const invalidFiles = Array.from(fileInput.files)
-        .filter(file => !allowedTypes.includes(file.type));
+    const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
 
     if (invalidFiles.length) {
         statusDiv.textContent = `Unsupported file type: ${invalidFiles[0].name}. Please upload PDF, TXT, or DOCX files.`;
@@ -23,36 +62,15 @@ async function uploadDocuments() {
     statusDiv.textContent = "Processing documents...";
     
     try {
-        const formData = new FormData();
-        fileInput.files.forEach(file => formData.append('files', file));
-
-        const response = await fetch(`${API_BASE_URL}/api/process`, {
-            method: 'POST',
-            body: formData
-        });
+        const result = await MockRAGSystem.processFiles(files);
         
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            const fileTypes = Array.from(fileInput.files)
-                .reduce((acc, file) => {
-                    const ext = file.name.split('.').pop().toUpperCase();
-                    acc[ext] = (acc[ext] || 0) + 1;
-                    return acc;
-                }, {});
+        const typeSummary = Object.entries(result.fileTypes)
+            .map(([type, count]) => `${count} ${type}`)
+            .join(', ');
 
-            const typeSummary = Object.entries(fileTypes)
-                .map(([type, count]) => `${count} ${type}`)
-                .join(', ');
-
-            statusDiv.textContent = `Processed ${result.count} chunks from ${fileInput.files.length} files (${typeSummary})`;
-        } else {
-            statusDiv.textContent = result.message || "Error processing documents";
-        }
+        statusDiv.textContent = `Processed ${result.count} chunks from ${files.length} files (${typeSummary})`;
     } catch (error) {
-        statusDiv.textContent = "Error connecting to server";
+        statusDiv.textContent = "Error processing documents";
         console.error("Upload error:", error);
     }
 }
@@ -72,22 +90,9 @@ async function askQuestion() {
     contextsDiv.innerHTML = sourcesDiv.innerHTML = "";
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/ask`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question })
-        });
+        const result = await MockRAGSystem.askQuestion(question);
         
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const result = await response.json();
-        
-        if (result.error) {
-            answerDiv.textContent = `Error: ${result.error}`;
-            return;
-        }
-        
-        answerDiv.innerHTML = `<strong>Answer:</strong> ${result.answer || "No answer found"}`;
+        answerDiv.innerHTML = `<strong>Answer:</strong> ${result.answer}`;
         
         if (result.contexts?.length) {
             contextsDiv.innerHTML = "<h4>Relevant Contexts:</h4>" + 
@@ -98,8 +103,19 @@ async function askQuestion() {
                     </div>
                 `).join('');
         }
+
+        if (result.sources?.length) {
+            sourcesDiv.innerHTML = "<h4>Sources:</h4>" + 
+                result.sources.map((source, i) => `
+                    <div class="source">
+                        <strong>Source ${i+1}:</strong> 
+                        <span>${source.filename}</span>
+                        ${source.page ? `<span> (page ${source.page})</span>` : ''}
+                    </div>
+                `).join('');
+        }
     } catch (error) {
-        answerDiv.textContent = "Error getting answer";
+        answerDiv.textContent = "Error generating answer";
         console.error("Question error:", error);
     }
 }
