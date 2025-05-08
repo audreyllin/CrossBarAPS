@@ -1,4 +1,5 @@
-// Document Processing
+const API_BASE_URL = 'http://localhost:8000'; // Match FastAPI default port
+
 async function uploadDocuments() {
     const fileInput = document.getElementById('fileInput');
     const statusDiv = document.getElementById('uploadStatus');
@@ -25,10 +26,12 @@ async function uploadDocuments() {
         const formData = new FormData();
         fileInput.files.forEach(file => formData.append('files', file));
 
-        const response = await fetch('/api/process', {
+        const response = await fetch(`${API_BASE_URL}/api/process`, {
             method: 'POST',
             body: formData
         });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const result = await response.json();
         
@@ -54,7 +57,6 @@ async function uploadDocuments() {
     }
 }
 
-// Question Handling
 async function askQuestion() {
     const question = document.getElementById('questionInput').value.trim();
     const answerDiv = document.getElementById('answer');
@@ -70,15 +72,21 @@ async function askQuestion() {
     contextsDiv.innerHTML = sourcesDiv.innerHTML = "";
 
     try {
-        const response = await fetch('/api/ask', {
+        const response = await fetch(`${API_BASE_URL}/api/ask`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ question })
         });
         
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
         const result = await response.json();
         
-        // Display results
+        if (result.error) {
+            answerDiv.textContent = `Error: ${result.error}`;
+            return;
+        }
+        
         answerDiv.innerHTML = `<strong>Answer:</strong> ${result.answer || "No answer found"}`;
         
         if (result.contexts?.length) {
@@ -86,18 +94,7 @@ async function askQuestion() {
                 result.contexts.map((ctx, i) => `
                     <div class="context">
                         <strong>Context ${i+1}:</strong>
-                        <p>${ctx.text}</p>
-                    </div>
-                `).join('');
-        }
-
-        if (result.sources?.length) {
-            sourcesDiv.innerHTML = "<h4>Sources:</h4>" + 
-                result.sources.map((source, i) => `
-                    <div class="source">
-                        <strong>Source ${i+1}:</strong> 
-                        <span>${source.filename}</span>
-                        ${source.page ? `<span> (page ${source.page})</span>` : ''}
+                        <p>${ctx}</p>
                     </div>
                 `).join('');
         }
