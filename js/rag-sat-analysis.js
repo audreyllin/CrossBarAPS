@@ -557,8 +557,11 @@ class DocumentProcessor {
         // Simulate processing delay
         await new Promise(resolve => setTimeout(resolve, 800));
 
-        // In a real implementation, you would extract text from the files here
-        // const sampleText = "Hi, how are you";
+        // Define sample text directly in the method
+        const sampleText = "Paleontologists searching for signs of ancient life have found many fossilized specimens " +
+            "at Mistaken Point, a geological formation in Newfoundland. This site contains some of the " +
+            "oldest known evidence of multicellular life, dating back over 565 million years. The fossils " +
+            "preserved here provide crucial insights into early evolutionary processes.";
 
         return {
             success: true,
@@ -692,7 +695,6 @@ class RAGInterfaceController {
     }
 }
 
-// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new RAGInterfaceController();
 });
