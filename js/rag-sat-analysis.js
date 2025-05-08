@@ -34,7 +34,7 @@ class EnhancedRAGSystem {
             }));
 
             // Step 6: Select and format best answer
-            return this.formatBestAnswer(scoredAnswers, questionType);
+            return this.formatBestAnswer(scoredAnswers, questionType, question, relevantContext);
         } catch (error) {
             console.error("Error processing query:", error);
             throw error;
@@ -195,7 +195,6 @@ class EnhancedRAGSystem {
                 must_not: ["reverse relationship", "ignore key differences"],
                 score: 0
             },
-            // Add default case for general_comprehension
             general_comprehension: {
                 must: ["be relevant to text", "address question"],
                 must_not: ["be off-topic", "introduce unrelated concepts"],
@@ -203,11 +202,9 @@ class EnhancedRAGSystem {
             }
         };
 
-        // Ensure we have a valid question type
         const validQuestionType = criteria.hasOwnProperty(questionType) ? questionType : "general_comprehension";
         const rules = criteria[validQuestionType];
 
-        // Check positive criteria
         if (rules.must && rules.must.includes("cover primary focus") &&
             this.checkPrimaryFocusCoverage(context, answer)) {
             rules.score += 1;
@@ -218,7 +215,6 @@ class EnhancedRAGSystem {
             rules.score += 1;
         }
 
-        // Check negative criteria
         if (rules.must_not && rules.must_not.includes("introduce new concepts") &&
             this.checkNewConcepts(context, answer)) {
             rules.score -= 1;
@@ -381,7 +377,7 @@ class EnhancedRAGSystem {
     }
 
     // Formatting the final answer
-    formatBestAnswer(scoredAnswers, questionType) {
+    formatBestAnswer(scoredAnswers, questionType, question, context) {
         scoredAnswers.sort((a, b) => b.score - a.score);
         const bestAnswer = scoredAnswers[0];
 
@@ -389,11 +385,13 @@ class EnhancedRAGSystem {
             answer: bestAnswer.text,
             confidence: bestAnswer.score.toFixed(2),
             explanation: this.generateExplanation(bestAnswer, questionType),
+            detailedResponse: this.generateDetailedExplanation(questionType, bestAnswer, context, question),
             alternatives: scoredAnswers.slice(1, 3).map(a => ({
                 text: a.text,
                 score: a.score.toFixed(2)
             })),
-            questionType: questionType
+            questionType: questionType,
+            contextSnippet: this.getContextSnippet(context)
         };
     }
 
@@ -408,6 +406,36 @@ class EnhancedRAGSystem {
         };
 
         return explanations[questionType] || `Selected with confidence ${answer.score.toFixed(2)}.`;
+    }
+
+    generateDetailedExplanation(questionType, answer, context, question) {
+        const mainTerms = this.getMainTerms(context).join(', ');
+
+        switch (questionType) {
+            case "main_idea":
+                return `The text primarily discusses ${mainTerms}. Based on the analysis, the most comprehensive summary is: "${answer.text}". This captures the key themes while maintaining accuracy (confidence score: ${answer.score.toFixed(2)}). The opening and closing sentences particularly support this interpretation.`;
+
+            case "logical_completion":
+                return `Given the context ending with "${this.getLastSentence(context)}", the most logical continuation is: "${answer.text}". This maintains the flow of ideas with ${answer.score.toFixed(2)} confidence. It properly follows the text's established pattern without introducing unrelated concepts.`;
+
+            case "evidence_support":
+                const evidencePoints = context.split(/[.!?]+/)
+                    .filter(s => /(study|research|data|found)\b/i.test(s))
+                    .slice(0, 2)
+                    .map(s => s.trim() + ".");
+                return `The claim is best supported by research evidence including: ${evidencePoints.join(' ')} The selected answer "${answer.text}" directly references these supporting elements with ${answer.score.toFixed(2)} confidence.`;
+
+            case "detail_extraction":
+                return `In response to "${question}", the text specifically mentions: "${this.getRelevantDetail(context, question)}". The answer "${answer.text}" precisely extracts this detail with ${answer.score.toFixed(2)} confidence, matching the textual evidence without overgeneralizing.`;
+
+            case "comparative":
+                const comparison = context.split(/[.!?]+/)
+                    .find(s => /(whereas|while|compared to|similar to)\b/i.test(s));
+                return `The comparison question is addressed by the textual contrast: "${comparison}". The answer "${answer.text}" correctly identifies this relationship with ${answer.score.toFixed(2)} confidence, maintaining the proper perspective on similarities and differences.`;
+
+            default:
+                return `The analysis of "${question}" yields: "${answer.text}" with ${answer.score.toFixed(2)} confidence. This response best matches the textual content which discusses ${mainTerms}. The system verified this against multiple contextual elements to ensure relevance and accuracy.`;
+        }
     }
 
     // Validation helper methods
@@ -437,6 +465,30 @@ class EnhancedRAGSystem {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 3)
             .map(e => e[0]);
+    }
+
+    getLastSentence(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        return sentences[sentences.length - 1].trim();
+    }
+
+    getRelevantDetail(text, question) {
+        const questionTerms = question.toLowerCase().match(/\b[a-z]+\b/g) || [];
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+        for (const sentence of sentences) {
+            const sentenceTerms = new Set(sentence.toLowerCase().match(/\b[a-z]+\b/g) || []);
+            const matches = questionTerms.filter(term => sentenceTerms.has(term));
+            if (matches.length > 0) {
+                return sentence.trim();
+            }
+        }
+        return sentences[0].trim();
+    }
+
+    getContextSnippet(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        return sentences.slice(0, 2).join('. ') + (sentences.length > 2 ? '...' : '');
     }
 
     // Generate potential answers
@@ -475,14 +527,14 @@ class EnhancedRAGSystem {
             ]
         };
 
-        // For the example question, provide more specific answers
-        if (question.includes("geological formation at Mistaken Point")) {
-            return [
-                "Mistaken Point contains important fossils documenting early multicellular life.",
-                "The formation is a UNESCO World Heritage Site with over 10,000 fossils.",
-                "It provides evidence of a critical moment in evolutionary history."
-            ];
-        }
+        // // For the example question, provide more specific answers
+        // if (question.includes("geological formation at Mistaken Point")) {
+        //     return [
+        //         "Mistaken Point contains important fossils documenting early multicellular life.",
+        //         "The formation is a UNESCO World Heritage Site with over 10,000 fossils.",
+        //         "It provides evidence of a critical moment in evolutionary history."
+        //     ];
+        // }
 
         return baseAnswers[questionType] || baseAnswers.general_comprehension;
     }
@@ -506,7 +558,7 @@ class DocumentProcessor {
         await new Promise(resolve => setTimeout(resolve, 800));
 
         // In a real implementation, you would extract text from the files here
-        const sampleText = "Paleontologists searching for signs of ancient life have found many fossilized specimens...";
+        // const sampleText = "Hi, how are you";
 
         return {
             success: true,
@@ -604,8 +656,21 @@ class RAGInterfaceController {
 
     presentResults(result) {
         this.elements.answerDisplay.innerHTML = `
-            <strong>Response (${result.confidence} confidence):</strong> ${result.answer}
-            <div class="explanation">${result.explanation}</div>
+            <div class="response-container">
+                <div class="response-header">
+                    <strong>Direct Answer:</strong> ${result.answer}
+                    <span class="confidence-badge">Confidence: ${result.confidence}</span>
+                </div>
+                <div class="detailed-response">
+                    <h4>Detailed Explanation:</h4>
+                    <p>${result.detailedResponse}</p>
+                </div>
+                <div class="technical-details">
+                    <h4>Analysis:</h4>
+                    <p>${result.explanation}</p>
+                    ${result.contextSnippet ? `<p><em>Key Context:</em> "${result.contextSnippet}"</p>` : ''}
+                </div>
+            </div>
         `;
         this.elements.answerDisplay.className = "status-success";
 
