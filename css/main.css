@@ -1,11 +1,11 @@
-:root {
+/* :root {
     --orange: #fd7e14;
     --orange-dark: #ff6a13;
     --yellow: #ffc107;
     --white: #ffffff;
     --black: #000000;
     --gray: #f8f9fa;
-}
+} */
 
 *,
 *::before,
@@ -37,7 +37,7 @@ p.terms {
 
 p.big {
     font-size: x-large;
-    color: var(--orange-dark);
+    color: coral;
     font-weight: bold;
 }
 
@@ -77,7 +77,7 @@ header {
 .header-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: var(--orange-dark);
+    color: coral;
 }
 
 .header-actions,
@@ -90,7 +90,7 @@ header {
 expander {
     width: 40px;
     height: 40px;
-    background-color: var(--orange);
+    background-color: coral;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -113,12 +113,12 @@ expander {
 }
 
 .btn-primary {
-    background-color: var(--orange);
+    background-color: cornflowerblue;
     color: var(--white);
 }
 
 .btn-primary:hover {
-    background-color: var(--orange-dark);
+    background-color: mistyrose;
 }
 
 .btn-secondary {
@@ -144,7 +144,7 @@ expander {
 h2 {
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
-    color: var(--orange-dark);
+    color: coral;
 }
 
 h3 {
@@ -165,7 +165,7 @@ h3 {
     position: absolute;
     top: -40px;
     left: 0;
-    background: var(--orange);
+    background: coral;
     color: var(--white);
     padding: 8px;
     z-index: 100;
@@ -201,7 +201,7 @@ footer {
 
 .footer-section h3 {
     font-size: 1.2rem;
-    color: var(--orange-dark);
+    color: coral;
     margin-bottom: 1rem;
     border-bottom: 1px solid lightsalmon;
     padding-bottom: 0.5rem;
@@ -224,7 +224,7 @@ footer {
 }
 
 .footer-section a:hover {
-    color: var(--orange);
+    color: coral;
 }
 
 .footer-bottom {
@@ -253,7 +253,7 @@ footer {
 }
 
 .footer-links a:hover {
-    color: var(--orange);
+    color: coral;
 }
 
 .copyright {
