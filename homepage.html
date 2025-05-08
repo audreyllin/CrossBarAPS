@@ -1,119 +1,184 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
     <title>AI Profile Search</title>
-
 </head>
 
 <body>
-
     <a href="#main-content" class="skip-link" tabindex="1">Skip to main content</a>
 
-
-
     <header class="main-header">
-
         <div class="logo-container">
-
             <img src="logo.png" alt="AI Profile Search Logo" class="logo" tabindex="2">
-
             <h1 class="header-title" tabindex="3">AI Profile Search</h1>
-
         </div>
+
+        <nav class="header-nav">
+            <a href="/culinary" tabindex="4">Culinary</a>
+            <a href="/culture" tabindex="5">Culture</a>
+            <a href="/sign-up" tabindex="6">Sign-Up</a>
+            <a href="/contact" tabindex="7">Contact Us</a>
+        </nav>
 
         <div class="header-actions">
-
-
-
-            <div class="expander" tabindex="5" aria-label="Menu expander">≡</div>
-
+            <div class="expander" tabindex="8" aria-label="Menu expander">≡</div>
         </div>
-
     </header>
 
-
-
     <main id="main-content">
+        <section class="hero">
+            <img src="logo.png" alt="CrossBar AI Logo" class="hero-logo">
+            <h2>Using APS</h2>
+            <p class="big">Join today :) so you can know someone better by conversing with them.</p>
+            <div class="cta-buttons">
+                <a href="/register" class="btn btn-primary" tabindex="9">Sign-up with Email</a>
+            </div>
+            <p class="terms">By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.
+            </p>
+        </section>
 
-        <h2 tabindex="6">Enhance Sales with APS</h2>
+        <section class="topics">
+            <div class="topic-column">
+                <h3>Why Post</h3>
+                <ul>
+                    <li>Affiliate Benefits</li>
+                    <li>Verified Organizations</li>
+                    <li>About conversations on APS</li>
+                </ul>
 
-        <div class="tagline" tabindex="7">Foster efficient, informative exchange.</div>
+                <h3>How to Post (Accessibility Friendly)</h3>
+                <ul>
+                    <li>Accessibility features of APS</li>
+                    <li>How to post links in a post</li>
+                    <li>How to make images accessible for people (image descriptions, GIF label)</li>
+                    <li>About public replies</li>
+                </ul>
+            </div>
 
-        <div class="cta-buttons">
+            <div class="topic-column">
+                <h3>Search and Public Conversations</h3>
+                <ul>
+                    <li>Search result FAQs</li>
+                    <li>Hows to use APS search</li>
+                    <li>How to save searches</li>
+                    <li>Search with Prompt FAQ</li>
+                </ul>
 
-            <a href="/register" class="btn btn-primary" tabindex="8">Get Started</a>
+                <h3>Following and unfollowing</h3>
+                <ul>
+                    <li>Topics on APS</li>
+                    <li>How to follow and unfollow people on APS</li>
+                    <li>How to upload and manage your contacts</li>
+                </ul>
+            </div>
 
-            <a href="/trial" class="btn btn-secondary" tabindex="9">Talk to Your Role Model</a>
+            <div class="topic-column">
+                <h3>Muting</h3>
+                <ul>
+                    <li>How to mute accounts on APS</li>
+                    <li>How to use advanced muting options</li>
+                </ul>
 
-        </div>
+                <h3>Private Conversations</h3>
+                <ul>
+                    <li>Private Conversations FAQs</li>
+                    <li>About Encrypted Private Conversations</li>
+                </ul>
+            </div>
 
+            <div class="topic-column">
+                <h3>Creators</h3>
+                <ul>
+                    <li>About Subscription creators</li>
+                    <li>Promoted Post Terms</li>
+                    <li>Creator Revenue Sharing</li>
+                    <li>Paid Partnerships Policy</li>
+                </ul>
+            </div>
+        </section>
     </main>
 
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Help Center</h3>
+                <ul>
+                    <li><a href="/help">Help Articles</a></li>
+                    <li><a href="/faq">FAQs</a></li>
+                    <li><a href="/tutorials">Tutorials</a></li>
+                </ul>
+            </div>
 
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul>
+                    <li><a href="/settings">Account Settings</a></li>
+                    <li><a href="/preferences">Email Preference Center</a></li>
+                    <li><a href="/security">Security</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                    <li><a href="/careers">Careers</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="/terms">Terms of Service</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/cookies">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="/help-center">Help Center</a>
+                <a href="/email-preferences">Email Preference Center</a>
+                <a href="/contact-us">Contact Us</a>
+            </div>
+            <img src="logo.png" alt="CrossBar AI Logo" class="footer-logo">
+            <p class="copyright">© 2025 CrossBar Corp. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
-
-            // Get Started button in header 
-
+            // Get Started button in header  
             const headerBtn = document.querySelector('.header-actions .btn-primary');
+            if (headerBtn) {
+                headerBtn.addEventListener('click', function () {
+                    window.location.href = '/register';
+                });
+            }
 
-            headerBtn.addEventListener('click', function () {
-
-                window.location.href = '/register';
-
-            });
-
-
-
-            // Get Started button in main 
-
+            // Get Started button in main  
             const mainBtn = document.querySelector('.cta-buttons .btn-primary');
+            if (mainBtn) {
+                mainBtn.addEventListener('click', function () {
+                    window.location.href = '/register';
+                });
+            }
 
-            mainBtn.addEventListener('click', function () {
-
-                window.location.href = '/register';
-
-            });
-
-
-
-            // Trial button 
-
-            const trialBtn = document.querySelector('.btn-secondary');
-
-            trialBtn.addEventListener('click', function () {
-
-                window.location.href = '/trial';
-
-            });
-
-
-
-            // Expander button 
-
+            // Expander button  
             const expander = document.querySelector('.expander');
-
-            expander.addEventListener('click', function () {
-
-                // Menu functionality would go here 
-
-                alert('Menu expanded');
-
-            });
-
+            if (expander) {
+                expander.addEventListener('click', function () {
+                    // Menu functionality would go here  
+                    alert('Menu expanded');
+                });
+            }
         });
-
     </script>
-
 </body>
-
 </html>
