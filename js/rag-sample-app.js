@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000'; // Match FastAPI default port
+const API_BASE_URL = 'http://localhost:8001'; // Match FastAPI default port
 
 async function uploadDocuments() {
     const fileInput = document.getElementById('fileInput');
