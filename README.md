@@ -7,6 +7,7 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 3. Company
 
 Style reference: https://business.x.com/en
+
 Question Bank (Reading / Writing) Training: https://satsuitequestionbank.collegeboard.org/digital/results
 
 My Design Page:
