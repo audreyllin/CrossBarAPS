@@ -1,37 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG System Demo</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        #results { margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
-        .context { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
-    </style>
+    <title>Document Q&A System</title>
+    <link rel="stylesheet" as="style" href="css/rag interface.css">
 </head>
+
 <body>
     <h1>Document Q&A System</h1>
-    
-    <div>
-        <h3>Upload Documents</h3>
-        <input type="file" id="fileInput" multiple>
+
+    <div class="section">
+        <h2>Upload Documents</h2>
+        <p>Supported formats: PDF, TXT, DOCX</p>
+        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.docx">
         <button onclick="uploadDocuments()">Process Documents</button>
         <div id="uploadStatus"></div>
     </div>
-    
-    <div>
-        <h3>Ask a Question</h3>
-        <textarea id="questionInput" rows="3" style="width: 100%"></textarea>
+
+    <div class="section">
+        <h2>Ask a Question</h2>
+        <textarea id="questionInput" placeholder="Enter your question about the documents..."></textarea>
         <button onclick="askQuestion()">Get Answer</button>
     </div>
-    
-    <div id="results">
-        <h3>Results</h3>
-        <div id="answer"></div>
+
+    <div class="section result-section">
+        <h2>Results</h2>
+        <div id="answer" style="margin-bottom: 20px;"></div>
+
         <div id="contexts"></div>
+        <div id="sources"></div>
     </div>
-    
-    <script src="app.js"></script>
+
+    <script src="js/rag-sample-app.js"></script>
 </body>
+
 </html>
