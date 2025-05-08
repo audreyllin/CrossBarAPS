@@ -194,27 +194,37 @@ class EnhancedRAGSystem {
                 must: ["identify correct relationship", "maintain comparison"],
                 must_not: ["reverse relationship", "ignore key differences"],
                 score: 0
+            },
+            // Add default case for general_comprehension
+            general_comprehension: {
+                must: ["be relevant to text", "address question"],
+                must_not: ["be off-topic", "introduce unrelated concepts"],
+                score: 0
             }
         };
 
-        const rules = criteria[questionType];
+        // Ensure we have a valid question type
+        const validQuestionType = criteria.hasOwnProperty(questionType) ? questionType : "general_comprehension";
+        const rules = criteria[validQuestionType];
 
-        if (rules.must.includes("cover primary focus") &&
+        // Check positive criteria
+        if (rules.must && rules.must.includes("cover primary focus") &&
             this.checkPrimaryFocusCoverage(context, answer)) {
             rules.score += 1;
         }
 
-        if (rules.must.includes("be textually grounded") &&
+        if (rules.must && rules.must.includes("be textually grounded") &&
             this.checkTextualGrounding(context, answer)) {
             rules.score += 1;
         }
 
-        if (rules.must_not.includes("introduce new concepts") &&
+        // Check negative criteria
+        if (rules.must_not && rules.must_not.includes("introduce new concepts") &&
             this.checkNewConcepts(context, answer)) {
             rules.score -= 1;
         }
 
-        if (rules.must_not.includes("be irrelevant") &&
+        if (rules.must_not && rules.must_not.includes("be irrelevant") &&
             this.checkIrrelevance(context, answer)) {
             rules.score -= 1;
         }
