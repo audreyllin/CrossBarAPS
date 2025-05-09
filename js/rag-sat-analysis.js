@@ -409,33 +409,225 @@ class EnhancedRAGSystem {
     }
 
     generateDetailedExplanation(questionType, answer, context, question) {
-        const mainTerms = this.getMainTerms(context).join(', ');
+        const keyConcepts = this.extractKeyConcepts(context, questionType);
 
         switch (questionType) {
             case "main_idea":
-                return `The text primarily discusses ${mainTerms}. Based on the analysis, the most comprehensive summary is: "${answer.text}". This captures the key themes while maintaining accuracy (confidence score: ${answer.score.toFixed(2)}). The opening and closing sentences particularly support this interpretation.`;
+                return `The text primarily focuses on ${keyConcepts.themes}. Based on analysis, the most comprehensive summary is: "${answer.text}". This captures ${keyConcepts.specifics} while maintaining accuracy (confidence: ${answer.score.toFixed(2)}). The ${keyConcepts.structure} particularly support this interpretation.`;
 
             case "logical_completion":
-                return `Given the context ending with "${this.getLastSentence(context)}", the most logical continuation is: "${answer.text}". This maintains the flow of ideas with ${answer.score.toFixed(2)} confidence. It properly follows the text's established pattern without introducing unrelated concepts.`;
+                return `Given the context's ${keyConcepts.endingPattern}, the most logical continuation is: "${answer.text}". This maintains ${keyConcepts.flow} with ${answer.score.toFixed(2)} confidence. It properly follows ${keyConcepts.establishedPattern}.`;
 
             case "evidence_support":
-                const evidencePoints = context.split(/[.!?]+/)
-                    .filter(s => /(study|research|data|found)\b/i.test(s))
-                    .slice(0, 2)
-                    .map(s => s.trim() + ".");
-                return `The claim is best supported by research evidence including: ${evidencePoints.join(' ')} The selected answer "${answer.text}" directly references these supporting elements with ${answer.score.toFixed(2)} confidence.`;
+                return `The claim is supported by ${keyConcepts.evidenceType} including: ${keyConcepts.evidencePoints}. The selected answer "${answer.text}" directly references ${keyConcepts.supportingElements} with ${answer.score.toFixed(2)} confidence.`;
 
             case "detail_extraction":
-                return `In response to "${question}", the text specifically mentions: "${this.getRelevantDetail(context, question)}". The answer "${answer.text}" precisely extracts this detail with ${answer.score.toFixed(2)} confidence, matching the textual evidence without overgeneralizing.`;
+                return `For "${question}", the text specifies: "${keyConcepts.relevantDetail}". The answer "${answer.text}" precisely matches ${keyConcepts.textualEvidence} with ${answer.score.toFixed(2)} confidence.`;
 
             case "comparative":
-                const comparison = context.split(/[.!?]+/)
-                    .find(s => /(whereas|while|compared to|similar to)\b/i.test(s));
-                return `The comparison question is addressed by the textual contrast: "${comparison}". The answer "${answer.text}" correctly identifies this relationship with ${answer.score.toFixed(2)} confidence, maintaining the proper perspective on similarities and differences.`;
+                return `The comparison centers on ${keyConcepts.comparisonFocus}. The answer "${answer.text}" correctly identifies ${keyConcepts.relationship} with ${answer.score.toFixed(2)} confidence, maintaining proper perspective on ${keyConcepts.differences}.`;
 
             default:
-                return `The analysis of "${question}" yields: "${answer.text}" with ${answer.score.toFixed(2)} confidence. This response best matches the textual content which discusses ${mainTerms}. The system verified this against multiple contextual elements to ensure relevance and accuracy.`;
+                return `Analysis of "${question}" yields: "${answer.text}" (${answer.score.toFixed(2)} confidence). This best matches ${keyConcepts.contentFocus}. The system verified ${keyConcepts.verificationCriteria}.`;
         }
+    }
+
+    // Add this method to the EnhancedRAGSystem class
+    getFlowCharacteristics(context) {
+        const sentences = context.split(/[.!?]+/).filter(s => s.trim());
+        if (sentences.length < 2) return "linear flow";
+
+        const transitionWords = {
+            contrast: ['however', 'but', 'although', 'yet'],
+            continuation: ['furthermore', 'moreover', 'additionally', 'also'],
+            causation: ['therefore', 'thus', 'hence', 'consequently', 'because'],
+            sequence: ['first', 'next', 'then', 'finally', 'afterward']
+        };
+
+        let detectedFlows = new Set();
+
+        for (const [flowType, words] of Object.entries(transitionWords)) {
+            if (words.some(word => context.toLowerCase().includes(word))) {
+                detectedFlows.add(flowType);
+            }
+        }
+
+        if (detectedFlows.size === 0) {
+            return "simple linear flow";
+        }
+
+        return Array.from(detectedFlows).join(' with ') + " flow";
+    }
+
+    getEstablishedPattern(context) {
+        const lastSentence = this.getLastSentence(context);
+        if (/however|but|although/i.test(lastSentence)) {
+            return "a contrast pattern";
+        }
+        if (/because|since|as/i.test(lastSentence)) {
+            return "a causal pattern";
+        }
+        if (/therefore|thus|so/i.test(lastSentence)) {
+            return "a conclusive pattern";
+        }
+        return "a descriptive pattern";
+    }
+
+    getEvidenceType(context) {
+        if (/(study|research|experiment)\b/i.test(context)) {
+            return "scientific evidence";
+        }
+        if (/(data|statistics|figures)\b/i.test(context)) {
+            return "quantitative evidence";
+        }
+        if (/"[^"]+"/.test(context)) {
+            return "direct quotations";
+        }
+        return "textual evidence";
+    }
+
+    getEvidencePoints(context) {
+        const points = context.split(/[.!?]+/)
+            .filter(s => /(study|research|found|according to)\b/i.test(s))
+            .slice(0, 2)
+            .map(s => s.trim());
+        return points.length > 0 ? points.join(' and ') : "key points in the text";
+    }
+
+    getSupportingElements(context) {
+        const elements = Object.entries(this.countNouns(context))
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 2)
+            .map(([noun]) => noun);
+        return elements.length > 0 ? elements.join(' and ') : "the main concepts";
+    }
+
+    getTextualEvidence(context) {
+        const evidence = context.split(/[.!?]+/)
+            .filter(s => s.trim().length > 0)
+            .slice(0, 2)
+            .map(s => s.trim());
+        return evidence.length > 0 ? evidence.join(' and ') : "the text";
+    }
+
+    getComparisonFocus(context) {
+        const comparisons = context.split(/[.!?]+/)
+            .filter(s => /(whereas|while|compared to|similar to)\b/i.test(s))
+            .map(s => s.trim());
+        return comparisons.length > 0 ? comparisons[0] : "the key elements";
+    }
+
+    getRelationshipType(context) {
+        if (/(similar to|alike|same as)\b/i.test(context)) {
+            return "similarities";
+        }
+        if (/(different from|unlike|contrast)\b/i.test(context)) {
+            return "differences";
+        }
+        return "the relationship";
+    }
+
+    getKeyDifferences(context) {
+        const diffMarkers = context.match(/(different from|unlike|whereas|while)\b/gi) || [];
+        return diffMarkers.length > 0 ? `${diffMarkers.length} key differences` : "the main distinctions";
+    }
+
+    getContentFocus(context) {
+        const nouns = this.countNouns(context);
+        const topNoun = Object.entries(nouns).sort((a, b) => b[1] - a[1])[0]?.[0] || "the text";
+        return `the ${topNoun} mentioned`;
+    }
+
+    getVerificationCriteria(context) {
+        const criteria = [];
+        if (/(study|research)\b/i.test(context)) criteria.push("research basis");
+        if (/\d/.test(context)) criteria.push("numerical data");
+        if (/"[^"]+"/.test(context)) criteria.push("direct quotes");
+        return criteria.length > 0 ? criteria.join(' and ') : "textual consistency";
+    }
+
+    extractKeyConcepts(context, questionType) {
+        const sentences = context.split(/[.!?]+/).filter(s => s.trim());
+        const firstSentence = sentences[0];
+        const lastSentence = sentences[sentences.length - 1];
+        const nouns = this.countNouns(context);
+        const topNouns = Object.entries(nouns).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+        const baseConcepts = {
+            themes: topNouns.map(([noun]) => noun).join(', '),
+            specifics: this.getSpecificDetails(context),
+            structure: this.getTextStructure(context),
+            endingPattern: this.getEndingPattern(lastSentence),
+            flow: this.getFlowCharacteristics(context),
+            establishedPattern: this.getEstablishedPattern(context)
+        };
+
+        switch (questionType) {
+            case "evidence_support":
+                return {
+                    ...baseConcepts,
+                    evidenceType: this.getEvidenceType(context),
+                    evidencePoints: this.getEvidencePoints(context),
+                    supportingElements: this.getSupportingElements(context)
+                };
+            case "detail_extraction":
+                return {
+                    ...baseConcepts,
+                    relevantDetail: this.getRelevantDetail(context, ""),
+                    textualEvidence: this.getTextualEvidence(context)
+                };
+            case "comparative":
+                return {
+                    ...baseConcepts,
+                    comparisonFocus: this.getComparisonFocus(context),
+                    relationship: this.getRelationshipType(context),
+                    differences: this.getKeyDifferences(context)
+                };
+            default:
+                return {
+                    ...baseConcepts,
+                    contentFocus: this.getContentFocus(context),
+                    verificationCriteria: this.getVerificationCriteria(context)
+                };
+        }
+    }
+
+    getSpecificDetails(context) {
+        const details = context.split(/[.!?]+/)
+            .filter(s => s.trim().length > 0)
+            .slice(1, -1)
+            .filter(s => s.split(/\s+/).length > 5);
+        return details.length > 0 ?
+            `specific details like "${details[0].trim()}"` :
+            "key themes";
+    }
+
+    getTextStructure(context) {
+        const markers = {
+            problem_solution: /(problem|solution)/i,
+            cause_effect: /(because|therefore)/i,
+            compare_contrast: /(whereas|however)/i
+        };
+
+        for (const [type, regex] of Object.entries(markers)) {
+            if (regex.test(context)) {
+                return `${type.replace('_', '-')} structure`;
+            }
+        }
+        return "introductory and concluding sections";
+    }
+
+    getEndingPattern(sentence) {
+        if (/however|but|although/i.test(sentence)) {
+            return "contrasting pattern";
+        }
+        if (/because|since|as/i.test(sentence)) {
+            return "causal pattern";
+        }
+        if (/therefore|thus|so/i.test(sentence)) {
+            return "conclusive pattern";
+        }
+        return "descriptive pattern";
     }
 
     // Validation helper methods
@@ -487,11 +679,23 @@ class EnhancedRAGSystem {
     }
 
     getContextSnippet(text) {
-        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        return sentences.slice(0, 2).join('. ') + (sentences.length > 2 ? '...' : '');
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+        if (sentences.length <= 2) return sentences.join('. ') + '.';
+
+        const importantSentences = sentences.filter(s =>
+            s.split(/\s+/).length > 5 &&
+            /[A-Z][a-z]+/.test(s) &&
+            !/^(and|but|or)\b/i.test(s)
+        );
+
+        const snippet = importantSentences.length > 0 ?
+            importantSentences.slice(0, 2).join('. ') :
+            sentences.slice(0, 2).join('. ');
+
+        return snippet + (sentences.length > 2 ? '...' : '');
     }
 
-    // Generate potential answers
+
     generatePotentialAnswers(question, context, questionType) {
         // Mock implementation - in production you would call an LLM
         const baseAnswers = {
@@ -527,20 +731,18 @@ class EnhancedRAGSystem {
             ]
         };
 
-        // // For the example question, provide more specific answers
-        // if (question.includes("geological formation at Mistaken Point")) {
-        //     return [
-        //         "Mistaken Point contains important fossils documenting early multicellular life.",
-        //         "The formation is a UNESCO World Heritage Site with over 10,000 fossils.",
-        //         "It provides evidence of a critical moment in evolutionary history."
-        //     ];
-        // }
+        if (question.includes("geological formation at Mistaken Point")) {
+            return [
+                "Mistaken Point contains important fossils documenting early multicellular life.",
+                "The formation is a UNESCO World Heritage Site with over 10,000 fossils.",
+                "It provides evidence of a critical moment in evolutionary history."
+            ];
+        }
 
         return baseAnswers[questionType] || baseAnswers.general_comprehension;
     }
 }
 
-// Document Processing Functionality
 class DocumentProcessor {
     static async processFiles(fileList) {
         const files = Array.from(fileList || []);
@@ -554,25 +756,71 @@ class DocumentProcessor {
             throw new Error(`Unsupported file type: ${invalidFiles[0].name}. Only PDF/TXT/DOCX allowed.`);
         }
 
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        try {
+            // Process each file and extract text
+            const processingResults = await Promise.all(
+                files.map(async file => {
+                    let textContent = '';
 
-        // Define sample text directly in the method
-        const sampleText = "Paleontologists searching for signs of ancient life have found many fossilized specimens " +
-            "at Mistaken Point, a geological formation in Newfoundland. This site contains some of the " +
-            "oldest known evidence of multicellular life, dating back over 565 million years. The fossils " +
-            "preserved here provide crucial insights into early evolutionary processes.";
+                    if (file.type === 'text/plain') {
+                        textContent = await this.readTextFile(file);
+                    }
+                    else if (file.type === 'application/pdf') {
+                        textContent = await this.extractTextFromPDF(file);
+                    }
+                    else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                        textContent = await this.extractTextFromDOCX(file);
+                    }
 
-        return {
-            success: true,
-            count: files.length,
-            extractedText: sampleText,
-            fileTypes: files.reduce((acc, file) => {
-                const ext = file.name.split('.').pop().toUpperCase();
-                acc[ext] = (acc[ext] || 0) + 1;
-                return acc;
-            }, {})
-        };
+                    return {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        content: textContent
+                    };
+                })
+            );
+
+            // Combine all text content
+            const combinedText = processingResults.map(r => r.content).join('\n\n');
+
+            return {
+                success: true,
+                count: files.length,
+                extractedText: combinedText,
+                fileInfo: processingResults,
+                fileTypes: files.reduce((acc, file) => {
+                    const ext = file.name.split('.').pop().toUpperCase();
+                    acc[ext] = (acc[ext] || 0) + 1;
+                    return acc;
+                }, {})
+            };
+
+        } catch (error) {
+            console.error("File processing error:", error);
+            throw new Error("Failed to process files. Please try again.");
+        }
+    }
+
+    static async readTextFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = event => resolve(event.target.result);
+            reader.onerror = error => reject(error);
+            reader.readAsText(file);
+        });
+    }
+
+    static async extractTextFromPDF(file) {
+        // Note: In a real implementation, you would use a PDF library like pdf.js
+        console.warn("PDF text extraction would require a PDF library in a real implementation");
+        return `PDF content placeholder for ${file.name}`;
+    }
+
+    static async extractTextFromDOCX(file) {
+        // Note: In a real implementation, you would use a DOCX parser
+        console.warn("DOCX text extraction would require a DOCX parser in a real implementation");
+        return `DOCX content placeholder for ${file.name}`;
     }
 }
 
@@ -659,39 +907,40 @@ class RAGInterfaceController {
 
     presentResults(result) {
         this.elements.answerDisplay.innerHTML = `
-            <div class="response-container">
-                <div class="response-header">
-                    <strong>Direct Answer:</strong> ${result.answer}
-                    <span class="confidence-badge">Confidence: ${result.confidence}</span>
-                </div>
-                <div class="detailed-response">
-                    <h4>Detailed Explanation:</h4>
-                    <p>${result.detailedResponse}</p>
-                </div>
-                <div class="technical-details">
-                    <h4>Analysis:</h4>
-                    <p>${result.explanation}</p>
-                    ${result.contextSnippet ? `<p><em>Key Context:</em> "${result.contextSnippet}"</p>` : ''}
-                </div>
+        <div class="response-container">
+            <div class="response-header">
+                <strong>Direct Answer:</strong> ${result.answer}
+                <span class="confidence-badge">Confidence: ${result.confidence}</span>
             </div>
-        `;
+            <div class="detailed-response">
+                <h4>Detailed Explanation:</h4>
+                <p>${result.detailedResponse}</p>
+            </div>
+            <div class="technical-details">
+                <h4>Analysis:</h4>
+                <p>${result.explanation}</p>
+                ${result.contextSnippet ? `<div class="context-snippet"><strong>Relevant Context:</strong> "${result.contextSnippet}"</div>` : ''}
+            </div>
+        </div>
+    `;
         this.elements.answerDisplay.className = "status-success";
 
         if (result.alternatives?.length > 0) {
             this.elements.contextDisplay.innerHTML = "<h3>Alternative Answers:</h3>" +
                 result.alternatives.map((alt, i) => `
-                    <div class="context-item">
-                        <span class="alt-number">${i + 1}.</span>
-                        <span class="alt-text">${alt.text}</span>
-                        <span class="alt-score">(${alt.score})</span>
-                    </div>
-                `).join('');
+                <div class="context-item">
+                    <span class="alt-number">${i + 1}.</span>
+                    <span class="alt-text">${alt.text}</span>
+                    <span class="alt-score">(${alt.score})</span>
+                </div>
+            `).join('');
         }
 
         this.elements.sourceDisplay.innerHTML = `
-            <h3>Question Type:</h3>
-            <div class="source-item">${result.questionType.replace(/_/g, ' ')}</div>
-        `;
+        <h3>Question Type:</h3>
+        <div class="source-item">${result.questionType.replace(/_/g, ' ')}</div>
+        ${result.contextSnippet ? `<div class="context-source">Key context extracted from document</div>` : ''}
+    `;
     }
 }
 
