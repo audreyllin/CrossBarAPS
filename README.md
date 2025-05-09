@@ -15,3 +15,4 @@ https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?
 
 GitHub Page:
 [audreyllin.github.io/CrossBarAPS/homepage.html](https://audreyllin.github.io/CrossBarAPS/homepage.html)
+[audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
