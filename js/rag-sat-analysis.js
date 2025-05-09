@@ -7,8 +7,39 @@ class EnhancedRAGSystem {
             evidence_support: this.handleEvidenceSupport.bind(this),
             detail_extraction: this.handleDetailExtraction.bind(this),
             comparative: this.handleComparativeQuestion.bind(this),
-            general_comprehension: this.handleGeneralQuestion.bind(this)
+            general_comprehension: this.handleGeneralQuestion.bind(this),
+            consequence_prediction: this.handleConsequencePrediction.bind(this)  // New handler
         };
+    }
+
+    // New handler method
+    handleConsequencePrediction(context) {
+        const sentences = context.split(/[.!?]+/).filter(s => s.trim());
+
+        // Look for cause-effect relationships
+        const causeEffectSentences = sentences.filter(s =>
+            /(because|since|as a result|therefore|thus|so|consequently|led to|caused)/i.test(s)
+        );
+
+        if (causeEffectSentences.length > 0) {
+            return "The most likely consequence would be " +
+                this.extractConsequence(causeEffectSentences[0]);
+        }
+
+        // Fallback to logical completion
+        return this.handleLogicalCompletion(context);
+    }
+
+    extractConsequence(sentence) {
+        // Simple extraction - in a real system you'd use more sophisticated NLP
+        if (/because|since|as/i.test(sentence)) {
+            return sentence.split(/(because|since|as)/i)[2] + " would not occur";
+        }
+        if (/therefore|thus|so|consequently/i.test(sentence)) {
+            return "the opposite of " + sentence;
+        }
+        return "a significant change in " +
+            (this.countNouns(sentence)[0]?.[0] || "the described situation");
     }
 
     // Core processing function
@@ -41,10 +72,16 @@ class EnhancedRAGSystem {
         }
     }
 
-    // Question Type Detection
     detectQuestionType(question) {
         const q = question.toLowerCase().trim();
 
+        // Add consequence detection
+        if (q.includes("most likely consequence") || q.includes("what would happen if") ||
+            q.includes("result if") || q.includes("outcome if")) {
+            return "consequence_prediction";
+        }
+
+        // Existing detection logic...
         if (q.includes("main idea") || q.includes("best states") ||
             q.includes("primary purpose") || q.includes("central theme")) {
             return "main_idea";
@@ -199,17 +236,18 @@ class EnhancedRAGSystem {
                 must: ["be relevant to text", "address question"],
                 must_not: ["be off-topic", "introduce unrelated concepts"],
                 score: 0
+            },
+            consequence_prediction: {
+                must: ["follow logical consequence", "be textually plausible"],
+                must_not: ["contradict evidence", "introduce unsupported outcomes"],
+                score: 0
             }
         };
 
         const validQuestionType = criteria.hasOwnProperty(questionType) ? questionType : "general_comprehension";
         const rules = criteria[validQuestionType];
 
-        if (rules.must && rules.must.includes("cover primary focus") &&
-            this.checkPrimaryFocusCoverage(context, answer)) {
-            rules.score += 1;
-        }
-
+        // Apply general validation rules
         if (rules.must && rules.must.includes("be textually grounded") &&
             this.checkTextualGrounding(context, answer)) {
             rules.score += 1;
@@ -220,12 +258,43 @@ class EnhancedRAGSystem {
             rules.score -= 1;
         }
 
-        if (rules.must_not && rules.must_not.includes("be irrelevant") &&
-            this.checkIrrelevance(context, answer)) {
-            rules.score -= 1;
+        // Apply question-type specific validation
+        switch (questionType) {
+            case "consequence_prediction":
+                if (this.checkLogicalConsequence(context, answer)) {
+                    rules.score += 1;
+                }
+                if (this.checkUnsupportedOutcome(context, answer)) {
+                    rules.score -= 1;
+                }
+                break;
+            case "main_idea":
+                if (this.checkPrimaryFocusCoverage(context, answer)) {
+                    rules.score += 1;
+                }
+                break;
+            // Add other question type specific validations as needed
         }
 
         return rules.score;
+    }
+
+    checkLogicalConsequence(context, answer) {
+        const contextTerms = new Set(context.toLowerCase().split(/\s+/));
+        const answerTerms = answer.toLowerCase().split(/\s+/);
+
+        // Check that answer doesn't contradict context
+        const negations = ["not", "never", "no longer", "failed"];
+        if (negations.some(neg => answerTerms.includes(neg))) {
+            return contextTerms.has("without") || contextTerms.has("stop");
+        }
+        return true;
+    }
+
+    checkUnsupportedOutcome(context, answer) {
+        const novelTerms = answer.toLowerCase().split(/\s+/)
+            .filter(term => !context.toLowerCase().includes(term));
+        return novelTerms.length > 3;  // Too many new concepts
     }
 
     // Confidence Scoring
@@ -357,7 +426,13 @@ class EnhancedRAGSystem {
                 .join("; ");
     }
 
-    handleDetailExtraction(context) {
+    handleDetailExtraction(context, question = "") {
+        // Special handling for consequence questions misclassified as detail extraction
+        if (question.includes("would have been") || question.includes("most likely consequence")) {
+            return this.handleConsequencePrediction(context);
+        }
+
+        // Original detail extraction logic
         return "Key details from the text: " +
             context.split(/[.!?]+/)
                 .filter(s => s.trim().length > 0)
@@ -697,7 +772,27 @@ class EnhancedRAGSystem {
 
 
     generatePotentialAnswers(question, context, questionType) {
-        // Mock implementation - in production you would call an LLM
+        // Handle consequence prediction questions
+        if (questionType === "consequence_prediction" ||
+            question.includes("would have been") ||
+            question.includes("most likely consequence")) {
+
+            const negativeMarkers = ["would have struggled to", "would not have been able to",
+                "might have failed to", "could have prevented"];
+            const positiveMarkers = ["would have continued to", "might have still",
+                "could have maintained"];
+
+            // Extract main verb/noun from context
+            const mainAction = this.extractMainAction(context);
+
+            return [
+                `${negativeMarkers[Math.floor(Math.random() * negativeMarkers.length)]} ${mainAction}`,
+                `${positiveMarkers[Math.floor(Math.random() * positiveMarkers.length)]} ${mainAction}`,
+                `The situation would have remained unchanged`,
+                `A different approach would have been needed`
+            ];
+        }
+
         const baseAnswers = {
             main_idea: [
                 "The text discusses the main topic and supporting evidence.",
@@ -740,6 +835,14 @@ class EnhancedRAGSystem {
         }
 
         return baseAnswers[questionType] || baseAnswers.general_comprehension;
+    }
+
+    extractMainAction(text) {
+        const verbs = ["maintain", "keep", "create", "produce", "meet", "sustain", "achieve"];
+        const nouns = this.countNouns(text);
+        const topNoun = Object.entries(nouns).sort((a, b) => b[1] - a[1])[0]?.[0] || "demand";
+
+        return verbs[Math.floor(Math.random() * verbs.length)] + " " + topNoun;
     }
 }
 
