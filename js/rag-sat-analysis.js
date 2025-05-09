@@ -574,12 +574,12 @@ class EnhancedRAGSystem {
 
     generateExplanation(answer, questionType) {
         const explanations = {
-            main_idea: `This answer best captures the primary focus of the text with a confidence of ${answer.score.toFixed(2)}.`,
-            logical_completion: `This option most coherently continues the text's logical flow (confidence: ${answer.score.toFixed(2)}).`,
-            evidence_support: `This statement provides the strongest direct support for the claim (confidence: ${answer.score.toFixed(2)}).`,
-            detail_extraction: `This conclusion is most directly supported by textual evidence (confidence: ${answer.score.toFixed(2)}).`,
-            comparative: `This option correctly identifies the key relationship (confidence: ${answer.score.toFixed(2)}).`,
-            general_comprehension: `This response addresses the question with confidence ${answer.score.toFixed(2)} based on textual analysis.`
+            main_idea: `This answer best captures the primary focus of the text with a confidence of ${answer.score.toFixed(2)}`,
+            logical_completion: `This option most coherently continues the text's logical flow (confidence: ${answer.score.toFixed(2)})`,
+            evidence_support: `This statement provides the strongest direct support for the claim (confidence: ${answer.score.toFixed(2)})`,
+            detail_extraction: `This conclusion is most directly supported by textual evidence (confidence: ${answer.score.toFixed(2)})`,
+            comparative: `This option correctly identifies the key relationship (confidence: ${answer.score.toFixed(2)})`,
+            general_comprehension: `This response addresses the question with confidence ${answer.score.toFixed(2)} based on textual analysis`
         };
 
         return explanations[questionType] || `Selected with confidence ${answer.score.toFixed(2)}.`;
@@ -668,7 +668,7 @@ class EnhancedRAGSystem {
 
             case "detail_extraction":
                 return `For the question "${question}", the text explicitly states ` +
-                    `"${keyConcepts.relevantDetail}". The answer "${answerText}" ` +
+                    `"${keyConcepts.relevantDetail}". "${answerText}" ` +
                     `precisely matches this because ${keyConcepts.textualEvidence} ` +
                     `(Confidence: ${confidenceStr}). This demonstrates accurate ` +
                     `comprehension of specific details.`;
@@ -991,42 +991,42 @@ class EnhancedRAGSystem {
 
         const baseAnswers = {
             main_idea: [
-                "The text discusses the main topic and supporting evidence.",
-                "A general overview of the subject matter.",
-                "The primary focus is on the key concept mentioned."
+                "The text discusses the main topic and supporting evidence",
+                "A general overview of the subject matter",
+                "The primary focus is on the key concept mentioned"
             ],
             logical_completion: [
-                "Therefore, the conclusion follows from the evidence.",
-                "However, there are alternative interpretations.",
-                "Additionally, more research is needed."
+                "Therefore, the conclusion follows from the evidence",
+                "However, there are alternative interpretations",
+                "Additionally, more research is needed"
             ],
             evidence_support: [
-                "The study found significant results supporting this.",
-                "Research data confirms this hypothesis.",
-                "Experts agree with this conclusion."
+                "The study found significant results supporting this",
+                "Research data confirms this hypothesis",
+                "Experts agree with this conclusion"
             ],
             detail_extraction: [
-                "The text specifically mentions this detail.",
-                "Key facts include these points.",
-                "Important information was provided."
+                "The text specifically mentions this detail",
+                "Key facts include these points",
+                "Important information was provided"
             ],
             comparative: [
-                "The comparison shows significant differences.",
-                "Similarities outweigh the differences.",
-                "The contrast reveals important distinctions."
+                "The comparison shows significant differences",
+                "Similarities outweigh the differences",
+                "The contrast reveals important distinctions"
             ],
             general_comprehension: [
-                "The text provides information about this topic.",
-                "Several points are made regarding this subject.",
-                "Key details are included in the passage."
+                "The text provides information about this topic",
+                "Several points are made regarding this subject",
+                "Key details are included in the passage"
             ]
         };
 
         if (question.includes("geological formation at Mistaken Point")) {
             return [
-                "Mistaken Point contains important fossils documenting early multicellular life.",
-                "The formation is a UNESCO World Heritage Site with over 10,000 fossils.",
-                "It provides evidence of a critical moment in evolutionary history."
+                "Mistaken Point contains important fossils documenting early multicellular life",
+                "The formation is a UNESCO World Heritage Site with over 10,000 fossils",
+                "It provides evidence of a critical moment in evolutionary history"
             ];
         }
 
