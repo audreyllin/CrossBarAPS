@@ -642,7 +642,7 @@ class EnhancedRAGSystem {
                 explanation += `the context's focus on ${keyConcepts.themes}.`;
             }
 
-            return `${explanation} (Confidence: ${confidenceStr})`;
+            return `${explanation}`;
         }
 
         // Handle all other question types with specific explanations
@@ -650,44 +650,44 @@ class EnhancedRAGSystem {
             case "main_idea":
                 return `The text primarily discusses ${keyConcepts.themes}. The selected answer "${answerText}" ` +
                     `effectively summarizes this by covering ${keyConcepts.specifics} ` +
-                    `(Confidence: ${confidenceStr}). This interpretation is supported by ` +
+                    `This interpretation is supported by ` +
                     `the text's ${keyConcepts.structure} and focus on ${keyConcepts.contentFocus}.`;
 
             case "logical_completion":
                 return `Given the text's ${keyConcepts.endingPattern} and ${keyConcepts.flow}, ` +
-                    `the most coherent continuation is "${answerText}" ` +
-                    `(Confidence: ${confidenceStr}). This follows the established ` +
+                    `the most likely inference is "${answerText}" ` +
+                    `This follows the established ` +
                     `${keyConcepts.establishedPattern} while maintaining focus on ` +
                     `${keyConcepts.themes}.`;
 
             case "evidence_support":
                 return `The argument is substantiated by ${keyConcepts.evidenceType}, particularly ` +
                     `${keyConcepts.evidencePoints}. The answer "${answerText}" directly cites ` +
-                    `${keyConcepts.supportingElements} (Confidence: ${confidenceStr}). ` +
+                    `${keyConcepts.supportingElements}` +
                     `This evidence best supports the claim because it ${keyConcepts.evidenceReasoning}.`;
 
             case "detail_extraction":
                 return `For the question "${question}", the text explicitly states ` +
                     `"${keyConcepts.relevantDetail}". "${answerText}" ` +
                     `precisely matches this because ${keyConcepts.textualEvidence} ` +
-                    `(Confidence: ${confidenceStr}). This demonstrates accurate ` +
+                    `This demonstrates accurate ` +
                     `comprehension of specific details.`;
 
             case "comparative":
                 return `The comparison focuses on ${keyConcepts.comparisonFocus}, examining ` +
                     `${keyConcepts.relationship}. The answer "${answerText}" correctly ` +
-                    `identifies ${keyConcepts.differences} (Confidence: ${confidenceStr}). ` +
+                    `identifies ${keyConcepts.differences}` +
                     `This interpretation maintains proper perspective on ${keyConcepts.comparisonDimensions}.`;
 
             case "general_comprehension":
                 return `Analysis of "${question}" reveals "${answerText}" ` +
-                    `(Confidence: ${confidenceStr}). This best addresses the question ` +
+                    `This best addresses the question ` +
                     `by focusing on ${keyConcepts.contentFocus}. The system verified ` +
                     `${keyConcepts.verificationCriteria} to ensure accuracy.`;
 
             default:
                 return `The system generated this response: "${answerText}" ` +
-                    `(Confidence: ${confidenceStr}). While not matching a specific ` +
+                    `While not matching a specific ` +
                     `question type, it relates to ${keyConcepts.themes} and was ` +
                     `validated against ${keyConcepts.verificationCriteria}.`;
         }
@@ -1230,8 +1230,10 @@ class RAGInterfaceController {
         this.elements.answerDisplay.innerHTML = `
         <div class="response-container">
             <div class="response-header">
-                <strong>Direct Answer:</strong> ${result.answer}
-                <span class="confidence-badge">Confidence: ${result.confidence}</span>
+                <div><strong>Direct Answer:</strong> ${result.answer}</div>
+                <span class="confidence-badge">
+                <strong>Confidence: </strong>
+                ${result.confidence}</span>
             </div>
             <div class="detailed-response">
                 <h4>Detailed Explanation:</h4>
