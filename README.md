@@ -14,5 +14,6 @@ My Design Page:
 https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?node-id=1-2896&t=IxHPbtuy9dw7gxfp-0
 
 GitHub Page:
-[audreyllin.github.io/CrossBarAPS/homepage.html](https://audreyllin.github.io/CrossBarAPS/homepage.html)
-[audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
+Intro Page: [audreyllin.github.io/CrossBarAPS/homepage.html](https://audreyllin.github.io/CrossBarAPS/homepage.html)
+
+Simple RAG Sample Page: [audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
