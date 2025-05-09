@@ -10,6 +10,8 @@ Style reference: https://business.x.com/en
 
 Question Bank (Reading / Writing) Training: https://satsuitequestionbank.collegeboard.org/digital/results
 
+Celebrity Facts Sources: https://people.com/celebrity/
+
 My Design Page:
 https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?node-id=1-2896&t=IxHPbtuy9dw7gxfp-0
 
