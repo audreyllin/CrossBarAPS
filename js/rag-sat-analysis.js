@@ -1242,7 +1242,7 @@ class RAGInterfaceController {
             <div class="technical-details">
                 <h4>Analysis:</h4>
                 <p>${result.explanation}</p>
-                ${result.contextSnippet ? `<div class="context-snippet"><strong>Relevant Context:</strong> "${result.contextSnippet}"</div>` : ''}
+                ${result.contextSnippet ? `<div class="context-snippet"><strong>Relevant Context:</strong> "<i>${result.contextSnippet}</i>"</div>` : ''}
             </div>
         </div>
     `;
