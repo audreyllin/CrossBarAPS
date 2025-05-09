@@ -575,10 +575,10 @@ class EnhancedRAGSystem {
     generateExplanation(answer, questionType) {
         const explanations = {
             main_idea: `This answer best captures the primary focus of the text with a confidence of ${answer.score.toFixed(2)}`,
-            logical_completion: `This option most coherently continues the text's logical flow (confidence: ${answer.score.toFixed(2)})`,
-            evidence_support: `This statement provides the strongest direct support for the claim (confidence: ${answer.score.toFixed(2)})`,
-            detail_extraction: `This conclusion is most directly supported by textual evidence (confidence: ${answer.score.toFixed(2)})`,
-            comparative: `This option correctly identifies the key relationship (confidence: ${answer.score.toFixed(2)})`,
+            logical_completion: `This option most coherently continues the text's logical flow`,
+            evidence_support: `This statement provides the strongest direct support for the claim`,
+            detail_extraction: `This conclusion is most directly supported by textual evidence`,
+            comparative: `This option correctly identifies the key relationship`,
             general_comprehension: `This response addresses the question with confidence ${answer.score.toFixed(2)} based on textual analysis`
         };
 
