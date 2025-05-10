@@ -6,6 +6,8 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 2. Fake (Middle-age white man, career-oriented, moderately liberal)
 3. Company
 
+Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q
+
 Style reference: https://business.x.com/en
 
 Question Bank (Reading / Writing) Training: https://satsuitequestionbank.collegeboard.org/digital/results
