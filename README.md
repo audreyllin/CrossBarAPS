@@ -8,22 +8,21 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 
 Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q
 
-Style reference: https://business.x.com/en
+* Style reference: https://business.x.com/en
 
-Question Bank (Reading / Writing) Training: https://satsuitequestionbank.collegeboard.org/digital/results
+* Question Bank (Reading / Writing) Training: https://satsuitequestionbank.collegeboard.org/digital/results
 
-Celebrity Facts Sources: https://people.com/celebrity/
+* Celebrity Facts Sources: https://people.com/celebrity/
 
-My Design Page:
-https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?node-id=1-2896&t=IxHPbtuy9dw7gxfp-0
+* My Design Page: https://www.figma.com/design/mrH47mccymIcm1sl0xXzYp/CrossBar-AI-Profile-Searech?node-id=1-2896&t=IxHPbtuy9dw7gxfp-0
 
 GitHub Page:
-Intro Page: [audreyllin.github.io/CrossBarAPS/homepage.html](https://audreyllin.github.io/CrossBarAPS/homepage.html)
+1. Intro Page: [audreyllin.github.io/CrossBarAPS/homepage.html](https://audreyllin.github.io/CrossBarAPS/homepage.html)
 
-Audrey's Personal Page:
+2. Audrey's Personal Page:
 
-Fake's Personal Page: [audreyllin.github.io/CrossBarAPS/fake.html](https://audreyllin.github.io/CrossBarAPS/fake.html)
+3. Fake's Personal Page: [audreyllin.github.io/CrossBarAPS/fake.html](https://audreyllin.github.io/CrossBarAPS/fake.html)
 
-Corporal Page:
+4. Corporal Page:
 
-Simple RAG Sample Page: [audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
+* Simple RAG Sample Page: [audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
