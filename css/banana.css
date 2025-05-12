@@ -1,0 +1,513 @@
+/* ==========================================================================
+   APPLE-INSPIRED CSS FRAMEWORK - MOBILE-FIRST, PERFORMANCE-OPTIMIZED
+   ========================================================================== */
+
+/* ==================== MODULAR CSS STRUCTURE ====================
+   1. Core Variables & Theming
+   2. Base & Reset
+   3. Typography System
+   4. Responsive Layout System
+   5. Apple-Style Components
+   6. Interactive Elements
+   7. Utility Classes
+   8. Print & Accessibility
+   =============================================================== */
+
+/* 1. Core Variables & Theming - Enhanced with Apple Design Tokens */
+:root {
+    /* Apple-Inspired Color System */
+    --color-blue: #0071e3;
+    --color-blue-dark: #0062c4;
+    --color-gray-100: #f5f5f7;
+    --color-gray-300: #d2d2d7;
+    --color-gray-500: #86868b;
+    --color-gray-700: #515154;
+    --color-gray-900: #1d1d1f;
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    /* Semantic Color Mapping */
+    --color-primary: var(--color-blue);
+    --color-primary-dark: var(--color-blue-dark);
+    --color-text: var(--color-gray-900);
+    --color-text-light: var(--color-gray-500);
+    --color-bg: var(--color-white);
+    --color-bg-alt: var(--color-gray-100);
+    --color-border: var(--color-gray-300);
+
+    /* Enhanced Spacing System (8px base) */
+    --space-base: 0.5rem;
+    /* 8px */
+    --space-xxs: var(--space-base);
+    /* 8px */
+    --space-xs: calc(var(--space-base) * 1.5);
+    /* 12px */
+    --space-sm: calc(var(--space-base) * 2);
+    /* 16px */
+    --space-md: calc(var(--space-base) * 3);
+    /* 24px */
+    --space-lg: calc(var(--space-base) * 4);
+    /* 32px */
+    --space-xl: calc(var(--space-base) * 6);
+    /* 48px */
+
+    /* Typography System (SF Pro Stack) */
+    --font-system: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+    --font-mono: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --text-base: 1rem;
+    /* 16px */
+    --text-scale: 1.125;
+    /* Major second scale */
+
+    /* Elevation (Apple-style subtle shadows) */
+    --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+
+    /* Motion (Apple-style timing) */
+    --motion-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --motion-medium: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --motion-slow: 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+    /* Breakpoints (Apple device-oriented) */
+    --bp-mobile: 375px;
+    /* iPhone */
+    --bp-tablet: 768px;
+    /* iPad */
+    --bp-desktop: 1024px;
+    /* Mac */
+    --bp-wide: 1440px;
+    /* iMac */
+}
+
+/* Dark Mode - Apple-style implementation */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text: var(--color-white);
+        --color-text-light: var(--color-gray-500);
+        --color-bg: var(--color-black);
+        --color-bg-alt: var(--color-gray-900);
+        --color-border: var(--color-gray-700);
+    }
+}
+
+/* 2. Base & Reset - Performance Optimized */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-family: var(--font-system);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Media defaults */
+img,
+video,
+svg {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+
+picture {
+    display: block;
+}
+
+/* 3. Typography System - Apple-style hierarchy */
+.text {
+    &-display {
+        font-size: calc(var(--text-base) * 2.5);
+        line-height: 1.1;
+        font-weight: 600;
+    }
+
+    &-headline {
+        font-size: calc(var(--text-base) * 1.5);
+        line-height: 1.2;
+        font-weight: 600;
+    }
+
+    &-body {
+        font-size: var(--text-base);
+        line-height: 1.5;
+    }
+
+    &-caption {
+        font-size: calc(var(--text-base) * 0.875);
+        line-height: 1.4;
+        color: var(--color-text-light);
+    }
+}
+
+/* 4. Responsive Layout System */
+.layout {
+    &-container {
+        width: 100%;
+        padding-inline: var(--space-sm);
+        margin-inline: auto;
+
+        @media (min-width: --bp-tablet) {
+            max-width: 692px;
+            padding-inline: var(--space-md);
+        }
+
+        @media (min-width: --bp-desktop) {
+            max-width: 980px;
+        }
+
+        @media (min-width: --bp-wide) {
+            max-width: 1440px;
+        }
+    }
+
+    &-grid {
+        display: grid;
+        gap: var(--space-md);
+
+        @media (min-width: --bp-tablet) {
+            grid-template-columns: repeat(12, 1fr);
+        }
+    }
+}
+
+/* 5. Apple-Style Components */
+/* Navigation Bar (Apple-style) */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 44px;
+    backdrop-filter: saturate(180%) blur(20px);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding-inline: var(--space-sm);
+
+    &__content {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 980px;
+        margin-inline: auto;
+    }
+
+    &__link {
+        color: var(--color-text-light);
+        font-size: 0.875rem;
+        transition: color var(--motion-fast);
+
+        &:hover {
+            color: var(--color-white);
+        }
+    }
+}
+
+/* Apple-style Card */
+.card {
+    background: var(--color-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform var(--motion-medium), box-shadow var(--motion-medium);
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+/* 6. Interactive Elements */
+.button {
+    --button-bg: var(--color-primary);
+    --button-text: var(--color-white);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 980px;
+    font-weight: 500;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    cursor: pointer;
+    transition:
+        background-color var(--motion-fast),
+        transform var(--motion-fast);
+
+    &:hover {
+        background-color: var(--color-primary-dark);
+        transform: scale(1.03);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    &--secondary {
+        --button-bg: var(--color-bg-alt);
+        --button-text: var(--color-text);
+    }
+}
+
+/* 7. Utility Classes - Atomic CSS Approach */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Spacing Utilities */
+@each $size in (xxs, xs, sm, md, lg, xl) {
+    .m-#{$size} {
+        margin: var(--space-#{$size});
+    }
+
+    .p-#{$size} {
+        padding: var(--space-#{$size});
+    }
+}
+
+/* 8. Print & Accessibility */
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+    }
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Line Clamp Utilities */
+.lt-line-clamp {
+    overflow: hidden;
+    position: relative;
+}
+
+.lt-line-clamp__ellipsis--dummy {
+    position: fixed;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+}
+
+.lt-line-clamp--single-line {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.lt-line-clamp--multi-line {
+    /*! autoprefixer: off */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /*! autoprefixer: on */
+    text-overflow: ellipsis;
+}
+
+.lt-line-clamp__raw-line {
+    display: block;
+    /*! autoprefixer: off */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /*! autoprefixer: on */
+    overflow: hidden;
+    white-space: pre-line;
+}
+
+/* Pulse Spinner Component */
+.pulse-spinner {
+    position: relative;
+    width: 16px;
+    height: 16px;
+}
+
+@media only screen and (min-width:735px) {
+    .pulse-spinner {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+body.is-not-focused .pulse-spinner {
+    opacity: .5;
+}
+
+.pulse-spinner__container {
+    position: absolute;
+    width: 0;
+    left: 50%;
+    top: 50%;
+    transform: scale(.075);
+    z-index: 1;
+}
+
+@media only screen and (min-width:735px) {
+    .pulse-spinner__container {
+        transform: scale(.15);
+    }
+}
+
+.pulse-spinner__nib {
+    position: absolute;
+    top: -12.5px;
+    width: 66px;
+    height: 28px;
+    background: 0 0;
+    border-radius: 25%/50%;
+    transform-origin: left center;
+}
+
+.pulse-spinner__nib::before {
+    width: 100%;
+    height: 100%;
+    display: block;
+    content: "";
+    background: #000;
+    border-radius: 25%/50%;
+    animation-duration: .8s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+    animation-fill-mode: none;
+    animation-play-state: running;
+    animation-name: spinner-line-fade-default;
+}
+
+@media (prefers-color-scheme:dark) {
+    .pulse-spinner__nib::before {
+        background: #fff;
+    }
+}
+
+@media (prefers-contrast:more) {
+    .pulse-spinner__nib::before {
+        animation-name: spinner-line-fade-increased-contrast;
+    }
+}
+
+.pulse-spinner__nib--1 {
+    transform: rotate(0) translateX(40px);
+}
+
+.pulse-spinner__nib--1::before {
+    animation-delay: -.8s;
+}
+
+.pulse-spinner__nib--2 {
+    transform: rotate(45deg) translateX(40px);
+}
+
+.pulse-spinner__nib--2::before {
+    animation-delay: -.7s;
+}
+
+.pulse-spinner__nib--3 {
+    transform: rotate(90deg) translateX(40px);
+}
+
+.pulse-spinner__nib--3::before {
+    animation-delay: -.6s;
+}
+
+.pulse-spinner__nib--4 {
+    transform: rotate(135deg) translateX(40px);
+}
+
+.pulse-spinner__nib--4::before {
+    animation-delay: -.5s;
+}
+
+.pulse-spinner__nib--5 {
+    transform: rotate(180deg) translateX(40px);
+}
+
+.pulse-spinner__nib--5::before {
+    animation-delay: -.4s;
+}
+
+.pulse-spinner__nib--6 {
+    transform: rotate(225deg) translateX(40px);
+}
+
+.pulse-spinner__nib--6::before {
+    animation-delay: -.3s;
+}
+
+.pulse-spinner__nib--7 {
+    transform: rotate(270deg) translateX(40px);
+}
+
+.pulse-spinner__nib--7::before {
+    animation-delay: -.2s;
+}
+
+.pulse-spinner__nib--8 {
+    transform: rotate(315deg) translateX(40px);
+}
+
+.pulse-spinner__nib--8::before {
+    animation-delay: -.1s;
+}
+
+.pulse-spinner__nib--10,
+.pulse-spinner__nib--11,
+.pulse-spinner__nib--12,
+.pulse-spinner__nib--9 {
+    display: none;
+}
+
+@keyframes spinner-line-fade-default {
+
+    0%,
+    1%,
+    100% {
+        opacity: .55;
+    }
+
+    95% {
+        opacity: .08;
+    }
+}
+
+@keyframes spinner-line-fade-increased-contrast {
+
+    0%,
+    1%,
+    100% {
+        opacity: .8;
+    }
+
+    95% {
+        opacity: .1;
+    }
+}
