@@ -4,225 +4,673 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transformer Demo</title>
+    <title>Contextual Q&A System</title>
     <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --gray-light: #f3f4f6;
+            --gray-medium: #e5e7eb;
+            --gray-dark: #6b7280;
+            --text: #111827;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 900px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            color: var(--text);
+            background-color: #f9fafb;
         }
 
         .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .panel {
+            border: 1px solid var(--gray-medium);
+            padding: 25px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            grid-column: 1 / -1;
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            margin-top: 0;
+            border-bottom: 2px solid var(--gray-medium);
+            padding-bottom: 12px;
+            font-weight: 500;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: var(--gray-dark);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        textarea,
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--gray-medium);
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: border 0.2s;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .qa-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .panel {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+        .question-display {
+            background-color: #eff6ff;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 10px;
         }
 
-        button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        .answer-display {
+            background-color: #f0fdf4;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        .confidence-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .confidence-meter {
+            height: 8px;
+            flex-grow: 1;
+            background-color: var(--gray-medium);
             border-radius: 4px;
-            cursor: pointer;
+            overflow: hidden;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .confidence-level {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.7s ease-out;
         }
 
-        textarea {
-            width: 100%;
-            height: 100px;
+        .confidence-value {
+            font-size: 14px;
+            color: var(--gray-dark);
+            min-width: 40px;
         }
 
-        #attention-visualization {
+        .source-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #e0e7ff;
+            color: var(--primary-dark);
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .loading {
+            color: var(--gray-dark);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 17px;
+        }
+
+        .spinner {
+            border: 3px solid var(--gray-light);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .document-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+
+        .document-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid var(--gray-medium);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-name {
+            font-weight: 500;
+        }
+
+        .document-status {
+            font-size: 12px;
+            color: var(--gray-dark);
+        }
+
+        .status-success {
+            color: var(--secondary);
+        }
+
+        .status-error {
+            color: #ef4444;
+        }
+
+        .status-loading {
+            color: var(--primary);
+        }
+
+        .follow-up {
             margin-top: 20px;
-            border: 1px solid #ccc;
-            min-height: 200px;
+        }
+
+        .follow-up h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            font-size: 16px;
+        }
+
+        .follow-up-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .follow-up-btn {
+            padding: 8px 14px;
+            background-color: #e0e7ff;
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .follow-up-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .technical-details {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--gray-dark);
+        }
+
+        .concept-map {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f3ff;
+            border-radius: 8px;
+        }
+
+        .concept-connection {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .connection-strength {
+            width: 80px;
+            height: 6px;
+            background-color: #e9d5ff;
+            border-radius: 3px;
+            margin: 0 12px;
             position: relative;
         }
 
-        .token {
-            display: inline-block;
-            padding: 5px;
-            margin: 2px;
-            background-color: #e1f5fe;
+        .connection-fill {
+            height: 100%;
+            background-color: #8b5cf6;
             border-radius: 3px;
+            width: 0%;
+            transition: width 0.7s ease-out;
         }
 
-        .attention-line {
-            position: absolute;
-            background-color: rgba(255, 0, 0, 0.3);
-            transform-origin: 0 100%;
+        .connection-percent {
+            font-size: 13px;
+            color: var(--gray-dark);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .token-highlight {
+            background-color: #dbeafe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            textarea {
+                height: 100px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Transformer System Demo</h1>
+    <h1>Contextual Question Answering System</h1>
 
     <div class="container">
         <div class="panel">
-            <h2>1. Tokenization</h2>
-            <textarea id="input-text" placeholder="Enter text to tokenize..."></textarea>
-            <button onclick="tokenize()">Tokenize</button>
-            <div id="token-output"></div>
+            <h2>Document Context</h2>
+            <input type="file" id="file-input" multiple accept=".pdf,.txt,.docx">
+            <button id="upload-btn">Process Documents</button>
+            <div id="upload-status" class="document-status"></div>
+            <div id="document-list" class="document-list"></div>
         </div>
 
         <div class="panel">
-            <h2>2. Positional Encoding</h2>
-            <button onclick="showPositionalEncoding()">Show Positional Encoding</button>
-            <canvas id="positional-encoding" width="600" height="200"></canvas>
+            <h2>Ask Questions</h2>
+            <textarea id="question-input" placeholder="Enter your question here..."></textarea>
+            <button id="ask-btn" disabled>Ask Question</button>
+
+            <div id="qa-history" class="qa-container">
+                <!-- Q&A pairs will be added here -->
+            </div>
         </div>
 
-        <div class="panel">
-            <h2>3. Attention Visualization</h2>
-            <div id="tokens-display"></div>
-            <div id="attention-visualization"></div>
-            <button onclick="visualizeAttention()">Show Attention</button>
-        </div>
-
-        <div class="panel">
-            <h2>4. Transformer Process</h2>
-            <button onclick="runFullProcess()">Run Full Process</button>
-            <div id="process-output"></div>
+        <div class="panel" style="grid-column: span 2;">
+            <h2>System Understanding</h2>
+            <div id="concept-mapping" class="concept-map" style="display:none;"></div>
+            <div id="technical-details" class="technical-details" style="display:none;"></div>
         </div>
     </div>
 
     <script>
-        // 1. Tokenization
-        function tokenize() {
-            const text = document.getElementById('input-text').value;
-            if (!text) return;
-
-            // Simple tokenizer (splitting by word)
-            const tokens = text.split(/\s+/).filter(t => t.length > 0);
-
-            // Display tokens
-            const tokenOutput = document.getElementById('token-output');
-            tokenOutput.innerHTML = tokens.map(t =>
-                `<span class="token">${t}</span>`
-            ).join(' ');
-        }
-
-        // 2. Positional Encoding
-        function showPositionalEncoding() {
-            const canvas = document.getElementById('positional-encoding');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Simplified positional encoding visualization
-            for (let pos = 0; pos < 50; pos++) {
-                for (let i = 0; i < 64; i++) {
-                    const angle = pos / Math.pow(10000, 2 * i / 64);
-                    const value = i % 2 === 0 ? Math.sin(angle) : Math.cos(angle);
-
-                    const x = pos * (width / 50);
-                    const y = height / 2 - value * height / 3;
-
-                    ctx.fillStyle = `hsl(${i * 5}, 100%, 50%)`;
-                    ctx.fillRect(x, y, 2, 2);
-                }
+        // Simple knowledge base for demonstration
+        const knowledgeBase = {
+            "meaning of life": {
+                answer: "The meaning of life is a philosophical question concerning significance and purpose of existence.",
+                confidence: 0.92,
+                aspects: ["philosophical", "scientific", "personal"]
+            },
+            "nature of consciousness": {
+                answer: "Consciousness refers to subjective experience and awareness, with major theories including dualism and physicalism.",
+                confidence: 0.88,
+                aspects: ["theories", "neuroscience", "philosophical"]
             }
-        }
+        };
 
-        // 3. Attention Visualization
-        function visualizeAttention() {
-            const container = document.getElementById('attention-visualization');
-            container.innerHTML = '';
+        // Document processing system
+        class DocumentRAGSystem {
+            constructor() {
+                this.processedDocuments = [];
+                this.currentContext = "";
+            }
 
-            // Sample tokens
-            const tokens = ["The", "cat", "sat", "on", "the", "mat"];
-            const tokensDisplay = document.getElementById('tokens-display');
-            tokensDisplay.innerHTML = tokens.map(t =>
-                `<span class="token" id="token-${t}">${t}</span>`
-            ).join(' ');
+            async processFiles(fileList) {
+                const files = Array.from(fileList || []);
+                if (files.length === 0) throw new Error("Please select files first");
 
-            // Create random attention patterns (simulated)
-            for (let i = 0; i < tokens.length; i++) {
-                for (let j = 0; j < tokens.length; j++) {
-                    if (Math.random() > 0.7) { // Random attention
-                        const fromEl = document.getElementById(`token-${tokens[i]}`);
-                        const toEl = document.getElementById(`token-${tokens[j]}`);
+                const allowedTypes = ['application/pdf', 'text/plain',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
 
-                        if (fromEl && toEl) {
-                            const fromRect = fromEl.getBoundingClientRect();
-                            const toRect = toEl.getBoundingClientRect();
-                            const containerRect = container.getBoundingClientRect();
+                if (invalidFiles.length > 0) {
+                    throw new Error(`Unsupported file type: ${invalidFiles[0].name}. Only PDF/TXT/DOCX allowed.`);
+                }
 
-                            const line = document.createElement('div');
-                            line.className = 'attention-line';
+                const maxSize = 5 * 1024 * 1024;
+                const largeFiles = files.filter(file => file.size > maxSize);
+                if (largeFiles.length > 0) {
+                    throw new Error(`File too large: ${largeFiles[0].name}. Maximum size is 5MB.`);
+                }
 
-                            const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
-                            const fromY = fromRect.bottom - containerRect.top;
-                            const toX = toRect.left + toRect.width / 2 - containerRect.left;
-                            const toY = toRect.top - containerRect.top;
+                const processingResults = await Promise.all(
+                    files.map(async file => {
+                        let textContent = await this.readFileContent(file);
+                        return {
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            content: textContent
+                        };
+                    })
+                );
 
-                            const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
-                            const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+                this.processedDocuments = processingResults;
+                this.currentContext = processingResults.map(r => r.content).join('\n\n');
+                return processingResults;
+            }
 
-                            line.style.width = `${length}px`;
-                            line.style.height = '2px';
-                            line.style.left = `${fromX}px`;
-                            line.style.top = `${fromY}px`;
-                            line.style.transform = `rotate(${angle}deg)`;
-                            line.style.opacity = Math.random() * 0.5 + 0.3;
+            async readFileContent(file) {
+                return new Promise((resolve) => {
+                    if (file.type === 'text/plain') {
+                        const reader = new FileReader();
+                        reader.onload = event => resolve(event.target.result);
+                        reader.readAsText(file);
+                    } else {
+                        setTimeout(() => resolve(`Content extracted from ${file.name}`), 500);
+                    }
+                });
+            }
 
-                            container.appendChild(line);
+            answerFromContext(question, context) {
+                // First try to find a direct answer pattern
+                const questionLower = question.toLowerCase();
+                const contextSentences = context.split(/[.!?]+/).filter(s => s.trim());
+
+                // For "how" questions, look for action-oriented answers
+                if (questionLower.startsWith('how')) {
+                    const actionSentences = contextSentences.filter(sentence =>
+                        sentence.toLowerCase().includes(questionLower.split(' ')[1]) // Match the main subject
+                    );
+
+                    if (actionSentences.length > 0) {
+                        // Extract the most specific part that explains "how"
+                        const answerSentence = actionSentences.find(s =>
+                            s.includes(' by ') || s.includes(' through ') || s.includes(' with ')
+                        ) || actionSentences[0];
+
+                        // Extract just the key explanation part
+                        let directAnswer = answerSentence;
+                        if (answerSentence.includes(' by ')) {
+                            directAnswer = answerSentence.split(' by ').slice(1).join(' by ');
+                        } else if (answerSentence.includes(' through ')) {
+                            directAnswer = answerSentence.split(' through ').slice(1).join(' through ');
+                        } else if (answerSentence.includes(' with ')) {
+                            directAnswer = answerSentence.split(' with ').slice(1).join(' with ');
                         }
+
+                        return {
+                            answer: directAnswer.trim().replace(/^[a-z]/, c => c.toUpperCase()) + '.',
+                            confidence: 0.9,
+                            source: "document"
+                        };
                     }
                 }
+
+                // For other questions, look for the most relevant sentence
+                const keywords = questionLower.split(/\s+/)
+                    .filter(word => word.length > 3 && !['what', 'is', 'the', 'of', 'to', 'and'].includes(word));
+
+                const relevantSentences = contextSentences.filter(sentence =>
+                    keywords.some(keyword => sentence.toLowerCase().includes(keyword))
+                );
+
+                if (relevantSentences.length > 0) {
+                    // Find the most specific sentence that answers the question
+                    const answerSentence = relevantSentences.reduce((mostSpecific, sentence) => {
+                        return (sentence.split(' ').length < mostSpecific.split(' ').length) ? sentence : mostSpecific;
+                    }, relevantSentences[0]);
+
+                    return {
+                        answer: answerSentence.trim() + '.',
+                        confidence: Math.min(0.95, 0.7 + (relevantSentences.length * 0.1)),
+                        source: "document"
+                    };
+                }
+
+                return {
+                    answer: "The answer could not be found in the provided documents.",
+                    confidence: 0.3,
+                    source: "document"
+                };
             }
         }
 
-        // 4. Full Transformer Process
-        function runFullProcess() {
-            const output = document.getElementById('process-output');
-            output.innerHTML = '<h3>Transformer Process Steps:</h3><ol>' +
-                '<li>Input Embedding: Convert tokens to vectors</li>' +
-                '<li>Add Positional Encoding: Inject position information</li>' +
-                '<li>Multi-Head Attention: Calculate attention weights</li>' +
-                '<li>Feed Forward Network: Process each position</li>' +
-                '<li>Layer Normalization: Stabilize training</li>' +
-                '<li>Repeat for N layers</li>' +
-                '<li>Output Projection: Generate probabilities</li></ol>' +
-                '<p>Note: This is a simulation. Actual training requires PyTorch/TensorFlow.</p>';
+        // Initialize systems
+        const documentRAG = new DocumentRAGSystem();
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadStatus = document.getElementById('upload-status');
+        const documentList = document.getElementById('document-list');
+        const questionInput = document.getElementById('question-input');
+        const askBtn = document.getElementById('ask-btn');
+        const qaHistory = document.getElementById('qa-history');
+        const conceptMapping = document.getElementById('concept-mapping');
+        const technicalDetails = document.getElementById('technical-details');
 
-            // Animated visualization
-            const steps = [
-                "Tokenizing input...",
-                "Creating embeddings...",
-                "Applying positional encoding...",
-                "Calculating attention weights...",
-                "Processing through feed-forward network...",
-                "Generating output probabilities..."
-            ];
+        // Event Listeners
+        uploadBtn.addEventListener('click', async () => {
+            uploadBtn.disabled = true;
+            uploadStatus.textContent = "Processing documents...";
+            uploadStatus.className = "status-loading";
 
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < steps.length) {
-                    output.innerHTML += `<p>${steps[i]}</p>`;
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    output.innerHTML += '<p style="color:green;">Process completed!</p>';
+            try {
+                const results = await documentRAG.processFiles(fileInput.files);
+
+                documentList.innerHTML = '';
+                results.forEach(doc => {
+                    const li = document.createElement('li');
+                    li.className = 'document-item';
+                    li.innerHTML = `
+                    <span class="document-name">${doc.name}</span>
+                    <span class="document-status">${(doc.size / 1024).toFixed(1)} KB</span>
+                `;
+                    documentList.appendChild(li);
+                });
+
+                uploadStatus.textContent = `Processed ${results.length} document(s)`;
+                uploadStatus.className = "status-success";
+                askBtn.disabled = false;
+            } catch (error) {
+                uploadStatus.textContent = error.message;
+                uploadStatus.className = "status-error";
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        });
+
+        askBtn.addEventListener('click', askQuestion);
+
+        questionInput.addEventListener('input', () => {
+            askBtn.disabled = !questionInput.value.trim();
+        });
+
+        questionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !askBtn.disabled) {
+                askQuestion();
+            }
+        });
+
+        // Main question answering function
+        async function askQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Add question to history
+            addQuestionToHistory(question);
+            questionInput.value = '';
+            askBtn.disabled = true;
+
+            // Show loading state
+            const loadingElement = document.createElement('div');
+            loadingElement.className = 'loading';
+            loadingElement.innerHTML = '<div class="spinner"></div> Analyzing your question...';
+            qaHistory.appendChild(loadingElement);
+
+            setTimeout(async () => {
+                try {
+                    // Remove loading element
+                    qaHistory.removeChild(loadingElement);
+
+                    let response;
+                    if (documentRAG.processedDocuments.length > 0) {
+                        response = documentRAG.answerFromContext(question, documentRAG.currentContext);
+                    } else {
+                        // Fall back to knowledge base
+                        const lowerQuestion = question.toLowerCase();
+                        let bestMatch = null;
+                        let highestScore = 0;
+
+                        for (const [concept, data] of Object.entries(knowledgeBase)) {
+                            const score = calculateSimilarity(lowerQuestion, concept);
+                            if (score > highestScore) {
+                                highestScore = score;
+                                bestMatch = { concept, data };
+                            }
+                        }
+
+                        if (bestMatch && highestScore > 0.4) {
+                            response = {
+                                answer: bestMatch.data.answer,
+                                confidence: bestMatch.data.confidence,
+                                source: "knowledge base",
+                                concept: bestMatch.concept
+                            };
+                        } else {
+                            response = {
+                                answer: "That's an interesting question. Could you provide more context or clarify what you're looking for?",
+                                confidence: 0.5,
+                                source: "system"
+                            };
+                        }
+                    }
+
+                    addAnswerToHistory(response, question);
+
+                } catch (error) {
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'answer-display';
+                    errorElement.textContent = `Error processing question: ${error.message}`;
+                    qaHistory.appendChild(errorElement);
                 }
-            }, 800);
+            }, 1000);
         }
+
+        function addQuestionToHistory(question) {
+            const questionElement = document.createElement('div');
+            questionElement.className = 'question-display';
+            questionElement.textContent = question;
+            qaHistory.appendChild(questionElement);
+        }
+
+        function addAnswerToHistory(response, question) {
+            const answerElement = document.createElement('div');
+            answerElement.className = 'answer-display';
+
+            let html = `<div>${response.answer}</div>`;
+
+            // Add confidence indicator
+            html += `
+            <div class="confidence-indicator">
+                <span>Confidence:</span>
+                <div class="confidence-meter">
+                    <div class="confidence-level" style="width:${response.confidence * 100}%"></div>
+                </div>
+                <span class="confidence-value">${Math.round(response.confidence * 100)}%</span>
+                <span class="source-tag">${response.source}</span>
+            </div>`;
+
+            // Add concept mapping if available
+            if (response.concept) {
+                const similarity = calculateSimilarity(question.toLowerCase(), response.concept);
+                html += `
+                <div class="technical-details" style="margin-top:15px;">
+                    <p>Connected to concept: <span class="token-highlight">${response.concept}</span> 
+                    (${Math.round(similarity * 100)}% semantic match)</p>
+                </div>`;
+            }
+
+            answerElement.innerHTML = html;
+            qaHistory.appendChild(answerElement);
+
+            // Scroll to bottom of Q&A history
+            qaHistory.scrollTop = qaHistory.scrollHeight;
+        }
+
+        // Simple similarity calculation for demo
+        function calculateSimilarity(phrase1, phrase2) {
+            const words1 = phrase1.split(/\s+/);
+            const words2 = phrase2.split(/\s+/);
+
+            const intersection = words1.filter(word => words2.includes(word));
+            return intersection.length / Math.max(words1.length, words2.length);
+        }
+
+        // Initialize with sample question
+        window.onload = function () {
+            questionInput.focus();
+        };
     </script>
+
 </body>
 
 </html>
