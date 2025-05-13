@@ -991,9 +991,9 @@ class EnhancedRAGSystem {
 
         const baseAnswers = {
             main_idea: [
-                "The text discusses the main topic and supporting evidence",
-                "A general overview of the subject matter",
-                "The primary focus is on the key concept mentioned"
+                "the text discusses the main topic and supporting evidence",
+                "a general overview of the subject matter",
+                "the primary focus is on the key concept mentioned"
             ],
             logical_completion: [
                 "Therefore, the conclusion follows from the evidence",
@@ -1001,19 +1001,19 @@ class EnhancedRAGSystem {
                 "Additionally, more research is needed"
             ],
             evidence_support: [
-                "The study found significant results supporting this",
-                "Research data confirms this hypothesis",
-                "Experts agree with this conclusion"
+                "the study found significant results supporting this",
+                "research data confirms this hypothesis",
+                "experts agree with this conclusion"
             ],
             detail_extraction: [
-                "The text specifically mentions this detail",
-                "Key facts include these points",
-                "Important information was provided"
+                "the text specifically mentions this detail",
+                "key facts include these points",
+                "important information was provided"
             ],
             comparative: [
-                "The comparison shows significant differences",
-                "Similarities outweigh the differences",
-                "The contrast reveals important distinctions"
+                "the comparison shows significant differences",
+                "similarities outweigh the differences",
+                "the contrast reveals important distinctions"
             ],
             general_comprehension: [
                 "the text provides information about this topic",
