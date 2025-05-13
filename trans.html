@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+
+        #attention-visualization {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            min-height: 200px;
+            position: relative;
+        }
+
+        .token {
+            display: inline-block;
+            padding: 5px;
+            margin: 2px;
+            background-color: #e1f5fe;
+            border-radius: 3px;
+        }
+
+        .attention-line {
+            position: absolute;
+            background-color: rgba(255, 0, 0, 0.3);
+            transform-origin: 0 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Transformer System Demo</h1>
+
+    <div class="container">
+        <div class="panel">
+            <h2>1. Tokenization</h2>
+            <textarea id="input-text" placeholder="Enter text to tokenize..."></textarea>
+            <button onclick="tokenize()">Tokenize</button>
+            <div id="token-output"></div>
+        </div>
+
+        <div class="panel">
+            <h2>2. Positional Encoding</h2>
+            <button onclick="showPositionalEncoding()">Show Positional Encoding</button>
+            <canvas id="positional-encoding" width="600" height="200"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>3. Attention Visualization</h2>
+            <div id="tokens-display"></div>
+            <div id="attention-visualization"></div>
+            <button onclick="visualizeAttention()">Show Attention</button>
+        </div>
+
+        <div class="panel">
+            <h2>4. Transformer Process</h2>
+            <button onclick="runFullProcess()">Run Full Process</button>
+            <div id="process-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Tokenization
+        function tokenize() {
+            const text = document.getElementById('input-text').value;
+            if (!text) return;
+
+            // Simple tokenizer (splitting by word)
+            const tokens = text.split(/\s+/).filter(t => t.length > 0);
+
+            // Display tokens
+            const tokenOutput = document.getElementById('token-output');
+            tokenOutput.innerHTML = tokens.map(t =>
+                `<span class="token">${t}</span>`
+            ).join(' ');
+        }
+
+        // 2. Positional Encoding
+        function showPositionalEncoding() {
+            const canvas = document.getElementById('positional-encoding');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Simplified positional encoding visualization
+            for (let pos = 0; pos < 50; pos++) {
+                for (let i = 0; i < 64; i++) {
+                    const angle = pos / Math.pow(10000, 2 * i / 64);
+                    const value = i % 2 === 0 ? Math.sin(angle) : Math.cos(angle);
+
+                    const x = pos * (width / 50);
+                    const y = height / 2 - value * height / 3;
+
+                    ctx.fillStyle = `hsl(${i * 5}, 100%, 50%)`;
+                    ctx.fillRect(x, y, 2, 2);
+                }
+            }
+        }
+
+        // 3. Attention Visualization
+        function visualizeAttention() {
+            const container = document.getElementById('attention-visualization');
+            container.innerHTML = '';
+
+            // Sample tokens
+            const tokens = ["The", "cat", "sat", "on", "the", "mat"];
+            const tokensDisplay = document.getElementById('tokens-display');
+            tokensDisplay.innerHTML = tokens.map(t =>
+                `<span class="token" id="token-${t}">${t}</span>`
+            ).join(' ');
+
+            // Create random attention patterns (simulated)
+            for (let i = 0; i < tokens.length; i++) {
+                for (let j = 0; j < tokens.length; j++) {
+                    if (Math.random() > 0.7) { // Random attention
+                        const fromEl = document.getElementById(`token-${tokens[i]}`);
+                        const toEl = document.getElementById(`token-${tokens[j]}`);
+
+                        if (fromEl && toEl) {
+                            const fromRect = fromEl.getBoundingClientRect();
+                            const toRect = toEl.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+
+                            const line = document.createElement('div');
+                            line.className = 'attention-line';
+
+                            const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+                            const fromY = fromRect.bottom - containerRect.top;
+                            const toX = toRect.left + toRect.width / 2 - containerRect.left;
+                            const toY = toRect.top - containerRect.top;
+
+                            const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+                            const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+
+                            line.style.width = `${length}px`;
+                            line.style.height = '2px';
+                            line.style.left = `${fromX}px`;
+                            line.style.top = `${fromY}px`;
+                            line.style.transform = `rotate(${angle}deg)`;
+                            line.style.opacity = Math.random() * 0.5 + 0.3;
+
+                            container.appendChild(line);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Full Transformer Process
+        function runFullProcess() {
+            const output = document.getElementById('process-output');
+            output.innerHTML = '<h3>Transformer Process Steps:</h3><ol>' +
+                '<li>Input Embedding: Convert tokens to vectors</li>' +
+                '<li>Add Positional Encoding: Inject position information</li>' +
+                '<li>Multi-Head Attention: Calculate attention weights</li>' +
+                '<li>Feed Forward Network: Process each position</li>' +
+                '<li>Layer Normalization: Stabilize training</li>' +
+                '<li>Repeat for N layers</li>' +
+                '<li>Output Projection: Generate probabilities</li></ol>' +
+                '<p>Note: This is a simulation. Actual training requires PyTorch/TensorFlow.</p>';
+
+            // Animated visualization
+            const steps = [
+                "Tokenizing input...",
+                "Creating embeddings...",
+                "Applying positional encoding...",
+                "Calculating attention weights...",
+                "Processing through feed-forward network...",
+                "Generating output probabilities..."
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < steps.length) {
+                    output.innerHTML += `<p>${steps[i]}</p>`;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    output.innerHTML += '<p style="color:green;">Process completed!</p>';
+                }
+            }, 800);
+        }
+    </script>
+</body>
+
+</html>
