@@ -680,7 +680,7 @@ class EnhancedRAGSystem {
                     `This interpretation maintains proper perspective on ${keyConcepts.comparisonDimensions}.`;
 
             case "general_comprehension":
-                return `Analysis of "${question}" reveals "${answerText}" ` +
+                return `Analysis reveals "${answerText}" ` +
                     `This best addresses the question ` +
                     `by focusing on ${keyConcepts.contentFocus}. The system verified ` +
                     `${keyConcepts.verificationCriteria} to ensure accuracy.`;
