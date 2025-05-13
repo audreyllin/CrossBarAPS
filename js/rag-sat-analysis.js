@@ -656,7 +656,7 @@ class EnhancedRAGSystem {
             case "logical_completion":
                 return `Given the text's ${keyConcepts.endingPattern} and ${keyConcepts.flow}, ` +
                     `the most likely inference is "${answerText}" ` +
-                    `This follows the established ` +
+                    `which follows the established ` +
                     `${keyConcepts.establishedPattern} while maintaining focus on ` +
                     `${keyConcepts.themes}.`;
 
@@ -1016,9 +1016,9 @@ class EnhancedRAGSystem {
                 "The contrast reveals important distinctions"
             ],
             general_comprehension: [
-                "The text provides information about this topic",
-                "Several points are made regarding this subject",
-                "Key details are included in the passage"
+                "the text provides information about this topic",
+                "several points are made regarding this subject",
+                "key details are included in the passage"
             ]
         };
 
