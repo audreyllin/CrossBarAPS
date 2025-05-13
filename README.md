@@ -26,3 +26,6 @@ GitHub Page:
 4. Corporal Page:
 
 * Simple RAG Sample Page: [audreyllin.github.io/CrossBarAPS/rag-sample.html](https://audreyllin.github.io/CrossBarAPS/rag-sample.html)
+
+Log: combine the css for .btn, .card, :hover, :focus, :nth-child(2n), .text-center, .mt-4, .hidden, .btn.primary, .card.featured .title, #header, #main-content, div, .error, #sidebar #menu-item, .active, .current, .title, .special
+(and search with " {", "," "." )
