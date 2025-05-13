@@ -868,7 +868,7 @@ class EnhancedRAGSystem {
             .slice(1, -1)
             .filter(s => s.split(/\s+/).length > 5);
         return details.length > 0 ?
-            `specific details like "${details[0].trim()}"` :
+            `specific details like "<i>${details[0].trim()}</i>"` :
             "key themes";
     }
 
