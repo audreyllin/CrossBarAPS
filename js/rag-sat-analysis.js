@@ -667,7 +667,7 @@ class EnhancedRAGSystem {
                     `This evidence best supports the claim because it ${keyConcepts.evidenceReasoning}.`;
 
             case "detail_extraction":
-                return `For the question "${question}", the text explicitly states ` +
+                return `For this question, the text explicitly states ` +
                     `"${keyConcepts.relevantDetail}". "${answerText}" ` +
                     `precisely matches this because ${keyConcepts.textualEvidence} ` +
                     `This demonstrates accurate ` +
