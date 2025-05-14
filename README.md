@@ -8,7 +8,7 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 
 Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q
 
-Tips of improving prediction accuracy: LLaMA 2 (llama.cpp), Phi-2, Gemma, Falcon 7B/40B (Apache 2.0), Hugging Face’s trainer
+Tips of improving prediction accuracy: LLaMA 2 (llama.cpp), Phi-2, Gemma, Falcon 7B/40B (Apache 2.0), Hugging Face’s trainer, LocalAI (https://github.com/mudler/LocalAI)
 
 * Style reference: https://business.x.com/en
 
