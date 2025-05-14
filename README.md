@@ -61,3 +61,5 @@ GitHub Page:
 
 Log: combine the css for .btn, .card, :hover, :focus, :nth-child(2n), .text-center, .mt-4, .hidden, .btn.primary, .card.featured .title, #header, #main-content, div, .error, #sidebar #menu-item, .active, .current, .title, .special
 (and search with " {", "," "." )
+
+# Stages of Model Training (Till Which Stage is it "Pre-Trained"?)
