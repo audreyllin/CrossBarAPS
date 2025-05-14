@@ -10,23 +10,25 @@ Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_pr
 
 Tips of improving prediction accuracy: Mistral 7B (https://huggingface.co/mistralai/Mistral-7B-v0.1), 
 
-Microsoft’s Phi-2 (from transformers import AutoModelForCausalLM, AutoTokenizer
+# Microsoft’s Phi-2 
+(from transformers import AutoModelForCausalLM, AutoTokenizer
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
 inputs = tokenizer("Your prompt", return_tensors="pt")
 outputs = model.generate(**inputs, max_length=200)
 print(tokenizer.decode(outputs[0]))), 
 
-LocalAI (# Install LocalAI (https://github.com/go-skynet/LocalAI)
+# LocalAI 
+(# Install LocalAI (https://github.com/go-skynet/LocalAI)
 docker run -p 8080:8080 localai/localai
-# Call it like OpenAI (but 100% offline)
 curl http://localhost:8080/v1/completions -H "Content-Type: application/json" -d '{
   "model": "mistral-7b",
   "prompt": "Hello world",
   "max_tokens": 128
 }'), 
 
-Ollama (ollama pull mistral  # Downloads model
+# Ollama 
+(ollama pull mistral  # Downloads model
 ollama run mistral "Tell me a joke"  # Runs locally)
 
 * Style reference: https://business.x.com/en
