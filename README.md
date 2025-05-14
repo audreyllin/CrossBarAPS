@@ -36,6 +36,7 @@ curl http://localhost:8080/v1/completions -H "Content-Type: application/json" -d
 ollama run mistral "Tell me a joke"  # Runs locally)
 
 # ---
+# Develop in Colab with fake/sample data, train locally (VS Code) on the real corporate/personal dataset. Use Colab only for loading pre-trained models.
 
 * Style reference: https://business.x.com/en
 
