@@ -11,10 +11,10 @@ Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_pr
 # ---
 Tips of improving prediction accuracy: 
 
-# Mistral 7B 
+# Mistral 7B (larger, more powerful)
 (https://huggingface.co/mistralai/Mistral-7B-v0.1), 
 
-# Microsoft’s Phi-2 
+# Microsoft’s Phi-2 (smaller, more efficient)
 (from transformers import AutoModelForCausalLM, AutoTokenizer
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
