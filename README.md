@@ -8,7 +8,11 @@ Using (Facebook AI Similarity Search) FAISS, RAG, and LangChain to create an int
 
 Final product should be in similarity to : https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q
 
-Tips of improving prediction accuracy: Mistral 7B (https://huggingface.co/mistralai/Mistral-7B-v0.1), 
+# ---
+Tips of improving prediction accuracy: 
+
+# Mistral 7B 
+(https://huggingface.co/mistralai/Mistral-7B-v0.1), 
 
 # Microsoft’s Phi-2 
 (from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -30,6 +34,8 @@ curl http://localhost:8080/v1/completions -H "Content-Type: application/json" -d
 # Ollama 
 (ollama pull mistral  # Downloads model
 ollama run mistral "Tell me a joke"  # Runs locally)
+
+# ---
 
 * Style reference: https://business.x.com/en
 
