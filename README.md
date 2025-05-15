@@ -37,7 +37,7 @@ ollama run mistral "Tell me a joke"  # Runs locally)
 
 # ---
 # Develop in Colab with fake/sample data (Language Modeling to predict the next word alike GPT, Masked Language Modeling to predict missing words alike BERT, other self-supervised tasks)
-# Use Kaggle notebook instead o Colab
+# Use Kaggle notebook instead: https://www.kaggle.com/code/aulia5/trans-0514-kaggle/edit
 
 # train and fine-tune locally (VS Code) on the real corporate/personal dataset. Use Colab only for loading pre-trained models.
 
