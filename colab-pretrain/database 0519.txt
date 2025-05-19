@@ -1,0 +1,190 @@
+﻿A merkle tree is a binary tree with hash pointers.
+
+
+The output refers to the destination address used in the bitcoin transaction.
+
+
+Confidentiality means that the transmitted message is only received by an authorized party.
+
+
+Authentication is the verification of the identity of the sender at the receiver end.
+
+
+Genesis Block is the very first block in the block chain of any digital currency.
+
+
+Block Reward refers to the “reward” that the Miner receives for successfully hashing a transaction block.
+
+
+Each block in the blockchain contains a cryptographic hash of the data of the previous block.
+
+
+Bitcoin Whitepaper was written by Satoshi Nakamoto in 2008, it describes the original plan and protocol for Bitcoin.
+
+
+Satoshi is a Bitcoin “cent”, the smallest form of Bitcoins. One Bitcoin is equal to 1 million Satoshis.
+
+
+A ledger is a file which keeps the record of all the transactions taking place between the two parties on the blockchain network.
+
+
+Cold Storage is a security measure for Bitcoin that is disconnected from the internet. Could be a paper wallet, USB stick or hardware wallet.
+
+
+Satoshi Nakamoto is the creator of Bitcoin and the author of the original Bitcoin whitepaper and code. His real identity is unknown to the world.
+
+
+An exchange is exactly how it sounds, somewhere where account holders can exchange one digital currency for another or a Fiat currency for a digital currency.
+
+
+Non Repudiation is a method of guaranteeing message transmission between parties via digital signature or encryption. It helps to protect against the denial of authentication attempts.
+
+
+Some transactions that occur in the bitcoin block chain contain transaction fees. These transaction fees are paid to the miner that hashes the block in question.
+
+
+A faucet is when an individual or team of individuals develop a digital currency and pre-mined a certain amount before release and gave these pre-mined coins away.
+
+
+The nonce is selected by the miners to solve a cryptographic puzzle for generating the next block in the chain. It is known as proof of work.
+
+
+A Peer-to-Peer (P2P) payment system, seamlessly integrated with blockchain technology, a decentralized application (DApp), and MetaMask wallet, orchestrates a streamlined and secure process for transparent transactions among users.
+
+
+A Fiat currency is a traditional paperback currency that is regulated by an organization such as the central bank. Examples include the Euro, the US dollar and the Australian dollar.
+
+
+Cryptography is a method of developing techniques and protocols to prevent a third party from accessing and gaining knowledge of the data from the private messages during a communication process.
+
+
+The public key is a string of digits and letters (your bitcoin address). When hashed with a corresponding string known as a private key it digitally signs and online communication.
+
+
+Bit Pay is a payment processing company and software that allows merchants such as eBay, Amazon and other online shopping channels to accept bitcoin as payment for its goods and services.
+
+
+An ASIC Miner is the hardware that houses the chip of the same name. You put them into your Internet connection via a modem or wireless mode. Bitcoin is independent of your desktop computer.
+
+
+Bit is a common unit used to designate a sub-unit of a bitcoin - 1,000,000 bits is equal to 1 bitcoin (BTC). This unit is usually more convenient for pricing, tips, goods and services.
+
+
+A block is a record in the block chain that contains and confirms many waiting transactions. Roughly every 10 minutes, on average, a new block including transactions is appended to the block chain through mining.
+
+
+ASIC stands for application specific integrated circuit, which is a specialized silicon chip that performs just one task. In the digital currency space, these chips process SHA-256 in order to mine bitcoin and validate transactions.
+
+
+Mt. Gox is one of the first Bitcoin exchanges that began liquidating after more than 850,000 of its users’ Bitcoins were lost or stolen – an amount equal to more than $450,000,000 at the time.
+
+
+Smart contracts, self-executing codes embedded within the blockchain, govern the parameters of transactions. These contracts autonomously execute payment instructions when predetermined conditions are met, obviating the necessity for intermediaries and enhancing the efficiency of the system.
+
+
+Dogecoin is an altcoin first started as a joke in late 2013. Dogecoin, which features a Japanese fighting dog as its mascot, gained a broad international following and quickly grew to have a multi-million dollar market capitalization.
+
+
+SHA-256 is the cryptographic function that dictates how the hash is constructed for the digital currency of Bitcoin. In bitcoin, SHA-256 is this function, and is used as the basis for hash creation (i.e. bitcoin’s proof of work).
+
+
+Proof of work (PoW) simply refers to the output of any efforts to mine bitcoin. In the bitcoin block chain, the hashing of a block takes time and effort, meaning the hash block can be considered proof of work.
+
+
+Bitcoin index is the live bitcoin news, a weighted average index that shows the value of one bitcoin versus one single unit of currency of each of the majors in the Forex space – EUR, USD, JPY, GBP and AUD.
+
+
+Paper Wallet simply refers to a printed sheet of paper that holds a number of public bitcoin addresses and corresponding private keys. Some people prefer to store their bitcoin in this form of cold storage in order to improve security.
+
+
+Microtransaction is the ability to pay for things in very small sums thanks to the fact that Bitcoin may be extended to 8 decimal places. Microtransactions are especially important to Bitcoin casinos by providing players the ability to deposit and gamble fractions of Bitcoins.
+
+
+BTC is the shorthand of Bitcoin. Bitcoin is a form of digital currency created in 2009, that is created and distributed on a peer-to-peer basis. It has no central bank - transactions are conducted directly between individuals. Bitcoin is the most popular kind of cryptocurrency.
+
+
+Silk Road is an underground website, as part of the “dark web”, that was essentially a black market online. One could purchase illegal drugs, organs or hire assassins online. The site used cryptocurrencies such as Bitcoin and was shut down in 2013 by the FBI.
+
+
+The hash rate is the measuring unit of the processing power of the Bitcoin network. The Bitcoin network must make intensive mathematical operations for security purposes. When the network reached a hash rate of 10 Th/s, it meant it could make 10 trillion calculations per second.
+
+
+Double spending is when a malicious user tries to spend their bitcoins with two different recipients at the same time. Bitcoin mining and the block chain are there to create a consensus on the network about which of the two transactions will confirm and be considered valid.
+
+
+In conclusion, there are myriads of different types of cryptocurrency wallets; these elements will be used to evaluate Web based Wallet, App based Wallet, hardware wallet and Paper Wallet. As mentioned earlier, OWASP for IoT guidelines are industry 32 standard tests which will help evaluate the IoT security.
+
+
+Paper wallet is a way of storing cryptocurrency which creates an image that contains the private and public keys to a new wallet address along with QR codes. This is depicted in Figure 3 above, which you can see printed, sealed, and stored securely in a safe or another secure place.
+
+
+A Bitcoin address is similar to a physical address or an email. It is the only information you need to provide for someone to pay you with Bitcoin. An important difference, however, is that each address should only be used for a single transaction. Typically consists of between 26 and 35 alphanumeric characters.
+
+
+Peer-to-peer (P2P) refers to systems that work like an organized collective by allowing each individual to interact directly with the others. In the case of Bitcoin, the network is built in such a way that each user is broadcasting the transactions of other users. And, crucially, no bank is required as a third party.
+
+
+Companies from different Countries have supplied hardware wallets, explaining the aims and objectives of these wallets. There are some reasons why users or investors are recommended to use these types of hardware wallets because of the degrees of security and privacy. The purpose of these Hardware Wallets is to promote a safe way of storing and sending bitcoin.
+
+
+Proof of Work is the original consensus algorithm used in blockchain networks like Bitcoin and Ethereum. In PoW, participants, known as miners, compete to solve complex mathematical problems. The first one to solve the problem gets the right to add a new block to the blockchain and is rewarded with newly created cryptocurrency (mining reward) and transaction fees.
+
+
+Blockchain is a digital file distributed to everyone participating in a cryptocurrency network. The blockchain acts as a kind of general ledger, keeping track of all the transactions that happen in the network. Everyone can look at the blockchain to see what transactions have happened on the network, and the blockchain is sealed using cryptography so that no one can tamper with it.
+
+
+Altcoin is a form of cryptocurrency that has the same decentralized, peer-to-peer principles as bitcoin, but which uses its own blockchain and has its own rules of operation. Altcoin is the term used to describe those digital currencies that do not have as big a market capitalization or do not have the recognition of the current incumbent cryptocurrencies such as bitcoin, litecoin and dogecoin.
+
+
+A Hash tree or Merkle tree is a tree in which every leaf node is labelled with the cryptographic hash of a data block, and every non-leaf node is labelled with the cryptographic hash of the labels of its child nodes. Hash trees allow efficient and secure verification of the contents of large data structures. Hash trees are a generalization of hash lists and hash chains.
+
+
+A private key is a secret piece of data that proves your right to spend bitcoins from a specific wallet through a cryptographic signature. Your private key(s) are stored in your computer if you use a software wallet; they are stored on some remote servers if you use a web wallet. Private keys must never be revealed as they allow you to spend bitcoins for their respective Bitcoin wallet.
+
+
+Cryptocurrency is the broad name for digital currencies that use blockchain technology to work on a peer-to-peer basis. Cryptocurrencies don't need a bank to carry out transactions between individuals. The nature of the blockchain means that individuals can transact between each other, even if they don't trust each other. The cryptocurrency network keeps track of all the transactions and ensures that no one tries to renege on a transaction.
+
+
+Cryptography is the branch of mathematics that lets us create mathematical proofs that provide high levels of security. Online commerce and banking already uses cryptography. In the case of Bitcoin, cryptography is used to make it impossible for anybody to spend funds from another user's wallet or to corrupt the block chain. It can also be used to encrypt a wallet, so that it cannot be used without a password.
+
+
+Confirmation means that a transaction has been processed by the network and is highly unlikely to be reversed. Transactions receive a confirmation when they are included in a block and for each subsequent block. Even a single confirmation can be considered secure for low value transactions, although for larger amounts like $1,000 US, it makes sense to wait for 6 confirmations or more. Each confirmation exponentially decreases the risk of a reversed transaction.
+
+
+A cryptographic signature is a mathematical mechanism that allows someone to prove ownership. In the case of Bitcoin, a Bitcoin wallet and its private key(s) are linked by some mathematical magic. When your Bitcoin software signs a transaction with the appropriate private key, the whole network can see that the signature matches the bitcoins being spent. However, there is no way for the world to guess your private key to steal your hard-earned bitcoins.
+
+
+A Bitcoin wallet is loosely the equivalent of a physical wallet on the Bitcoin network. The wallet actually contains your private key(s) which allow you to spend the bitcoins allocated to it in the block chain. Each Bitcoin wallet can show you the total balance of all bitcoins it controls and lets you pay a specific amount to a specific person, just like a real wallet. This is different from credit cards where you are charged by the merchant.
+
+
+Proof of Stake is a consensus algorithm where validators, also known as "stalkers," are chosen to create a new block based on the amount of cryptocurrency they hold and are willing to "stake" as collateral. In a PoS system, validators are selected to create blocks and validate transactions based on factors such as the number of coins they own and are willing to lock up. Ethereum is transitioning from Proof of Work to Proof of Stake with Ethereum 2.0.
+
+
+Blocks can be recognized by their block height(Block No.) and block header hash. The data in the block is detected through a computerized algorithm known as a Hash function. It not only locks the data to be seen by the participants in the Blockchain but also makes the data immutable. Every block has its hash function. In Blockchain, once the data has been recorded, it will not be changed. Blockchain works like a digital notary with timestamps to avoid tampering with information.
+
+
+A user's private key has full control of the user's fund, and she should stand on her own feet and keep her private keys safe by herself, which is one of the most critical challenges in cryptocurrencies. Users usually employ crypto wallets to generate and store their private keys and sign transactions. Crypto wallets have many forms from online wallets to mobile and cold wallets, and the most secure one is hardware wallet which usually is in the form of a USB stick, Bluetooth device or smartcard.
+
+
+A cryptographic hash is a mathematical function that takes a file and produces a relatively short code that can be used to identify that file. A hash has a couple of key properties: It is unique. Only a particular file can produce a particular hash, and two different files will never produce the same hash. It cannot be reversed. You can't work out what a file was by looking at its hash. Hashing is used to prove that a set of data has not been tampered with. It is what makes bitcoin mining possible.
+
+
+The private key allows you to have access to your funds through the crypto wallet. it is used to send Bitcoin and must be protected and secured. As for the public key, it is used to receive Bitcoin and can be published anywhere safely. As we noticed last decade, centralized exchanges such as MT. Gox and Binance have reported losses from hackers. There has been an increased number of security breaches that lead to the loss of users’ funds. As a result, investors may become reluctant to rely on centralized exchanges to store funds.
+
+
+Cryptocurrencies usually use elliptic-curve asymmetric cryptography to control the ownership of coins or accounts . In other words, to transfer funds from a user to another, the sender signs a transaction with her private key, and the blockchain verifies the signature of the transaction with the sender 's public key. If the blockchain network accepts and confirms this transaction, nobody can roll it back, unlike the traditional bank transfer. Thus, if a hacker empties the user account and transfers all her money to his account, she has no way to reverse the transaction and recover her loss. Unfortunately, many people have experienced this disaster.
+
+
+Online or Web-Based Wallets are a type of electronic card which is used for transactions made online; Its utility is the same as a credit or debit card, it primarily has two components, the first is software, and the second is information. The software component stores personal information and provides security and encryption of the data, whereas the information component is a database of details provided by the user which includes their name, home address, payment method, amount to be paid, credit or debit card details, etc. These wallets are vulnerable, and it is recommended not to leave a large amount of crypto tokens in this wallet.
+
+
+Satoshi Nakamoto is the creator of Bitcoin. While the true identity of Satoshi Nakamoto may never be known for certain— despite those like Dorian Nakamoto, whom the mainstream media say is Satoshi—what we do know, in very prolific and historical detail, are the underpinnings and design of Bitcoin from its earliest days. The first words posted by Satoshi Nakamoto were eloquent in their simplicity as he announced his creation, which would go on to change the world, “I’ve been working on a new electronic cash system that’s fully peer-to-peer, with no trusted third party.” He then put a link to a white paper he had written on the subject. These discussions, taking place publicly on the bitcointalk.org forum, went on until December 12th, 2010.  After that, Satoshi went dark.
+
+
+Bitcoin was created by an anonymous person (or group of persons) known as Satoshi Nakamoto. At the time Nakamoto made his first public post announcing his paper on Bitcoin, he was just another anonymous user like millions of others posting on Internet forums. His new software was then still in the early phase of development, and Bitcoin was only an experiment in its early stages. Satoshi’s interaction was limited to email exchanges only and for a brief duration of a little over 2 years. Since then, we haven’t heard from him. Around the time of his last post, Bitcoin’s value was soaring, and the media were starting to take notice. Just when Bitcoin appeared poised to take off and was beginning to attract serious interest, Satoshi Nakamoto retreated from the public eye.
+
+
+Mining is the act of producing units of a cryptocurrency (such as bitcoins) through some kind of effort. The effort is required so that people can't just create infinite amounts of the digital currency, which would devalue it. In bitcoin, mining requires computing power. Here is a detailed description of how mining works. Bitcoin mining is the process of making computer hardware do mathematical calculations for the Bitcoin network to confirm transactions and increase security. As a reward for their services, Bitcoin miners can collect transaction fees for the transactions they confirm, along with newly created bitcoins. Mining is a specialized and competitive market where the rewards are divided up according to how much calculation is done. Not all Bitcoin users do Bitcoin mining, and it is not an easy way to make money.
+
+
+Nowadays with technology, people are changing their ways of doing online transactions; they are seen using Cryptocurrency Wallets. With the prosperity of human economic activities and the development of science and technology, the currency pattern has been constantly changing. Investing Cryptocurrency is like putting money in the bank. After the 1980s, under the support of modern information technology, new currency forms such as electronic money, virtual currency, and digital cryptocurrency emerged one after another. Bitcoin is the most well-known cryptocurrency, and has been in existence since 2009, invented by Satoshi Nakamoto while publishing it in 2008. It has experienced different stages such as physical currency, silver standard, gold standard metal currency and credit currency. Cryptocurrency wallet is a software program that stores the public and private keys and interacts with various blockchain to enable users to send and receive digital currency and monitor their balance. The use of Cryptocurrency has been rising in Africa which has been one of the largest economies. According to Statista on “How Common is Crypto” mentioned that Nigeria, one of the African Countries, has been using and owning Cryptocurrency in which they send or receive money all around the world. They have been using Cryptocurrency in their daily lives. There has been a statistical growth since Nigeria began using Cryptocurrency more. There have been higher rates not only in Nigeria but numerous other Countries such as Vietnam, South Africa, Turkey, United States, Peru, Spain, Germany, and Japan.
