@@ -1,0 +1,199 @@
+﻿Genesis Block is the very first block in the block chain of any digital currency.
+
+
+The three largest cryptos by market capitalization are Bitcoin (BTC), Ether (ETH), and Tether (USDT).
+
+
+Block Reward refers to the “reward” that the Miner receives for successfully hashing a transaction block.
+
+
+A bedrock of the Bitcoin framework is mining, a computation intensive process that is used to verify Bitcoin transactions for profit.
+
+
+The Bitcoin cryptocurrency provides a decentralized and distributed method of verifying monetary transactions between trustless parties. Although cryptocurrencies had been proposed previously, Bitcoin was the first to provide a truly trustless solution. Unlike a traditional monetary system which is issued and backed by a single entity, Bitcoin requires no central administrator nor trust between participants.
+Traditionally, the difficulty in creating a distributed currency is the need for a scheme to prevent double spending. One party might simultaneously broadcast two transactions, sending the same coins to two separate parties on the network; but without a central server to arbitrate both transactions and decide which is valid, disagreement arises over the true history and ownership of a given coin. Created in 2008, Bitcoin resolves this problem and guarantees consensus of ownership by maintaining a public ledger of all transactions, called the blockchain. New transactions are grouped together and are checked against the existing history to ensure all new transactions are valid.
+
+
+Miners are those who contribute computation power to Bitcoin’s network to verify and append transactions to a public ledger, assuring its authenticity. Miners’ willingness to lend their computation power to the network, typically in the form of ASICs dedicated to mining, in exchange for reward (profit) is critical to the security and survival of Bitcoin.
+
+
+Bitcoin mining is intrinsically resilient to errors; its parallel nature minimizes the propagation of errors incurred while searching for a solution, and Bitcoin’s distributed verification system detects and invalidates any potentially erroneous solutions. As such, a Bitcoin mining ASIC can be built out of approximate circuits that trade off circuits’ reliability for reduced delay and area; an appropriate approximate circuit will maximize profit even when producing results that are not guaranteed to be correct.
+To maintain the validity of transactions in the Bitcoin network, there must be an incentive to contribute to verifying transactions within the blockchain. Bitcoin provides this incentive by rewarding miners who contribute with new bitcoins for every block created. Without miners, new transactions cannot be added to the public ledger, and Bitcoin will not function.
+The output refers to the destination address used in the transaction when a bitcoin transaction takes place. Mining consists of searching for a cryptographic nonce value within a block such that the hash of the block falls within a certain range. The network scales the range to maintain an average rate of one new block every ten minutes.
+
+
+Bitcoin Whitepaper was written by Satoshi Nakamoto in 2008, it describes the original plan and protocol for Bitcoin.
+
+
+Satoshi is a Bitcoin “cent”, the smallest form of Bitcoins. One Bitcoin is equal to 1 million Satoshis.
+
+
+In today’s world everyone has an idea of what cryptocurrency is. There is a misconception that blockchain is also a type of cryptocurrency like bitcoin.
+
+
+Satoshi Nakamoto is the creator of Bitcoin and the author of the original Bitcoin whitepaper and code. His real identity is unknown to the world.
+
+
+An exchange is exactly how it sounds, somewhere where account holders can exchange one digital currency for another or a Fiat currency for a digital currency.
+
+
+Cold Storage is a security measure for Bitcoin that is disconnected from the internet. Could be a paper wallet, USB stick or hardware wallet.
+
+
+Cryptocurrency wallet is a software program that stores the public and private keys and interacts with various blockchain to enable users to send and receive digital currency and monitor their balance. The use of Cryptocurrency has been rising in Africa which has been one of the largest economies. According to Statista on “How Common is Crypto” mentioned that Nigeria, one of the African Countries, has been using and owning Cryptocurrency in which they send or receive money all around the world. They have been using Cryptocurrency in their daily lives. There has been a statistical growth since Nigeria began using Cryptocurrency more. There have been higher rates not only in Nigeria but numerous other Countries such as Vietnam, South Africa, Turkey, 8 United States, Peru, Spain, Germany, and Japan. The great thing about it is that you can see the records of the transactions, how they increase and how they decrease based on the assets and is stored in one’s digital wallet. It can be stored using a web-based (hot) wallet or large cryptocurrency values are at stake than in a more secure offline (cold) wallet like a USB Drive. 
+
+
+Some transactions that occur in the bitcoin block chain contain transaction fees. These transaction fees are paid to the miner that hashes the block in question.
+
+
+A faucet happens when an individual or team of individuals develop a digital currency and pre-mined a certain amount before release and gave these pre-mined coins away.
+
+
+A Fiat currency is a traditional paperback currency that is regulated by an organization such as the central bank. Examples include the Euro, the US dollar and the Australian dollar.
+
+
+The public key is a string of digits and letters (your bitcoin address). When hashed with a corresponding string known as a private key it digitally signs and online communication.
+
+
+Bit Pay is a payment processing company and software that allows merchants such as eBay, Amazon and other online shopping channels to accept bitcoin as payment for its goods and services.
+
+
+An ASIC Miner is the hardware that houses the chip of the same name. You put them into your Internet connection via a modem or wireless mode. Bitcoin is independent of your desktop computer.
+
+
+A block is a record in the block chain that contains and confirms many waiting transactions. Roughly every 10 minutes, on average, a new block including transactions is appended to the block chain through mining.
+
+
+ASIC stands for application specific integrated circuit, which is a specialized silicon chip that performs just one task. In the digital currency space, these chips process SHA-256 in order to mine bitcoin and validate transactions.
+
+
+Every digital currency must have a cryptographic function that dictates how the hash is constructed. In bitcoin, SHA-256 is this function, and is used as the basis for hash creation (i.e. bitcoin’s proof of work).
+
+
+Mt. Gox is one of the first Bitcoin exchanges that began liquidating after more than 850,000 of its users’ Bitcoins were lost or stolen – an amount equal to more than $450,000,000 at the time.
+
+
+Bit is a common unit used to designate a sub-unit of a bitcoin - 1,000,000 bits is equal to 1 bitcoin (BTC or ). This unit is usually more convenient for pricing, tips, goods and services.
+
+
+Dogecoin is an altcoin first started as a joke in late 2013. Dogecoin, which features a Japanese fighting dog as its mascot, gained a broad international following and quickly grew to have a multi-million dollar market capitalization.
+
+
+What are cryptocurrencies? 
+Cryptocurrencies, or cryptos, are digital currencies used as an alternative to fiat currencies (e.g., U.S. dollars). They are neither issued nor guaranteed by any government but instead designed to be decentralized and secured by cryptography.
+
+
+Proof of work (PoW) simply refers to the output of any efforts to mine bitcoin. In the bitcoin block chain, the hashing of a block takes time and effort, meaning the hash block can be considered proof of work.
+
+
+The live bitcoin news bitcoin index is a weighted average index that shows the value of one bitcoin versus one single unit of currency of each of the majors in the Forex space – EUR, USD, JPY, GBP and AUD.
+
+
+Microtransaction is the ability to pay for things in very small sums thanks to the fact that Bitcoin may be extended to 8 decimal places. Microtransactions are especially important to Bitcoin casinos by providing players the ability to deposit and gamble fractions of Bitcoins.
+
+
+Silk Road is underground website, as part of the “dark web”, that was essentially a black market online. One could purchase illegal drugs, organs or hire assassins online. The site used cryptocurrencies such as Bitcoin and was shut down in 2013 by the FBI.
+
+
+BTC is the shorthand for Bitcoin. Bitcoin is a form of digital currency created in 2009, that is created and distributed on a peer-to-peer basis. It has no central bank - transactions are conducted directly between individuals. Bitcoin is the most popular kind of cryptocurrency.
+
+
+Some people prefer to store their bitcoin in the paper wallet – a form of cold storage – in order to improve security. The term simply refers to a printed sheet of paper that holds a number of public bitcoin addresses and corresponding private keys.
+
+
+The hash rate is the measuring unit of the processing power of the Bitcoin network. The Bitcoin network must make intensive mathematical operations for security purposes. When the network reached a hash rate of 10 Th/s, it meant it could make 10 trillion calculations per second.
+
+
+Double spending is when a malicious user tries to spend their bitcoins with two different recipients at the same time. Bitcoin mining and the block chain are there to create a consensus on the network about which of the two transactions will confirm and be considered valid.
+
+
+A purely peer-to-peer version of electronic cash would allow online payments to be sent directly from one party to another without going through a financial institution. Digital signatures provide part of the solution, but the main benefits are lost if a trusted third party is still required to prevent double-spending.
+
+
+Peer-to-peer (P2P) refers to systems that work like an organized collective by allowing each individual to interact directly with the others. In the case of Bitcoin, the network is built in such a way that each user is broadcasting the transactions of other users. And, crucially, no bank is required as a third party.
+
+
+Bitcoin Glossary:
+A Bitcoin address is similar to a physical address or an email. It is the only information you need to provide for someone to pay you with Bitcoin. An important difference, however, is that each address should only be used for a single transaction. Typically consists of between 26 and 35 alphanumeric characters.
+
+
+Blockchain is a  digital file distributed to everyone participating in a cryptocurrency network. The blockchain acts as a kind of general ledger, keeping track of all the transactions that happen in the network. Everyone can look at the blockchain to see what transactions have happened on the network, and the blockchain is sealed using cryptography so that no one can tamper with it.
+
+
+Altcoin is a form of cryptocurrency that has the same decentralized, peer-to-peer principles as bitcoin, but which uses its own blockchain and has its own rules of operation. Altcoin is the term used to describe those digital currencies that do not have as big a market capitalization or do not have the recognition of the current incumbent cryptocurrencies such as bitcoin, Litecoin and dogecoin.
+
+
+A private key is a secret piece of data that proves your right to spend bitcoins from a specific wallet through a cryptographic signature. Your private key(s) are stored in your computer if you use a software wallet; they are stored on some remote servers if you use a web wallet. Private keys must never be revealed as they allow you to spend bitcoins for their respective Bitcoin wallet.
+
+
+Cryptocurrency is the broad name for digital currencies that use blockchain technology to work on a peer-to-peer basis. Cryptocurrencies don't need a bank to carry out transactions between individuals. The nature of the blockchain means that individuals can transact between each other, even if they don't trust each other. The cryptocurrency network keeps track of all the transactions and ensures that no one tries to renege on a transaction.
+
+
+Cryptography is the branch of mathematics that lets us create mathematical proofs that provide high levels of security. Online commerce and banking already uses cryptography. In the case of Bitcoin, cryptography is used to make it impossible for anybody to spend funds from another user's wallet or to corrupt the block chain. It can also be used to encrypt a wallet, so that it cannot be used without a password.
+
+
+Confirmation means that a transaction has been processed by the network and is highly unlikely to be reversed. Transactions receive a confirmation when they are included in a block and for each subsequent block. Even a single confirmation can be considered secure for low value transactions, although for larger amounts like $1,000 US, it makes sense to wait for 6 confirmations or more. Each confirmation exponentially decreases the risk of a reversed transaction.
+
+
+A cryptographic signature is a mathematical mechanism that allows someone to prove ownership. In the case of Bitcoin, a Bitcoin wallet and its private key(s) are linked by some mathematical magic. When your Bitcoin software signs a transaction with the appropriate private key, the whole network can see that the signature matches the bitcoins being spent. However, there is no way for the world to guess your private key to steal your hard-earned bitcoins.
+
+
+A Bitcoin wallet is loosely the equivalent of a physical wallet on the Bitcoin network. The wallet actually contains your private key(s) which allow you to spend the bitcoins allocated to it in the block chain. Each Bitcoin wallet can show you the total balance of all bitcoins it controls and lets you pay a specific amount to a specific person, just like a real wallet. This is different from credit cards where you are charged by the merchant.
+
+
+A cryptographic hash is a mathematical function that takes a file and produces a relatively short code that can be used to identify that file. A hash has a couple of key properties: It is unique. Only a particular file can produce a particular hash, and two different files will never produce the same hash. It cannot be reversed. You can't work out what a file was by looking at its hash. Hashing is used to prove that a set of data has not been tampered with. It is what makes bitcoin mining possible.
+
+
+Today’s modern money is fiat money. Define fiat money as a substance or device used as money that has no intrinsic value (no value of its own) or representational value (does not represent anything of value, such as gold). It is money because the government says it has value and because we, as members of society, accept it as a medium of exchange that serves as a unit of account and store of value. It facilitates the exchange of resources, goods, and services.
+There is no precious metal such as gold or silver backing it, and it has no value of its own.
+
+
+Bitcoin and Ethereum use the same digital signature scheme Elliptic Curve Digital Signature Algorithm (ECDSA). However, they use different hash algorithms. Bitcoin chooses to use Secure Hash Algorithm (SHA), and Ethereum uses Keccak-256.
+ECDSA is a variant of Digital Signature Algorithm (DSA). It requires a shorter key length than Rivest-Shamir-Adleman (RSA), so it was preferred to use in the blockchain.
+Bitcoin chose to use SHA-256 since it came out earlier than Keccak-256 with adequate security. Conversely, Keccak-256 is preferred by Ethereum since it has better performance and security compared to SHA-256.
+SHA-256 and Keccak-256 are used in the blockchains' proof-of-work (or proof-of-stake) and Merkle tree structure.
+
+
+Bitcoin is a technological and monetary innovation that allows for the peer to peer transfer of value online without trusting third parties. The system uses a distributed public ledger to reach consensus among network participants about the legitimacy of transactions. This ledger isn't denominated with fiat currencies, but instead uses its own units called bitcoins. The system relies on various elements of cryptography to ensure that this public ledger is accurate instead of trusting a central institution. The code is open-source and the network is decentralized, resulting in low barriers to entry and censorship-resistance. New bitcoins are issued by a predictable algorithm that is intended to replicate mining for a scare resource.
+
+
+The ledger is the second accounting record book that is a list of a company’s individual accounts list in order of account category. While the journal lists all types of transactions chronologically, the ledgers separate this same information out by account and keep a running balance of each of these accounts.
+Each account has its own ledger page. The account name appears across the top.
+The ledger form has six columns: Date, Item, Debit, Credit, Debit, Credit. The first set of Debit and Credit columns are where amounts from the journal transactions are copied. The second set of Debit and Credit columns are where the account’s running total is maintained. An account’s running balance typically appears in either the Debit or the Credit column, not both.
+
+
+Ether is a cryptocurrency that is used to pay for the computational resources needed to run an application or program. Just like cash, it doesn’t require a third party to process or approve a transaction. But instead of operating as a digital currency or payment, Ether seeks to provide “fuel” or “computational power” for the decentralized apps on the network. It is sometimes called “digital oil” because Ethereum transaction fees are calculated based on how much “gas” the actions require. Even though Bitcoin has more value in today’s market, Ether has its own advantages to become successful. Ethereum has an object-oriented language while Bitcoin is in a stack-based language. The Ethereum transactions are confirmed in seconds while Bitcoin takes minutes.
+Ethereum uses its own hashing algorithm called ‘ethash’, while bitcoin uses SHA256 algorithm.
+
+
+Mining is the act of producing units of a cryptocurrency (such as bitcoins) through some kind of effort. The effort is required so that people can't just create infinite amounts of the digital currency, which would devalue it. In bitcoin, mining requires computing power. Here is a detailed description of how mining works. Bitcoin mining is the process of making computer hardware do mathematical calculations for the Bitcoin network to confirm transactions and increase security. As a reward for their services, Bitcoin miners can collect transaction fees for the transactions they confirm, along with newly created bitcoins. Mining is a specialized and competitive market where the rewards are divided up according to how much calculation is done. Not all Bitcoin users do Bitcoin mining, and it is not an easy way to make money.
+
+
+A blockchain is a public digital registry that safely records the transactions between two parties in a secure manner. Any exchange performed will be communicated to everyone in the hub on the blockchain. Once a transaction is performed, the record will be stored in a block which is interrelated to the previous blocks. So, in order to change a record in one of the blocks, the recent blocks should also be altered which alerts the whole network and immediate action can be taken. In this way, the whole network will be robust against any alterations.
+Ethereum is a type of Open Source, Public, Blockchain based distributed computing platform and operating system. Its primary functionality is to serve as a ledger that is incorruptible and coupled with an efficient transparency. This very functionality of Ethereum can be used in providing diversified applications in addition to the financial services.
+
+
+Commonly cited applications include using on-blockchain digital assets to represent custom currencies and financial instruments ("colored coins"), the ownership of an underlying physical device ("smart property"), non-fungible assets such as domain names ("Namecoin") as well as more advanced applications such as decentralized exchange, financial derivatives, peer-to-peer gambling and on-blockchain identity and reputation systems. Another important area of inquiry is "smart contracts" - systems which automatically move digital assets according to arbitrary pre-specified rules. For example, one might have a treasury contract of the form "A can withdraw up to X currency units per day, B can withdraw up to Y per day, A and B together can withdraw anything, and A can shut off B's ability to withdraw". The logical extension of this is decentralized autonomous organizations (DAOs) - long-term smart contracts that contain the assets and encode the bylaws of an entire organization. What Ethereum intends to provide is a blockchain with a built-in fully fledged Turing complete programming language that can be used to create "contracts" that can be used to encode arbitrary state transition functions, allowing users to create any of the systems described above, as well as many others that we have not yet imagined, simply by writing up the logic in a few lines of code.
+
+
+When Satoshi Nakamoto first set the Bitcoin blockchain into motion in January 2009, he was simultaneously introducing two radical and untested concepts. The first is the "bitcoin", a decentralized peer-to-peer online currency that maintains a value without any backing, intrinsic value or central issuer. So far, the "bitcoin" as a currency unit has taken up the bulk of the public attention, both in terms of the political aspects of a currency without a central bank and its extreme upward and downward volatility in price.
+However, there is also another, equally important, part to Satoshi's grand experiment: the concept of a proof of work-based blockchain to allow for public agreement on the order of transactions. Bitcoin as an application can be described as a first-to-file system: if one entity has 50 BTC, and simultaneously sends the same 50 BTC to A and to B, only the transaction that gets confirmed first will process. There is no intrinsic way of determining from two transactions which came earlier, and for decades this stymied the development of decentralized digital currency. Satoshi's blockchain was the first credible decentralized solution. And now, attention is rapidly starting to shift toward this second part of Bitcoin's technology, and how the blockchain concept can be used for more than just money.
+
+
+Commerce on the Internet has come to rely almost exclusively on financial institutions serving as trusted third parties to process electronic payments. While the system works well enough for most transactions, it still suffers from the inherent weaknesses of the trust based model.
+Completely non-reversible transactions are not really possible, since financial institutions cannot avoid mediating disputes. The cost of mediation increases transaction costs, limiting the minimum practical transaction size and cutting off the possibility for small casual transactions, and there is a broader cost in the loss of ability to make non-reversible payments for nonreversible services. With the possibility of reversal, the need for trust spreads. Merchants must be wary of their customers, hassling them for more information than they would otherwise need.
+A certain percentage of fraud is accepted as unavoidable. These costs and payment uncertainties can be avoided in person by using physical currency, but no mechanism exists to make payments over a communications channel without a trusted party.
+What is needed is an electronic payment system based on cryptographic proof instead of trust, allowing any two willing parties to transact directly with each other without the need for a trusted third party. Transactions that are computationally impractical to reverse would protect sellers from fraud, and routine escrow mechanisms could easily be implemented to protect buyers.
+
+
+Bitcoin emerged in 2008 when it was introduced by the mysterious Satoshi Nakamoto, whose real identity is still unknown.
+Bitcoin is created by digital mining. In this process, computing hardware is employed to solve complex mathematical puzzles that verify Bitcoin transactions. This computational effort carried out by miners is rewarded with a certain number of Bitcoins. The ownership of Bitcoins and associated transactions is recorded using blockchain technology and shared within the entire network. The method of obtaining cryptocurrency by solving mathematical puzzles is called Proof-of-Work (PoW) and is very energy intensive. The issuance of Bitcoins and their transactions are decentralized, transparent, and secure.
+Ethereum was introduced in 2013 as a decentralized blockchain. Ether is the crypto utilized to transact on the Ethereum blockchain. Until recently, Ether was mined using a PoW methodology using graphics processing units (GPUs). In 2022, Ether switched to a proof-of-stake (PoS) approach, where transactions are validated by committing Ether as collateral (stacking) to validate transactions. In the PoS mechanism, Ether is minted as a reward for staking and helping secure the network.
+An essential class of cryptocurrencies is stablecoins. Stablecoins are cryptos that are pegged to another currency, usually on a 1-to-1 basis, to enable the use of fiat currency in the digital marketplace. The third largest crypto by market capitalization is Tether (USDT) which is a stablecoin that allows for a $1 for 1 USDT exchange rate. Similar to a real wallet that stores dollars, decentralized digital wallets (online and offline) store cryptocurrencies.
+
+
+Bitcoin is both a currency and a payment network. While most attention is paid to the currency, the technological innovation that makes Bitcoin unique is in its payment network. To understand why Bitcoin is valuable, we must understand the context of digital payments previous to this innovation.
+Bitcoin is not the first digital currency. The majority of the traditional fiat money supply isn't physically printed, but instead is represented digitally. Services such as PayPal, WebMoney, or Liberty Reserve allowed individuals to send and receive money digitally.
+All of these digital currencies were centralized, meaning they have an issuing body and organization who is able to control transactions on the network. This was necessary because of the double-spending problem. Because data is trivially easy to replicate, using digital currency has one inherent drawback.
+The recipient cannot be certain their digital representation of value hasn't been duplicated, and spent elsewhere. This conundrum is called the double spending problem, and it was dealt with by having a central organization maintain the ledger balances of the currencies. This meant that this organization whether a governmental body or a private company—would be able to directly control the balances and transactions occurring on the network.
+Bitcoin solves the double-spending problem without relying on a central organization to maintain the ledger. Instead, it makes the transaction ledger public, distributes it among network participants, and relies on consensus to ensure that balances are accurate. This distributed ledger—called the blockchain -- contains the history of every transaction which has ever occurred on the network, allowing any participant to know the exact ledger balances at any moment and verify if proposed transactions are legitimate. Once the first transaction has been recorded in the blockchain, any attempt at double spending would be automatically rejected by network participants as invalid.
