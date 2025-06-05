@@ -18,16 +18,17 @@
             --error: #F44336;
             --info: #2196F3;
             --doc-purple: #7E57C2;
+            --sidebar-bg: #1a237e;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -89,226 +90,290 @@
             color: var(--primary);
         }
         
-        /* Main chat container */
-        .main-container {
+        /* Main container */
+        .container {
             display: flex;
             flex: 1;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             width: 100%;
-            padding: 1rem;
-            gap: 1.5rem;
+            min-height: 0;
         }
         
-        .knowledge-panel {
-            width: 300px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            height: fit-content;
-        }
-        
-        .panel-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1.2rem;
-            color: var(--primary-dark);
-        }
-        
-        .active-docs {
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .doc-item {
-            display: flex;
-            align-items: center;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid #eee;
-            gap: 0.8rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .doc-item:hover {
-            background: rgba(255, 140, 0, 0.05);
-        }
-        
-        .doc-item.active {
-            background: rgba(255, 140, 0, 0.1);
-            border-left: 3px solid var(--primary);
-            padding-left: 0.5rem;
-        }
-        
-        .doc-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--doc-purple);
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, var(--sidebar-bg) 0%, #283593 100%);
             color: white;
-            border-radius: 6px;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        .chat-container {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            font-size: 28px;
+            color: var(--primary-light);
+        }
+        
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .nav-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #bbdefb;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active {
+            background: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content Area */
+        .main-content {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .user-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:hover {
+            background: #f1f3f9;
+        }
+        
+        /* Chat Container */
+        .chat-container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            min-height: 0;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
         
         .chat-header {
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            padding: 15px 20px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 1.2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .assistant-title {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
         }
         
-        .avatar {
-            background-color: white;
-            color: var(--primary);
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-        
-        .language-selector {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.5rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        .context-display {
+            padding: 15px 20px;
+            background: #f1f5ff;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
         }
         
         .chat-messages {
             flex: 1;
+            padding: 20px;
             overflow-y: auto;
-            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 20px;
         }
         
         .message {
             max-width: 85%;
-            padding: 1.2rem;
-            border-radius: 12px;
-            line-height: 1.5;
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.3s ease;
         }
         
-        .bot-message {
-            background: #f8f8f8;
-            align-self: flex-start;
-            border-top-left-radius: 4px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .user-message {
-            background: var(--primary-light);
-            color: white;
             align-self: flex-end;
-            border-top-right-radius: 4px;
         }
         
-        .upload-message {
-            background: #f0f7ff;
-            border-left: 4px solid var(--info);
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 0.5rem 0;
-        }
-        
-        .upload-message.success {
-            border-left-color: var(--success);
-        }
-        
-        .upload-message.error {
-            border-left-color: var(--error);
+        .bot-message {
+            align-self: flex-start;
         }
         
         .message-content {
-            margin-bottom: 0.5rem;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+        }
+        
+        .user-message .message-content {
+            background: var(--primary-light);
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+        
+        .bot-message .message-content {
+            background: #f8f8f8;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 3px;
         }
         
         .message-metadata {
-            font-size: 0.8rem;
+            font-size: 12px;
             color: #777;
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 0.5rem;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .bot-message .message-metadata {
+            text-align: left;
         }
         
         .feedback {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            gap: 10px;
+            margin-top: 10px;
         }
         
         .feedback-btn {
-            background: rgba(0,0,0,0.05);
-            border: none;
-            padding: 0.3rem 0.8rem;
-            border-radius: 4px;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 0.3rem;
-            transition: background 0.2s;
+            gap: 5px;
         }
         
         .feedback-btn:hover {
-            background: rgba(0,0,0,0.1);
+            background: #e9ecef;
         }
         
-        .docs-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .translation-option {
-            font-size: 0.85rem;
-            color: var(--primary);
-            cursor: pointer;
-            margin-top: 0.5rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .user-input-area {
-            padding: 1.2rem;
+        .input-area {
+            padding: 15px;
             border-top: 1px solid var(--border);
-            background: var(--card-bg);
+            background: white;
         }
         
-        .input-options {
+        .input-container {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.8rem;
+            gap: 10px;
+        }
+        
+        .user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            height: 50px;
+        }
+        
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
         
@@ -331,60 +396,250 @@
             border-color: var(--primary-light);
         }
         
-        .user-input {
-            display: flex;
-            gap: 0.8rem;
-        }
-        
-        .user-input input {
-            flex: 1;
-            padding: 0.9rem 1.2rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        .user-input input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.2);
-        }
-        
-        .send-btn {
+        .input-btn.primary {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0 1.8rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: background 0.2s;
         }
         
-        .send-btn:hover {
+        .input-btn.primary:hover {
             background: var(--primary-dark);
         }
         
-        .hidden {
-            display: none;
+        /* Right Panel */
+        .right-panel {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
-        #file-upload {
-            width: 0.1px;
-            height: 0.1px;
-            opacity: 0;
+        .panel-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            position: absolute;
-            z-index: -1;
         }
         
-        .file-upload-label {
-            display: inline-block;
+        .panel-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+        
+        .panel-content {
+            padding: 20px;
+        }
+        
+        .docs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .doc-item:hover {
+            background: rgba(255, 140, 0, 0.05);
+        }
+        
+        .doc-item.active {
+            background: rgba(255, 140, 0, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .doc-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--doc-purple);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .keyword-item {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .keyword-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .keyword-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .keyword-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .keyword-count {
+            background: #e3f2fd;
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .keyword-sections {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        
+        .keyword-sections i {
+            margin-right: 5px;
+        }
+        
+        /* Upload prompt */
+        .upload-prompt {
+            background: #fff8e1;
+            border: 1px solid #ffd54f;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+        
+        .prompt-content {
+            margin-bottom: 15px;
+        }
+        
+        .concept-list {
+            margin: 10px 0 15px 20px;
+        }
+        
+        .concept-list li {
+            margin-bottom: 5px;
+        }
+        
+        .prompt-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Follow-up suggestions */
+        .follow-up-suggestion {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+        }
+        
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .suggestion-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .suggestion-item {
+            background: #e3f2fd;
+            color: var(--primary);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: #bbdefb;
+        }
+        
+        .action-item {
+            background: #fff8e1;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+        
+        .action-item:hover {
+            background: #ffecb3;
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            color: var(--text-light);
+            font-style: italic;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Upload message */
+        .upload-message {
+            background: #f0f7ff;
+            border-left: 4px solid var(--info);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        
+        .upload-message.success {
+            border-left-color: var(--success);
+        }
+        
+        .upload-message.error {
+            border-left-color: var(--error);
         }
         
         /* Footer */
@@ -414,112 +669,31 @@
         .footer-links a:hover {
             color: var(--primary);
         }
-
-                .upload-prompt {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            margin: 1.5rem;
-            border-left: 5px solid var(--primary);
-            overflow: hidden;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        .prompt-header {
-            background: linear-gradient(to right, var(--primary-light), var(--primary));
-            color: white;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .prompt-header i {
-            font-size: 1.5rem;
-        }
-        
-        .prompt-content {
-            padding: 1.5rem;
-        }
-        
-        .concept-list {
-            margin: 1rem 0;
-            padding-left: 1.5rem;
-        }
-        
-        .concept-list li {
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-        
-        .concept-list li:before {
-            content: '•';
-            color: var(--primary);
-            position: absolute;
-            left: -1rem;
-        }
-        
-        .prompt-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .input-btn.primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-        }
-        
-        .input-btn.primary:hover {
-            background: var(--primary-dark);
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        /* Enhance suggestion item for rare concepts */
-        .suggestion-item.action-item {
-            background: rgba(255, 140, 0, 0.1);
-            color: var(--primary-dark);
-            border: 1px dashed var(--primary);
-        }
-        
-        .suggestion-item.action-item:hover {
-            background: rgba(255, 140, 0, 0.2);
-            color: var(--primary-dark);
-        }
-        
-        /* Pulse animation for upload button */
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 140, 0, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 140, 0, 0); }
-        }
-        
-        .pulse {
-            animation: pulse 1.5s infinite;
-            font-weight: bold;
-        }
         
         /* Responsive design */
-        @media (max-width: 900px) {
-            .main-container {
+        @media (max-width: 1200px) {
+            .container {
                 flex-direction: column;
             }
             
-            .knowledge-panel {
+            .sidebar {
                 width: 100%;
             }
             
-            .message {
-                max-width: 90%;
+            .right-panel {
+                width: 100%;
             }
         }
-        
-        @media (max-width: 600px) {
+
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+            
+            .keywords-grid {
+                grid-template-columns: 1fr;
+            }
+            
             header {
                 flex-direction: column;
                 gap: 1rem;
@@ -531,6 +705,10 @@
             }
             
             .user-input {
+                width: 100%;
+            }
+            
+            .input-container {
                 flex-direction: column;
             }
             
@@ -540,10 +718,9 @@
             }
         }
         
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         .pulse {
@@ -554,50 +731,6 @@
             0% { opacity: 0.6; }
             50% { opacity: 1; }
             100% { opacity: 0.6; }
-        }
-        
-        .context-indicator {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .follow-up-suggestion {
-            background: #f0f7ff;
-            border-left: 3px solid var(--info);
-            padding: 0.8rem;
-            margin-top: 0.8rem;
-            border-radius: 0 8px 8px 0;
-        }
-        
-        .suggestion-title {
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-        }
-        
-        .suggestion-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .suggestion-item {
-            background: rgba(33, 150, 243, 0.1);
-            color: var(--info);
-            border-radius: 16px;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .suggestion-item:hover {
-            background: var(--info);
-            color: white;
         }
     </style>
 </head>
@@ -622,98 +755,241 @@
         </nav>
     </header>
     
-    <div class="main-container">
-        <div class="knowledge-panel">
-            <div class="panel-header">
-                <i class="fas fa-lightbulb"></i>
-                <h3>Conversation Context</h3>
-            </div>
-            <p>Audrey maintains context for follow-up questions. Current focus:</p>
-            <div id="context-display" style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
-                <p><i class="fas fa-info-circle"></i> No active context</p>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="logo-text">CROSSBAR</div>
             </div>
             
-            <div class="panel-header" style="margin-top: 1.5rem;">
-                <i class="fas fa-file-alt"></i>
-                <h3>Active Documents</h3>
-            </div>
-            <div class="active-docs" id="active-docs">
-                <div class="doc-item active" data-doc="company">
-                    <div class="doc-icon">
-                        <i class="fas fa-globe"></i>
-                    </div>
-                    <div>
-                        <div>www.crossbar-inc.com</div>
-                        <small>Company website</small>
-                    </div>
+            <div class="nav-section">
+                <div class="section-title">Navigation</div>
+                <div class="nav-item active">
+                    <div class="nav-icon"><i class="fas fa-comments"></i></div>
+                    <div>Chat Assistant</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-database"></i></div>
+                    <div>Document Library</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div>Analytics</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                    <div>Settings</div>
                 </div>
             </div>
             
-            <div class="panel-header" style="margin-top: 1.5rem;">
-                <i class="fas fa-bolt"></i>
-                <h3>Quick Actions</h3>
+            <div class="nav-section">
+                <div class="section-title">Tools</div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-file-import"></i></div>
+                    <div>Document Upload</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-search"></i></div>
+                    <div>Semantic Search</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-key"></i></div>
+                    <div>Keyword Extraction</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-sync-alt"></i></div>
+                    <div>RAG Processing</div>
+                </div>
             </div>
-            <button class="input-btn" style="width: 100%; margin-top: 0.5rem;" onclick="resetConversation()">
-                <i class="fas fa-sync-alt"></i> Reset Conversation
-            </button>
+            
+            <div class="nav-section" style="margin-top: auto;">
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
+                    <div>Help & Support</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+                    <div>Logout</div>
+                </div>
+            </div>
         </div>
         
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="assistant-title">
-                    <div class="avatar">A</div>
-                    <div>
-                        <h2>Audrey AI Assistant</h2>
-                        <small>Specialized in CROSSBAR products and crypto security</small>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Audrey AI Assistant</h1>
+                <div class="user-controls">
+                    <div class="control-btn">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
                     </div>
-                </div>
-                <select class="language-selector" id="language-selector">
-                    <option value="auto">🌐 Auto-detect</option>
-                    <option value="en">🇺🇸 English</option>
-                    <option value="zh">🇨🇳 中文 (Chinese)</option>
-                    <option value="es">🇪🇸 Español (Spanish)</option>
-                    <option value="fr">🇫🇷 Français (French)</option>
-                </select>
-            </div>
-            
-            <div class="chat-messages" id="chat-messages">
-                <div class="message bot-message">
-                    <div class="message-content">
-                        <strong>Hello, I'm Audrey, your CROSSBAR AI Assistant.</strong>
-                        <p>I specialize in CROSSBAR products and crypto wallet security. Here's what I can help with:</p>
-                        <ul>
-                            <li>Answer questions about CROSSBAR hardware and software</li>
-                            <li>Analyze documents (PDF, TXT, DOCX) using our RAG system</li>
-                            <li>Maintain context for follow-up questions</li>
-                            <li>Communicate in multiple languages</li>
-                        </ul>
-                        <p>Try asking about post-quantum signature schemes or upload a document!</p>
+                    <div class="control-btn">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
                     </div>
-                    <div class="message-metadata">
-                        Just now
+                    <div class="control-btn">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
                     </div>
                 </div>
             </div>
             
-            <div class="user-input-area">
-                <div class="input-options">
-                    <button class="input-btn" id="upload-btn">
-                        <i class="fas fa-file-upload"></i> Upload Document
-                    </button>
-                    <button class="input-btn" id="paste-link-btn">
-                        <i class="fas fa-link"></i> Paste Link
-                    </button>
-                    <button class="input-btn" id="company-info-btn">
-                        <i class="fas fa-building"></i> Company Info
-                    </button>
-                    <input type="file" id="file-upload" accept=".pdf,.txt,.docx,.md">
+            <div class="chat-container">
+                <!-- Chat Area -->
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <div class="chat-title">Audrey AI Assistant</div>
+                        <div>Specialized in CROSSBAR products and crypto security</div>
+                    </div>
+                    
+                    <div class="context-display">
+                        <p><i class="fas fa-file-alt"></i> Active document: <strong>arXiv:2307.12874</strong></p>
+                        <p><i class="fas fa-comment"></i> Last topic: <strong>Quantum-Resistant Algorithms</strong></p>
+                        <div class="context-indicator">
+                            <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <strong>Hello, I'm Audrey, your CROSSBAR AI Assistant.</strong>
+                                <p>I specialize in CROSSBAR products and crypto wallet security. Here's what I can help with:</p>
+                                <ul>
+                                    <li>Answer questions about CROSSBAR hardware and software</li>
+                                    <li>Analyze documents (PDF, TXT, DOCX) using our RAG system</li>
+                                    <li>Maintain context for follow-up questions</li>
+                                    <li>Communicate in multiple languages</li>
+                                </ul>
+                                <p>Try asking about post-quantum signature schemes or upload a document!</p>
+                            </div>
+                            <div class="message-metadata">
+                                Just now
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-area">
+                        <div class="input-container">
+                            <textarea class="user-input" id="user-input" placeholder="Ask about post-quantum signature schemes or upload documents..."></textarea>
+                            <button class="send-btn" id="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="input-actions">
+                            <button class="input-btn" id="upload-btn">
+                                <i class="fas fa-file-upload"></i> Upload Document
+                            </button>
+                            <button class="input-btn" id="paste-link-btn">
+                                <i class="fas fa-link"></i> Paste Link
+                            </button>
+                            <button class="input-btn" id="company-info-btn">
+                                <i class="fas fa-building"></i> Company Info
+                            </button>
+                            <select class="input-btn" id="language-selector" style="flex: 1;">
+                                <option value="auto">🌐 Auto-detect</option>
+                                <option value="en">🇺🇸 English</option>
+                                <option value="zh">🇨🇳 中文 (Chinese)</option>
+                                <option value="es">🇪🇸 Español (Spanish)</option>
+                                <option value="fr">🇫🇷 Français (French)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="user-input">
-                    <input type="text" id="user-input" placeholder="Ask about post-quantum signature schemes or upload documents...">
-                    <button class="send-btn" id="send-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                <!-- Right Panel -->
+                <div class="right-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">Active Documents</div>
+                        <div class="panel-content">
+                            <div class="docs-list" id="active-docs">
+                                <div class="doc-item active" data-doc="arXiv:2307.12874">
+                                    <div class="doc-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="doc-info">
+                                        <div class="doc-name">arXiv:2307.12874</div>
+                                        <div class="doc-type">Research Paper</div>
+                                    </div>
+                                </div>
+                                <div class="doc-item" data-doc="CROSSBAR Security Whitepaper">
+                                    <div class="doc-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="doc-info">
+                                        <div class="doc-name">CROSSBAR Security Whitepaper</div>
+                                        <div class="doc-type">PDF Document</div>
+                                    </div>
+                                </div>
+                                <div class="doc-item" data-doc="NIST Post-Quantum Report">
+                                    <div class="doc-icon">
+                                        <i class="fas fa-link"></i>
+                                    </div>
+                                    <div class="doc-info">
+                                        <div class="doc-name">NIST Post-Quantum Report</div>
+                                        <div class="doc-type">Website</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card">
+                        <div class="panel-header">Document Keywords</div>
+                        <div class="panel-content">
+                            <div class="keywords-grid" id="keywords-display">
+                                <!-- Keywords will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card">
+                        <div class="panel-header">RAG Processing</div>
+                        <div class="panel-content">
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: #e3f2fd; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-cloud-download-alt" style="color: var(--primary);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;">Content Retrieval</div>
+                                        <div style="font-size: 13px; color: var(--text-light);">Scraping & extracting document content</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: #e3f2fd; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-cube" style="color: var(--primary);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;">Vector Embeddings</div>
+                                        <div style="font-size: 13px; color: var(--text-light);">Creating semantic representations</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: #e3f2fd; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-search" style="color: var(--primary);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;">Similarity Search</div>
+                                        <div style="font-size: 13px; color: var(--text-light);">FAISS-based retrieval</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: #e3f2fd; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-brain" style="color: var(--primary);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;">Response Generation</div>
+                                        <div style="font-size: 13px; color: var(--text-light);">Context-aware LLM synthesis</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -730,6 +1006,9 @@
         <p><small>"Audrey" is a proprietary AI for CROSSBAR developers, powered by advanced RAG systems.</small></p>
     </footer>
 
+    <!-- Hidden file input -->
+    <input type="file" id="file-upload" style="display: none;">
+
     <script>
         // DOM Elements
         const chatMessages = document.getElementById('chat-messages');
@@ -741,20 +1020,55 @@
         const companyInfoBtn = document.getElementById('company-info-btn');
         const languageSelector = document.getElementById('language-selector');
         const activeDocs = document.getElementById('active-docs');
-        const contextDisplay = document.getElementById('context-display');
+        const keywordsDisplay = document.getElementById('keywords-display');
         
         // App state
         let currentContext = {
-            activeDocument: "www.crossbar-inc.com",
-            lastTopic: "CROSSBAR products",
+            activeDocument: "arXiv:2307.12874",
+            lastTopic: "Quantum-Resistant Algorithms",
             conversationHistory: [],
-            lastResponseType: null
+            lastResponseType: null,
+            documents: {
+                "arXiv:2307.12874": {
+                    type: "research_paper",
+                    content: "This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms for resource-constrained hardware wallets. We benchmark CRYSTALS-Dilithium, Falcon, and SPHINCS+ on ARM Cortex-M4 microcontrollers, analyzing performance, memory footprint, and power consumption. Our results demonstrate that lattice-based schemes (particularly CRYSTALS-Dilithium) offer the optimal balance between security against quantum attacks and computational efficiency, with signature times under 2.5ms and verification under 1ms. We propose hardware-accelerated implementations that maintain battery life while enhancing security.",
+                    keywords: {
+                        "quantum-resistant": {count: 28, sections: ['1.1', '3.1', '4.2']},
+                        "lattice cryptography": {count: 22, sections: ['2.3', '3.4']},
+                        "hardware wallets": {count: 42, sections: ['1.0', '3.4', '5.1']},
+                        "cryptographic protocols": {count: 18, sections: ['2.3', '4.2']}
+                    }
+                },
+                "CROSSBAR Security Whitepaper": {
+                    type: "whitepaper",
+                    content: "The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security, focusing on quantum-resistant cryptography, secure element implementation, and tamper-resistant design. Key features include: 1) EAL6+ certified secure element, 2) Multi-factor authentication combining biometrics and PIN, 3) Self-destruct mechanism upon tampering detection, 4) Hardware-accelerated cryptographic operations, 5) Open-source firmware verification.",
+                    keywords: {
+                        "secure element": {count: 15, sections: ['4.3', '5.2']},
+                        "biometric authentication": {count: 17, sections: ['3.2', '4.1']},
+                        "quantum-resistant": {count: 12, sections: ['2.1', '3.5']},
+                        "tamper resistance": {count: 19, sections: ['4.2', '6.1']}
+                    }
+                },
+                "NIST Post-Quantum Report": {
+                    type: "report",
+                    content: "The NIST report on post-quantum cryptography standardization process evaluates candidate algorithms for standardization. The report focuses on four main categories: 1) Lattice-based cryptography (CRYSTALS-Kyber, CRYSTALS-Dilithium), 2) Hash-based signatures (SPHINCS+), 3) Code-based cryptography (Classic McEliece), and 4) Multivariate cryptography (Rainbow). The report provides detailed security analyses and implementation considerations for each algorithm.",
+                    keywords: {
+                        "NIST standardization": {count: 32, sections: ['1.0', '2.1']},
+                        "lattice-based": {count: 28, sections: ['3.1', '4.2']},
+                        "security analysis": {count: 21, sections: ['2.3', '5.1']},
+                        "implementation": {count: 18, sections: ['3.4', '4.2']}
+                    }
+                }
+            }
         };
         
         // Initialize event listeners
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
         
         uploadBtn.addEventListener('click', () => fileUpload.click());
@@ -762,8 +1076,29 @@
         companyInfoBtn.addEventListener('click', fetchCompanyInfo);
         fileUpload.addEventListener('change', handleFileUpload);
         
-        // Initialize with company website info
-        updateContextDisplay();
+        // Initialize with sample documents and conversation
+        window.onload = function() {
+            // Set keywords for active document
+            updateKeywordsDisplay();
+            
+            // Add document click handlers
+            document.querySelectorAll('.doc-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.doc-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                    currentContext.activeDocument = item.dataset.doc;
+                    currentContext.lastTopic = item.dataset.doc;
+                    updateContextDisplay();
+                    updateKeywordsDisplay();
+                    addMessage('bot', {
+                        text: `Now focusing on <strong>${item.dataset.doc}</strong>. Ask me anything about this document.`,
+                        type: 'status'
+                    });
+                });
+            });
+        };
         
         // Add new handler for rare concept action
         window.handleRareConceptAction = function(concepts) {
@@ -844,9 +1179,12 @@
                 // Update context display
                 updateContextDisplay();
                 
+                // Update keywords if document changed
+                updateKeywordsDisplay();
+                
                 // Scroll to bottom
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1000);
+            }, 1500);
         }
         
         function showTypingIndicator() {
@@ -854,11 +1192,11 @@
             typingDiv.className = 'message bot-message';
             typingDiv.innerHTML = `
                 <div class="message-content">
-                    <div class="pulse" style="display: flex; gap: 0.5rem; align-items: center;">
-                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
-                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
-                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
-                        <span>Audrey is thinking...</span>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <span>Analyzing document content...</span>
                     </div>
                 </div>
             `;
@@ -874,7 +1212,17 @@
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            if (sender === 'bot') {
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <strong>${content}</strong>
+                    </div>
+                    <div class="message-metadata">
+                        ${timeString}
+                    </div>
+                `;
+            } else {
+                // Bot message
                 messageDiv.innerHTML = `
                     <div class="message-content">
                         ${content.text}
@@ -894,35 +1242,25 @@
                     </div>
                 `;
                 
-                // Update the suggestion rendering in addMessage function
-                // In addMessage function, where suggestions are rendered:
+                // Add follow-up suggestions for document responses
                 if (content.type === 'document' && content.suggestions) {
-                messageDiv.innerHTML += `
-                    <div class="follow-up-suggestion">
-                    <div class="suggestion-title">Follow-up suggestions:</div>
-                    <div class="suggestion-list">
-                        ${content.suggestions.map(s => {
-                        if (typeof s === 'object' && s.isAction) {
-                            return `<div class="suggestion-item action-item" 
-                                    onclick="handleRareConceptAction(['${s.concepts.join("','")}'])">
-                            <i class="fas fa-file-upload"></i> ${s.text}
-                            </div>`;
-                        }
-                        return `<div class="suggestion-item" onclick="followUpSuggestion('${s}')">${s}</div>`;
-                        }).join('')}
-                    </div>
-                    </div>
-                `;
+                    messageDiv.innerHTML += `
+                        <div class="follow-up-suggestion">
+                            <div class="suggestion-title">Follow-up suggestions:</div>
+                            <div class="suggestion-list">
+                                ${content.suggestions.map(s => {
+                                    if (typeof s === 'object' && s.isAction) {
+                                        return `<div class="suggestion-item action-item" 
+                                                onclick="handleRareConceptAction(['${s.concepts.join("','")}'])">
+                                            <i class="fas fa-file-upload"></i> ${s.text}
+                                        </div>`;
+                                    }
+                                    return `<div class="suggestion-item" onclick="followUpSuggestion('${s}')">${s}</div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
                 }
-            } else {
-                messageDiv.innerHTML = `
-                    <div class="message-content">
-                        <strong>${content}</strong>
-                    </div>
-                    <div class="message-metadata">
-                        ${timeString}
-                    </div>
-                `;
             }
             
             chatMessages.appendChild(messageDiv);
@@ -951,12 +1289,49 @@
             
             setTimeout(() => {
                 // Add to active documents
-                addActiveDocument(file.name, 'file');
+                const docItem = document.createElement('div');
+                docItem.className = 'doc-item';
+                docItem.dataset.doc = file.name;
+                
+                docItem.innerHTML = `
+                    <div class="doc-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-name">${file.name}</div>
+                        <div class="doc-type">Document</div>
+                    </div>
+                `;
+                
+                docItem.addEventListener('click', () => {
+                    document.querySelectorAll('.doc-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    docItem.classList.add('active');
+                    currentContext.activeDocument = file.name;
+                    currentContext.lastTopic = file.name;
+                    updateContextDisplay();
+                    updateKeywordsDisplay();
+                    addMessage('bot', {
+                        text: `Now focusing on <strong>${file.name}</strong>. Ask me anything about this document.`,
+                        type: 'status'
+                    });
+                });
+                
+                activeDocs.appendChild(docItem);
+                
+                // Add to documents state with simulated content
+                currentContext.documents[file.name] = {
+                    type: "uploaded_file",
+                    content: `This is the processed content of ${file.name}. In a real implementation, this would be extracted from the uploaded document using OCR or text extraction.`,
+                    keywords: generateKeywordsForUploadedFile(file.name)
+                };
                 
                 // Set as active context
                 currentContext.activeDocument = file.name;
                 currentContext.lastTopic = file.name;
                 updateContextDisplay();
+                updateKeywordsDisplay();
                 
                 // Show success message
                 showUploadMessage(`✅ Document processed successfully! You can now ask questions about "${file.name}"`, true);
@@ -970,40 +1345,53 @@
             }, 2000);
         }
         
-        function addActiveDocument(name, type) {
-            const docItem = document.createElement('div');
-            docItem.className = 'doc-item';
-            docItem.dataset.doc = name;
+        function generateKeywordsForUploadedFile(filename) {
+            // Simulate keyword extraction based on filename
+            const commonKeywords = {
+                "security": {count: Math.floor(Math.random() * 20) + 5, sections: ['1.1', '2.3']},
+                "cryptography": {count: Math.floor(Math.random() * 15) + 5, sections: ['3.1']},
+                "implementation": {count: Math.floor(Math.random() * 10) + 3, sections: ['4.2']}
+            };
             
-            const icon = type === 'file' ? 'fa-file-pdf' : 'fa-globe';
-            const typeText = type === 'file' ? 'Document' : 'Website';
+            if (filename.toLowerCase().includes('quantum')) {
+                commonKeywords["quantum-resistant"] = {count: Math.floor(Math.random() * 25) + 10, sections: ['1.0', '3.4']};
+            }
             
-            docItem.innerHTML = `
-                <div class="doc-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div>
-                    <div>${name}</div>
-                    <small>${typeText}</small>
-                </div>
-            `;
+            if (filename.toLowerCase().includes('wallet')) {
+                commonKeywords["hardware wallet"] = {count: Math.floor(Math.random() * 30) + 15, sections: ['2.1', '5.1']};
+            }
             
-            // Add click handler to set active document
-            docItem.addEventListener('click', () => {
-                document.querySelectorAll('.doc-item').forEach(item => {
-                    item.classList.remove('active');
+            return commonKeywords;
+        }
+        
+        function updateKeywordsDisplay() {
+            const currentDoc = currentContext.documents[currentContext.activeDocument];
+            if (!currentDoc || !currentDoc.keywords) return;
+            
+            keywordsDisplay.innerHTML = '';
+            
+            for (const [keyword, data] of Object.entries(currentDoc.keywords)) {
+                const keywordItem = document.createElement('div');
+                keywordItem.className = 'keyword-item';
+                
+                keywordItem.innerHTML = `
+                    <div class="keyword-header">
+                        <div class="keyword-name">${keyword}</div>
+                        <div class="keyword-count">${data.count} mentions</div>
+                    </div>
+                    <div class="keyword-sections">
+                        <i class="fas fa-bookmark"></i> Sections: ${data.sections.join(', ')}
+                    </div>
+                `;
+                
+                // Add click handler to search for this keyword
+                keywordItem.addEventListener('click', () => {
+                    userInput.value = `Tell me about ${keyword} in ${currentContext.activeDocument}`;
+                    sendMessage();
                 });
-                docItem.classList.add('active');
-                currentContext.activeDocument = name;
-                currentContext.lastTopic = name;
-                updateContextDisplay();
-                addMessage('bot', {
-                    text: `Now focusing on <strong>${name}</strong>. Ask me anything about this document.`,
-                    type: 'status'
-                });
-            });
-            
-            activeDocs.appendChild(docItem);
+                
+                keywordsDisplay.appendChild(keywordItem);
+            }
         }
         
         function promptForLink() {
@@ -1020,31 +1408,61 @@
             
             setTimeout(() => {
                 // Add to active documents
-                const domain = new URL(url).hostname;
-                addActiveDocument(domain, 'link');
+                const docName = `arXiv:2307.12874`;
+                const docItem = document.createElement('div');
+                docItem.className = 'doc-item';
+                docItem.dataset.doc = docName;
+                
+                docItem.innerHTML = `
+                    <div class="doc-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-name">${docName}</div>
+                        <div class="doc-type">Website</div>
+                    </div>
+                `;
+                
+                docItem.addEventListener('click', () => {
+                    document.querySelectorAll('.doc-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    docItem.classList.add('active');
+                    currentContext.activeDocument = docName;
+                    currentContext.lastTopic = "Quantum-Resistant Algorithms";
+                    updateContextDisplay();
+                    updateKeywordsDisplay();
+                    addMessage('bot', {
+                        text: `Now focusing on <strong>${docName}</strong>. Ask me anything about this document.`,
+                        type: 'status'
+                    });
+                });
+                
+                activeDocs.appendChild(docItem);
                 
                 // Set as active context
-                currentContext.activeDocument = url;
-                currentContext.lastTopic = domain;
+                currentContext.activeDocument = docName;
+                currentContext.lastTopic = "Quantum-Resistant Algorithms";
                 updateContextDisplay();
+                updateKeywordsDisplay();
                 
                 // Show success message
                 showUploadMessage(`✅ Successfully analyzed document from ${url}`, true);
                 addMessage('bot', {
-                    text: `I've processed the document from <a href="${url}" target="_blank" class="docs-link">${url}</a>. Ask me questions about its content.`,
+                    text: `I've processed the document <a href="${url}" target="_blank" class="docs-link">${docName}</a>. Ask me questions about its content.`,
                     type: 'status'
                 });
             }, 2500);
         }
         
         function fetchCompanyInfo() {
-            showUploadMessage(`⏳ Retrieving company information from CROSSBAR website...`, true);
+            showUploadMessage(`⏳ Retrieving company information...`, true);
             
             setTimeout(() => {
                 // Simulated company data
                 const companyInfo = {
                     name: "CROSSBAR Inc.",
-                    founded: "2020",
+                    founded: "2018",
                     headquarters: "San Francisco, CA",
                     ceo: "Alex Morgan",
                     contact: "contact@crossbar-inc.com",
@@ -1061,7 +1479,7 @@
                         <p><strong>Contact:</strong> <a href="mailto:${companyInfo.contact}" class="docs-link">${companyInfo.contact}</a></p>
                         <p><strong>Website:</strong> <a href="${companyInfo.website}" target="_blank" class="docs-link">${companyInfo.website}</a></p>
                     </div>
-                    <p style="margin-top: 0.8rem;">For more details, visit our <a href="https://www.crossbar-inc.com/company/contact/" target="_blank" class="docs-link">contact page</a>.</p>
+                    <p style="margin-top: 0.8rem;">For more details, visit our <a href="${companyInfo.website}" target="_blank" class="docs-link">website</a>.</p>
                 `;
                 
                 addMessage('bot', {
@@ -1070,7 +1488,7 @@
                 });
                 
                 // Update context
-                currentContext.lastTopic = "CROSSBAR company information";
+                currentContext.lastTopic = "Company information";
                 updateContextDisplay();
             }, 1500);
         }
@@ -1081,33 +1499,33 @@
             msgDiv.textContent = text;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Remove after delay
+            setTimeout(() => {
+                if (msgDiv.parentNode) {
+                    chatMessages.removeChild(msgDiv);
+                }
+            }, 5000);
         }
         
         function generateResponse(query) {
-            const lang = languageSelector.value;
             const isFollowUp = currentContext.conversationHistory.length > 1 && 
                               (query.toLowerCase().includes('it') || 
                                query.toLowerCase().includes('that') || 
                                query.length < 20);
             
-            // Handle follow-up questions based on last response
-            if (isFollowUp && currentContext.lastResponseType) {
-                switch(currentContext.lastResponseType) {
-                    case 'document':
-                        return documentQuestionResponse(query, currentContext.activeDocument, true);
-                    case 'crypto':
-                        return cryptoResponse(query, true);
-                    case 'crossbar':
-                        return crossbarResponse(query, true);
-                    default:
-                        // Continue to normal processing
-                }
-            }
-            
             // Handle document-specific questions
-            if (currentContext.activeDocument) {
+            if (currentContext.activeDocument && currentContext.documents[currentContext.activeDocument]) {
                 if (query.toLowerCase().includes('summary') || query.toLowerCase().includes('summarize')) {
                     return documentSummaryResponse(currentContext.activeDocument);
+                }
+                
+                if (query.toLowerCase().includes('abstract')) {
+                    return documentAbstractResponse(currentContext.activeDocument);
+                }
+                
+                if (query.toLowerCase().includes('conclusion')) {
+                    return documentConclusionResponse(currentContext.activeDocument);
                 }
                 
                 if (query.toLowerCase().includes('key feature') || 
@@ -1116,49 +1534,34 @@
                     return documentKeyFeaturesResponse(currentContext.activeDocument);
                 }
                 
-                if (currentContext.activeDocument.includes('crossbar-inc.com')) {
-                    return companyInfoResponse(query);
-                }
-                
                 // General document question
-                return documentQuestionResponse(query, currentContext.activeDocument);
-            }
-            
-            // Handle general CROSSBAR questions
-            if (query.toLowerCase().includes('crossbar')) {
-                return crossbarResponse(query);
-            }
-            
-            // Handle crypto wallet questions
-            if (query.toLowerCase().includes('wallet') || 
-                query.toLowerCase().includes('crypto') ||
-                query.toLowerCase().includes('blockchain') ||
-                query.toLowerCase().includes('quantum')) {
-                return cryptoResponse(query);
+                return documentQuestionResponse(query, currentContext.activeDocument, isFollowUp);
             }
             
             // Default response
             return {
-                text: `🔍 I specialize in CROSSBAR products and crypto wallet security. ` +
-                      `Please ask questions related to these topics, or upload a document to analyze.`,
+                text: `🔍 I specialize in technical document analysis. ` +
+                      `Please ask questions related to document content, or upload a document to analyze.`,
                 type: 'default'
             };
         }
         
         function documentSummaryResponse(document) {
+            const docData = currentContext.documents[document];
             let response = '';
             
             if (document.includes('arxiv')) {
                 response = `
-                    <strong>Document Summary:</strong>
-                    <p>The paper "Quantum-Resistant Cryptographic Algorithms for Hardware Wallets" discusses:</p>
+                    <strong>Document Summary: Quantum-Resistant Cryptographic Algorithms</strong>
+                    <p>${docData.content.substring(0, 300)}...</p>
+                    
+                    <p><strong>Key Findings:</strong></p>
                     <ul>
-                        <li>Evaluation of post-quantum signature schemes (CRYSTALS-Dilithium, Falcon, SPHINCS+)</li>
-                        <li>Performance benchmarks on embedded hardware</li>
-                        <li>Security analysis against quantum attacks</li>
-                        <li>Implementation recommendations for hardware wallets</li>
+                        <li>Lattice-based cryptography offers optimal performance-security tradeoffs</li>
+                        <li>CRYSTALS-Dilithium showed 40% better performance than traditional ECC</li>
+                        <li>Recommended for next-gen hardware wallets</li>
                     </ul>
-                    <p>The authors conclude that lattice-based schemes offer the best balance of security and performance for future hardware wallets.</p>
+                    
                     <p><a href="https://arxiv.org/pdf/2307.12874" target="_blank" class="docs-link">View full paper</a></p>
                 `;
             } else {
@@ -1166,11 +1569,7 @@
                     <strong>Document Summary:</strong>
                     <p>Based on my analysis of ${document}, the key points are:</p>
                     <ul>
-                        <li>Hardware wallet security architecture</li>
-                        <li>Multi-signature transaction workflows</li>
-                        <li>Secure element technology specifications</li>
-                        <li>Implementation of quantum-resistant algorithms</li>
-                        <li>Compliance with FIPS 140-3 standards</li>
+                        ${Object.keys(docData.keywords).slice(0, 5).map(k => `<li>${k}</li>`).join('')}
                     </ul>
                     <p>Would you like more details on any specific section?</p>
                 `;
@@ -1180,25 +1579,22 @@
                 text: response,
                 type: 'document',
                 suggestions: [
-                    'Key features?',
-                    'Security recommendations?',
-                    'Performance metrics?',
-                    'Implementation challenges?'
+                    'Show me the abstract?',
+                    'What are the key features?',
+                    'Explain the security recommendations',
+                    'What are the performance metrics?'
                 ]
             };
         }
         
-        function documentKeyFeaturesResponse(document) {
+        function documentAbstractResponse(document) {
+            const docData = currentContext.documents[document];
             const response = `
-                <strong>Key Features from ${document}:</strong>
-                <div style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
-                    <p>1. <strong>Advanced Secure Element:</strong> Military-grade EAL6+ certified chip</p>
-                    <p>2. <strong>Quantum-Resistant Algorithms:</strong> CRYSTALS-Dilithium implementation</p>
-                    <p>3. <strong>Multi-Party Computation:</strong> Distributed key generation for enhanced security</p>
-                    <p>4. <strong>Biometric Authentication:</strong> Integrated fingerprint scanner</p>
-                    <p>5. <strong>Cross-Chain Support:</strong> Compatible with 50+ blockchain networks</p>
+                <strong>Abstract:</strong>
+                <div style="margin-top: 0.8rem; padding: 1rem; background: #f8f8f8; border-radius: 8px; font-style: italic;">
+                    <p>"${docData.content.substring(0, 500)}"</p>
                 </div>
-                <p class="translation-option" onclick="translateResponse(this, '${languageSelector.value}')">
+                <p class="translation-option" style="margin-top: 10px; display: inline-block; color: var(--primary); cursor: pointer;">
                     <i class="fas fa-language"></i> Translate to ${getLanguageName(languageSelector.value)}
                 </p>
             `;
@@ -1207,62 +1603,84 @@
                 text: response,
                 type: 'document',
                 suggestions: [
-                    'How does biometric auth work?',
-                    'Quantum-resistant details?',
-                    'Cross-chain compatibility?',
-                    'Performance benchmarks?'
+                    'What is the main contribution?',
+                    'Explain the methodology',
+                    'Show conclusion',
+                    'Key findings?'
                 ]
             };
         }
         
-        // Add this helper function to analyze document keywords
-        function extractKeywordsFromDocument(documentName) {
-        // This would be replaced with actual RAG analysis in production
-        // For simulation, we'll return predefined keywords based on document
-        if (documentName.includes('arxiv')) {
+        function documentConclusionResponse(document) {
+            const docData = currentContext.documents[document];
+            const response = `
+                <strong>Conclusion:</strong>
+                <div style="margin-top: 0.8rem; padding: 1rem; background: #f8f8f8; border-radius: 8px;">
+                    <p>${docData.content.substring(0, 300)}...</p>
+                    
+                    <ul>
+                        <li>Lattice cryptography achieves optimal balance between security and performance</li>
+                        <li>Hardware acceleration reduces signature times by 65% with minimal power impact</li>
+                        <li>Multi-party computation enhances security for high-value transactions</li>
+                        <li>Implementation requires careful consideration of memory constraints</li>
+                    </ul>
+                </div>
+            `;
+            
             return {
-            'lattice-based cryptography': {count: 15, sections: ['3.2', '4.1', '5.3']},
-            'CRYSTALS-Dilithium': {count: 25, sections: ['4.2', '5.1']},
-            'post-quantum': {count: 32, sections: ['1.1', '2.3', '4.1']},
-            'embedded devices': {count: 18, sections: ['3.1', '5.2']},
-            'multi-party computation': {count: 3, sections: ['2.1']},
-            'SPHINCS+': {count: 12, sections: ['4.3']},
-            'zero-knowledge proofs': {count: 1, sections: ['5.4']}
+                text: response,
+                type: 'document',
+                suggestions: [
+                    'What are the limitations?',
+                    'Future research directions?',
+                    'How does this compare to traditional methods?',
+                    'Practical implementation recommendations?'
+                ]
             };
         }
-        return {
-            'secure element': {count: 22, sections: ['2.1', '3.2']},
-            'biometric auth': {count: 15, sections: ['4.3']},
-            'quantum-resistant': {count: 28, sections: ['1.1', '3.1']}
-        };
+        
+        function documentKeyFeaturesResponse(document) {
+            const docData = currentContext.documents[document];
+            const response = `
+                <strong>Key Features:</strong>
+                <div style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
+                    ${Object.keys(docData.keywords).slice(0, 5).map((k, i) => 
+                        `<p>${i+1}. <strong>${k}:</strong> Mentioned ${docData.keywords[k].count} times in sections ${docData.keywords[k].sections.join(', ')}</p>`
+                    ).join('')}
+                </div>
+                <p class="translation-option" style="margin-top: 10px; display: inline-block; color: var(--primary); cursor: pointer;">
+                    <i class="fas fa-language"></i> Translate to ${getLanguageName(languageSelector.value)}
+                </p>
+            `;
+            
+            return {
+                text: response,
+                type: 'document',
+                suggestions: [
+                    'How does quantum resistance work?',
+                    'Explain secure key storage',
+                    'Performance benchmarks?',
+                    'Compatibility details?'
+                ]
+            };
         }
 
         function documentQuestionResponse(query, document, isFollowUp = false) {
+            const docData = currentContext.documents[document];
             let answer = '';
             
             if (isFollowUp) {
                 // Handle follow-up based on previous document context
                 if (query.toLowerCase().includes('quantum') || query.toLowerCase().includes('crypto')) {
                     answer = `
-                        <p>Following up on quantum-resistant signatures:</p>
-                        <p>Post-quantum signature schemes are cryptographic algorithms designed to be secure against attacks by quantum computers. The three main approaches are:</p>
-                        <ol>
-                            <li><strong>Lattice-based (e.g., CRYSTALS-Dilithium):</strong> Based on the hardness of lattice problems, offering a balance of security and performance.</li>
-                            <li><strong>Hash-based (e.g., SPHINCS+):</strong> Rely on cryptographic hash functions, providing strong security guarantees but larger signature sizes.</li>
-                            <li><strong>Multivariate (e.g., Rainbow):</strong> Based on the difficulty of solving systems of multivariate polynomial equations.</li>
-                        </ol>
-                        <p>CROSSBAR implements lattice-based schemes as they provide the best performance-security tradeoff for embedded devices.</p>
+                        <p>Following up on quantum-resistant cryptography:</p>
+                        <p>${docData.content.substring(0, 300)}...</p>
                     `;
                 } else {
-                    answer = `
-                        <p>Building on our previous discussion about ${currentContext.lastTopic}:</p>
-                        <p>${getDocumentAnswer(query, document)}</p>
-                    `;
+                    answer = getDocumentAnswer(query, document);
                 }
             } else {
-                answer = `
-                    <p>${getDocumentAnswer(query, document)}</p>
-                `;
+                answer = getDocumentAnswer(query, document);
             }
             
             const response = `
@@ -1272,13 +1690,13 @@
             `;
             
             // Get keywords from document
-            const keywords = extractKeywordsFromDocument(document);
+            const keywords = docData.keywords;
             
             // Analyze query for relevant keywords
             const queryKeywords = [];
             for (const [keyword, data] of Object.entries(keywords)) {
                 if (query.toLowerCase().includes(keyword.toLowerCase())) {
-                queryKeywords.push({keyword, ...data});
+                    queryKeywords.push({keyword, ...data});
                 }
             }
             
@@ -1292,11 +1710,10 @@
             };
         }
 
-        // New function to generate context-aware suggestions
-            function generateSmartSuggestions(query, allKeywords, matchedKeywords) {
+        function generateSmartSuggestions(query, allKeywords, matchedKeywords) {
             const baseSuggestions = [
-                'How does this compare to traditional schemes?',
-                'Implementation in CROSSBAR?',
+                'How does this compare to traditional methods?',
+                'Implementation challenges?',
                 'Performance impact?',
                 'Security tradeoffs?'
             ];
@@ -1305,7 +1722,7 @@
             const rareConcepts = [];
             for (const [keyword, data] of Object.entries(allKeywords)) {
                 if (data.count <= 2 && query.toLowerCase().includes(keyword.toLowerCase())) {
-                rareConcepts.push(keyword);
+                    rareConcepts.push(keyword);
                 }
             }
             
@@ -1320,68 +1737,50 @@
             // Add special suggestion for rare concepts
             if (rareConcepts.length > 0) {
                 suggestions.push({
-                text: `The ${rareConcepts.join(', ')} ${rareConcepts.length > 1 ? 'are' : 'is'} mentioned briefly. Upload specialized documents?`,
-                isAction: true,
-                concepts: rareConcepts
+                    text: `The ${rareConcepts.join(', ')} ${rareConcepts.length > 1 ? 'are' : 'is'} mentioned briefly. Upload specialized documents?`,
+                    isAction: true,
+                    concepts: rareConcepts
                 });
             }
             
             return suggestions;
         }
         
-        function getDocumentAnswer(query, document) {
-            if (query.toLowerCase().includes('post-quantum') || query.toLowerCase().includes('quantum-resistant')) {
-                return `Post-quantum signature schemes are cryptographic algorithms designed to be secure against attacks by quantum computers. The paper discusses three main candidates for hardware wallet implementation: lattice-based CRYSTALS-Dilithium, hash-based SPHINCS+, and Falcon. CRYSTALS-Dilithium offers the best balance of security and performance for embedded devices like CROSSBAR wallets.`;
+        async function getAnswer() {
+            const query = document.getElementById("queryBox").value;
+            if (!query) return alert("Please enter a question.");
+
+            const responseBox = document.getElementById("response");
+            responseBox.innerHTML = "Processing...";
+            
+            try {
+                const response = await fetch("http://127.0.0.1:5000/ask", { 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                responseBox.innerHTML = `<strong>AI Response:</strong> ${data.answer}`;
+            } catch (error) {
+                responseBox.innerHTML = "Error retrieving answer.";
             }
-            
-            const answers = {
-                "summary": `The document provides a comprehensive overview of hardware wallet security, focusing on quantum-resistant algorithms and secure element implementations.`,
-                "key feature": `The most significant innovation in the document is the implementation of lattice-based cryptography for quantum resistance without compromising performance.`,
-                "quantum": `The paper discusses three quantum-resistant algorithms suitable for hardware wallets: CRYSTALS-Dilithium, Falcon, and SPHINCS+.`,
-                "security": `Security measures include multi-factor authentication, tamper-resistant hardware, and air-gapped transaction signing.`
-            };
-            
-            for (const [key, answer] of Object.entries(answers)) {
-                if (query.toLowerCase().includes(key)) {
-                    return answer;
-                }
-            }
-            
-            return `Based on my analysis of ${document}, ${getRandomAnswer()}`;
         }
-        
+
         function updateContextDisplay() {
-            let contextHTML = '';
-            
-            if (currentContext.activeDocument) {
-                contextHTML = `
+            const contextDisplay = document.querySelector('.context-display');
+            if (contextDisplay) {
+                contextDisplay.innerHTML = `
                     <p><i class="fas fa-file-alt"></i> Active document: <strong>${currentContext.activeDocument}</strong></p>
                     <p><i class="fas fa-comment"></i> Last topic: <strong>${currentContext.lastTopic}</strong></p>
                     <div class="context-indicator">
                         <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
                     </div>
                 `;
-            } else {
-                contextHTML = `
-                    <p><i class="fas fa-info-circle"></i> No active document context</p>
-                    <p><i class="fas fa-comment"></i> Last topic: <strong>${currentContext.lastTopic || 'None'}</strong></p>
-                `;
             }
-            
-            contextDisplay.innerHTML = contextHTML;
         }
         
         // Helper functions
-        function getRandomAnswer() {
-            const answers = [
-                "the document emphasizes the importance of secure key management in hardware wallets.",
-                "a key finding is that lattice-based cryptography offers the best performance-security tradeoff for embedded devices.",
-                "the research demonstrates a 40% improvement in signature speed compared to traditional methods.",
-                "the authors recommend using multi-party computation for high-value transactions."
-            ];
-            return answers[Math.floor(Math.random() * answers.length)];
-        }
-        
         function getLanguageName(code) {
             const languages = {
                 'en': 'English',
@@ -1412,49 +1811,95 @@
             userInput.value = question;
             sendMessage();
         };
-        
-        function resetConversation() {
-            if (confirm("Are you sure you want to reset the conversation? This will clear the chat history.")) {
-                chatMessages.innerHTML = `
-                    <div class="message bot-message">
-                        <div class="message-content">
-                            <strong>Hello, I'm Audrey, your CROSSBAR AI Assistant.</strong>
-                            <p>Our conversation has been reset. How can I help you today?</p>
-                        </div>
-                        <div class="message-metadata">
-                            Just now
-                        </div>
-                    </div>
-                `;
-                currentContext = {
-                    activeDocument: "www.crossbar-inc.com",
-                    lastTopic: "CROSSBAR products",
-                    conversationHistory: [],
-                    lastResponseType: null
+    </script>
+
+    <!-- Backend integration script -->
+    <script>
+        // This would be replaced with actual API calls in production
+        class AIService {
+            constructor() {
+                // Simulated FAISS index and embeddings
+                this.documents = [
+                    "Crypto wallets securely store private keys.",
+                    "Cold wallets are offline and provide enhanced security.",
+                    "Our company provides enterprise-grade wallet solutions."
+                ];
+                
+                // Simulated embedding model
+                this.embeddingModel = {
+                    encode: function(text) {
+                        // In a real implementation, this would call the actual embedding model
+                        // For demo purposes, we'll return a random vector
+                        return Array(384).fill(0).map(() => Math.random());
+                    }
                 };
-                updateContextDisplay();
+                
+                // Simulated FAISS index
+                this.faissIndex = {
+                    search: function(vectors, k) {
+                        // Simulate nearest neighbor search
+                        return {
+                            distances: [Array(k).fill(0.1)],
+                            indices: [Array(k).fill(0).map((_, i) => i % this.documents.length)]
+                        };
+                    },
+                    ntotal: this.documents.length
+                };
+                
+                // Simulated LLM
+                this.llm = {
+                    generate: function(prompt) {
+                        // In a real implementation, this would call the actual LLM
+                        return "This is a simulated response based on the query: " + prompt;
+                    }
+                };
+            }
+            
+            async retrieveDocuments(query, k=3) {
+                // Simulate document retrieval
+                const queryVector = this.embeddingModel.encode(query);
+                const { distances, indices } = this.faissIndex.search([queryVector], k);
+                
+                return indices[0].map(idx => ({
+                    text: this.documents[idx],
+                    distance: distances[0][idx]
+                }));
+            }
+            
+            async generateAnswer(query, context) {
+                // Simulate RAG response generation
+                const retrieved = await this.retrieveDocuments(query);
+                const contextStr = context ? `Context: ${context}\n\n` : '';
+                const prompt = `${contextStr}Question: ${query}\n\nRelevant documents:\n${retrieved.map(d => `- ${d.text}`).join('\n')}`;
+                
+                return this.llm.generate(prompt);
+            }
+            
+            async computeSimilarity(query, document) {
+                // Simulate similarity computation
+                const queryVector = this.embeddingModel.encode(query);
+                const docVector = this.embeddingModel.encode(document);
+                
+                // Calculate cosine similarity
+                const dotProduct = queryVector.reduce((sum, val, i) => sum + val * docVector[i], 0);
+                const queryMagnitude = Math.sqrt(queryVector.reduce((sum, val) => sum + val * val, 0));
+                const docMagnitude = Math.sqrt(docVector.reduce((sum, val) => sum + val * val, 0));
+                const cosineSim = dotProduct / (queryMagnitude * docMagnitude);
+                
+                // Calculate Euclidean distance
+                const euclideanDist = Math.sqrt(
+                    queryVector.reduce((sum, val, i) => sum + Math.pow(val - docVector[i], 2), 0)
+                );
+                
+                return {
+                    cosine: cosineSim,
+                    euclidean: euclideanDist
+                };
             }
         }
         
-        // Initialize with an example conversation
-        setTimeout(() => {
-            addMessage('user', 'What are post-quantum signature schemes?');
-            setTimeout(() => {
-                addMessage('bot', {
-                    text: documentQuestionResponse('What are post-quantum signature schemes?', 'arXiv Paper').text,
-                    type: 'document',
-                    suggestions: [
-                        'How do they differ from traditional schemes?',
-                        'Implementation in CROSSBAR?',
-                        'Performance impact?',
-                        'Security tradeoffs?'
-                    ]
-                });
-                currentContext.lastTopic = "post-quantum signature schemes";
-                currentContext.lastResponseType = 'document';
-                updateContextDisplay();
-            }, 500);
-        }, 2000);
+        // Initialize the AI service
+        const aiService = new AIService();
     </script>
 </body>
 </html>
