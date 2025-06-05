@@ -3,42 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CROSSBAR Developer Portal | Audrey AI Assistant</title>
+    <title>CROSSBAR | Audrey AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #FF8C00;  /* Warm orange (fatigue-friendly) */
+            --primary: #FF8C00;  /* Warm orange */
             --primary-light: #FFA726;
             --primary-dark: #EF6C00;
             --text: #333333;
-            --bg: #FFF8F0;       /* Soft yellow-orange background */
+            --bg: #FFF8F0;       /* Soft yellow-orange */
             --card-bg: #FFFFFF;
             --border: #E0E0E0;
             --success: #4CAF50;
             --error: #F44336;
+            --info: #2196F3;
+            --doc-purple: #7E57C2;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            line-height: 1.5;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         
+        /* Header styles */
         header {
             background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             font-weight: 700;
             font-size: 1.5rem;
             color: var(--primary-dark);
+        }
+        
+        .logo-icon {
+            background: var(--primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         nav ul {
@@ -51,84 +79,228 @@
             text-decoration: none;
             color: var(--text);
             font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         
         nav a:hover {
             color: var(--primary);
         }
         
-        .chat-container {
-            max-width: 900px;
-            margin: 2rem auto;
+        /* Main chat container */
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+        
+        .knowledge-panel {
+            width: 300px;
             background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary-dark);
+        }
+        
+        .active-docs {
+            background: #f5f5f5;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .doc-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+            gap: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .doc-item:hover {
+            background: rgba(255, 140, 0, 0.05);
+        }
+        
+        .doc-item.active {
+            background: rgba(255, 140, 0, 0.1);
+            border-left: 3px solid var(--primary);
+            padding-left: 0.5rem;
+        }
+        
+        .doc-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--doc-purple);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-container {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .chat-header {
-            background: var(--primary);
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
             color: white;
-            padding: 1rem;
-            font-weight: 600;
+            padding: 1.2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        
+        .assistant-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .avatar {
+            background-color: white;
+            color: var(--primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
         
         .language-selector {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
         
         .chat-messages {
-            height: 60vh;
+            flex: 1;
             overflow-y: auto;
             padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
         
         .message {
-            margin-bottom: 1.5rem;
+            max-width: 85%;
+            padding: 1.2rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
         }
         
-        .bot-message .avatar {
-            background-color: var(--primary-light);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 0.5rem;
-            font-weight: bold;
+        .bot-message {
+            background: #f8f8f8;
+            align-self: flex-start;
+            border-top-left-radius: 4px;
         }
         
         .user-message {
-            text-align: right;
+            background: var(--primary-light);
+            color: white;
+            align-self: flex-end;
+            border-top-right-radius: 4px;
         }
         
         .upload-message {
-            background: #f5f5f5;
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            background: #f0f7ff;
+            border-left: 4px solid var(--info);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
         }
         
         .upload-message.success {
-            border-left: 3px solid var(--success);
+            border-left-color: var(--success);
         }
         
         .upload-message.error {
-            border-left: 3px solid var(--error);
+            border-left-color: var(--error);
+        }
+        
+        .message-content {
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-metadata {
+            font-size: 0.8rem;
+            color: #777;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+        }
+        
+        .feedback {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .feedback-btn {
+            background: rgba(0,0,0,0.05);
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: background 0.2s;
+        }
+        
+        .feedback-btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .docs-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .translation-option {
+            font-size: 0.85rem;
+            color: var(--primary);
+            cursor: pointer;
+            margin-top: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         
         .user-input-area {
-            padding: 1rem;
+            padding: 1.2rem;
             border-top: 1px solid var(--border);
             background: var(--card-bg);
         }
@@ -136,46 +308,64 @@
         .input-options {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
         }
         
-        .input-options button {
+        .input-btn {
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.8rem;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
         }
         
-        .input-options button:hover {
+        .input-btn:hover {
             background: var(--primary-light);
             color: white;
+            border-color: var(--primary-light);
         }
         
         .user-input {
             display: flex;
+            gap: 0.8rem;
         }
         
         .user-input input {
             flex: 1;
-            padding: 0.75rem;
+            padding: 0.9rem 1.2rem;
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 1rem;
+            transition: border-color 0.2s;
         }
         
-        .user-input button {
+        .user-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.2);
+        }
+        
+        .send-btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0 1.5rem;
-            margin-left: 0.5rem;
-            border-radius: 4px;
+            padding: 0 1.8rem;
+            border-radius: 8px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: background 0.2s;
         }
         
-        .user-input button:hover {
+        .send-btn:hover {
             background: var(--primary-dark);
         }
         
@@ -197,104 +387,258 @@
             cursor: pointer;
         }
         
+        /* Footer */
         footer {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-            font-size: 0.875rem;
+            background: var(--card-bg);
             border-top: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-        
-        .feedback {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-        }
-        
-        .feedback button {
-            background: none;
-            border: none;
-            cursor: pointer;
+            padding: 1.5rem;
+            text-align: center;
             color: #666;
+            font-size: 0.9rem;
+            margin-top: auto;
         }
         
-        .docs-link {
-            color: var(--primary);
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text);
             text-decoration: none;
+            transition: color 0.2s;
         }
         
-        .translation-option {
-            font-size: 0.8rem;
+        .footer-links a:hover {
             color: var(--primary);
-            cursor: pointer;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .knowledge-panel {
+                width: 100%;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .user-input {
+                flex-direction: column;
+            }
+            
+            .send-btn {
+                width: 100%;
+                padding: 0.8rem;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .context-indicator {
+            font-size: 0.8rem;
+            color: #666;
             margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .follow-up-suggestion {
+            background: #f0f7ff;
+            border-left: 3px solid var(--info);
+            padding: 0.8rem;
+            margin-top: 0.8rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .suggestion-title {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        
+        .suggestion-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .suggestion-item {
+            background: rgba(33, 150, 243, 0.1);
+            color: var(--info);
+            border-radius: 16px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background: var(--info);
+            color: white;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">CROSSBAR</div>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span>CROSSBAR</span>
+        </div>
         <nav>
             <ul>
-                <li><a href="#">News</a></li>
-                <li><a href="#">Developer Portal</a></li>
-                <li><a href="#">Ask Audrey</a></li>
-                <li><a href="#">Dev Tracks</a></li>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">GitHub</a></li>
-                <li><a href="#">Discord</a></li>
+                <li><a href="#"><i class="fas fa-newspaper"></i> News</a></li>
+                <li><a href="#"><i class="fas fa-code"></i> Developer Portal</a></li>
+                <li><a href="#" class="active"><i class="fas fa-robot"></i> Ask Audrey</a></li>
+                <li><a href="#"><i class="fas fa-road"></i> Dev Tracks</a></li>
+                <li><a href="#"><i class="fas fa-book"></i> Documentation</a></li>
+                <li><a href="#"><i class="fab fa-github"></i> GitHub</a></li>
+                <li><a href="#"><i class="fab fa-discord"></i> Discord</a></li>
             </ul>
         </nav>
     </header>
     
-    <div class="chat-container">
-        <div class="chat-header">
-            Audrey AI Assistant
-            <select class="language-selector">
-                <option value="auto">Auto-detect</option>
-                <option value="en">English</option>
-                <option value="zh">中文 (Chinese)</option>
-                <option value="es">Español (Spanish)</option>
-                <option value="fr">Français (French)</option>
-                <option value="de">Deutsch (German)</option>
-                <option value="ja">日本語 (Japanese)</option>
-            </select>
-        </div>
-        
-        <div class="chat-messages" id="chat-messages">
-            <div class="message bot-message">
-                <div class="avatar">A</div>
-                <strong>Hello, I'm Audrey, the CROSSBAR AI Assistant.</strong><br>
-                I specialize in CROSSBAR products and crypto wallet security.<br>
-                <em>You can:</em>
-                <ul>
-                    <li>Ask about CROSSBAR hardware/software</li>
-                    <li>Upload documents for analysis (PDF, TXT, DOCX)</li>
-                    <li>Chat in multiple languages</li>
-                </ul>
+    <div class="main-container">
+        <div class="knowledge-panel">
+            <div class="panel-header">
+                <i class="fas fa-lightbulb"></i>
+                <h3>Conversation Context</h3>
             </div>
-        </div>
-        
-        <div class="user-input-area">
-            <div class="input-options">
-                <button id="upload-btn">📁 Upload Document</button>
-                <button id="paste-link-btn">🔗 Paste Link</button>
-                <input type="file" id="file-upload" accept=".pdf,.txt,.docx">
+            <p>Audrey maintains context for follow-up questions. Current focus:</p>
+            <div id="context-display" style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
+                <p><i class="fas fa-info-circle"></i> No active context</p>
             </div>
             
-            <div class="user-input">
-                <input type="text" id="user-input" placeholder="Ask about CROSSBAR or upload crypto-related documents...">
-                <button id="send-btn">Send</button>
+            <div class="panel-header" style="margin-top: 1.5rem;">
+                <i class="fas fa-file-alt"></i>
+                <h3>Active Documents</h3>
+            </div>
+            <div class="active-docs" id="active-docs">
+                <div class="doc-item active" data-doc="company">
+                    <div class="doc-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div>
+                        <div>www.crossbar-inc.com</div>
+                        <small>Company website</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-header" style="margin-top: 1.5rem;">
+                <i class="fas fa-bolt"></i>
+                <h3>Quick Actions</h3>
+            </div>
+            <button class="input-btn" style="width: 100%; margin-top: 0.5rem;" onclick="resetConversation()">
+                <i class="fas fa-sync-alt"></i> Reset Conversation
+            </button>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="assistant-title">
+                    <div class="avatar">A</div>
+                    <div>
+                        <h2>Audrey AI Assistant</h2>
+                        <small>Specialized in CROSSBAR products and crypto security</small>
+                    </div>
+                </div>
+                <select class="language-selector" id="language-selector">
+                    <option value="auto">🌐 Auto-detect</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="zh">🇨🇳 中文 (Chinese)</option>
+                    <option value="es">🇪🇸 Español (Spanish)</option>
+                    <option value="fr">🇫🇷 Français (French)</option>
+                </select>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <strong>Hello, I'm Audrey, your CROSSBAR AI Assistant.</strong>
+                        <p>I specialize in CROSSBAR products and crypto wallet security. Here's what I can help with:</p>
+                        <ul>
+                            <li>Answer questions about CROSSBAR hardware and software</li>
+                            <li>Analyze documents (PDF, TXT, DOCX) using our RAG system</li>
+                            <li>Maintain context for follow-up questions</li>
+                            <li>Communicate in multiple languages</li>
+                        </ul>
+                        <p>Try asking about post-quantum signature schemes or upload a document!</p>
+                    </div>
+                    <div class="message-metadata">
+                        Just now
+                    </div>
+                </div>
+            </div>
+            
+            <div class="user-input-area">
+                <div class="input-options">
+                    <button class="input-btn" id="upload-btn">
+                        <i class="fas fa-file-upload"></i> Upload Document
+                    </button>
+                    <button class="input-btn" id="paste-link-btn">
+                        <i class="fas fa-link"></i> Paste Link
+                    </button>
+                    <button class="input-btn" id="company-info-btn">
+                        <i class="fas fa-building"></i> Company Info
+                    </button>
+                    <input type="file" id="file-upload" accept=".pdf,.txt,.docx,.md">
+                </div>
+                
+                <div class="user-input">
+                    <input type="text" id="user-input" placeholder="Ask about post-quantum signature schemes or upload documents...">
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
     
     <footer>
-        © 2025 CROSSBAR Inc. All rights reserved.<br>
-        <a href="#">Legal</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a><br>
-        <small>"Audrey" is a proprietary AI for CROSSBAR developers.</small>
+        <div class="footer-links">
+            <a href="#">Legal</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms</a>
+            <a href="https://www.crossbar-inc.com/company/contact/" target="_blank">Contact</a>
+        </div>
+        <p>© 2025 CROSSBAR Inc. All rights reserved.</p>
+        <p><small>"Audrey" is a proprietary AI for CROSSBAR developers, powered by advanced RAG systems.</small></p>
     </footer>
 
     <script>
@@ -305,9 +649,20 @@
         const uploadBtn = document.getElementById('upload-btn');
         const fileUpload = document.getElementById('file-upload');
         const pasteLinkBtn = document.getElementById('paste-link-btn');
-        const languageSelector = document.querySelector('.language-selector');
+        const companyInfoBtn = document.getElementById('company-info-btn');
+        const languageSelector = document.getElementById('language-selector');
+        const activeDocs = document.getElementById('active-docs');
+        const contextDisplay = document.getElementById('context-display');
         
-        // Example conversation flow
+        // App state
+        let currentContext = {
+            activeDocument: "www.crossbar-inc.com",
+            lastTopic: "CROSSBAR products",
+            conversationHistory: [],
+            lastResponseType: null
+        };
+        
+        // Initialize event listeners
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
@@ -315,8 +670,11 @@
         
         uploadBtn.addEventListener('click', () => fileUpload.click());
         pasteLinkBtn.addEventListener('click', promptForLink);
-        
+        companyInfoBtn.addEventListener('click', fetchCompanyInfo);
         fileUpload.addEventListener('change', handleFileUpload);
+        
+        // Initialize with company website info
+        updateContextDisplay();
         
         function sendMessage() {
             const message = userInput.value.trim();
@@ -326,32 +684,98 @@
             addMessage('user', message);
             userInput.value = '';
             
-            // Simulate Audrey's response (in a real app, this would call your RAG backend)
+            // Update conversation history
+            currentContext.conversationHistory.push({ role: 'user', content: message });
+            
+            // Show typing indicator
+            const typingIndicator = showTypingIndicator();
+            
+            // Simulate processing delay
             setTimeout(() => {
+                // Remove typing indicator
+                chatMessages.removeChild(typingIndicator);
+                
+                // Generate response
                 const response = generateResponse(message);
                 addMessage('bot', response);
                 
+                // Update context with last response type
+                currentContext.lastResponseType = response.type;
+                currentContext.conversationHistory.push({ role: 'assistant', content: response.text });
+                
+                // Update context display
+                updateContextDisplay();
+                
                 // Scroll to bottom
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 500);
+            }, 1000);
+        }
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message';
+            typingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="pulse" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
+                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
+                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
+                        <span>Audrey is thinking...</span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingDiv;
         }
         
         function addMessage(sender, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
             
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
             if (sender === 'bot') {
                 messageDiv.innerHTML = `
-                    <div class="avatar">A</div>
-                    <strong>Audrey:</strong> ${content}
+                    <div class="message-content">
+                        ${content.text}
+                    </div>
+                    ${content.type !== 'status' ? `
                     <div class="feedback">
-                        Was this helpful? 
-                        <button onclick="rateResponse(this, true)">👍 Yes</button> 
-                        <button onclick="rateResponse(this, false)">👎 No</button>
+                        <button class="feedback-btn" onclick="rateResponse(this, true)">
+                            <i class="fas fa-thumbs-up"></i> Helpful
+                        </button>
+                        <button class="feedback-btn" onclick="rateResponse(this, false)">
+                            <i class="fas fa-thumbs-down"></i> Not helpful
+                        </button>
+                    </div>
+                    ` : ''}
+                    <div class="message-metadata">
+                        ${timeString}
                     </div>
                 `;
+                
+                // Add follow-up suggestions for document responses
+                if (content.type === 'document' && content.suggestions) {
+                    messageDiv.innerHTML += `
+                        <div class="follow-up-suggestion">
+                            <div class="suggestion-title">Follow-up suggestions:</div>
+                            <div class="suggestion-list">
+                                ${content.suggestions.map(s => `<div class="suggestion-item" onclick="followUpSuggestion('${s}')">${s}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
             } else {
-                messageDiv.innerHTML = `<strong>You:</strong> ${content}`;
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <strong>${content}</strong>
+                    </div>
+                    <div class="message-metadata">
+                        ${timeString}
+                    </div>
+                `;
             }
             
             chatMessages.appendChild(messageDiv);
@@ -363,33 +787,83 @@
             if (!file) return;
             
             // Validate file type
-            const validTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const validTypes = [
+                'application/pdf', 
+                'text/plain', 
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/msword'
+            ];
+            
             if (!validTypes.includes(file.type)) {
-                showUploadMessage(`❌ Unsupported file type: ${file.type}`, false);
+                showUploadMessage(`❌ Unsupported file type: ${file.name}`, false);
                 return;
             }
             
-            // Simulate upload processing (in real app, send to your RAG system)
-            showUploadMessage(`⏳ Processing "${file.name}"...`, true);
+            // Simulate upload processing
+            showUploadMessage(`⏳ Processing "${file.name}" using our RAG system...`, true);
             
             setTimeout(() => {
-                showUploadMessage(`✅ Successfully analyzed "${file.name}". Ask me questions about it!`, true);
+                // Add to active documents
+                addActiveDocument(file.name, 'file');
                 
-                // Example of extracted content (in real app, this would come from your RAG system)
-                const extractedContent = `Document "${file.name}" contains information about:
-                - Multi-signature wallet security
-                - Quantum-resistant algorithms
-                - CROSSBAR hardware specifications`;
+                // Set as active context
+                currentContext.activeDocument = file.name;
+                currentContext.lastTopic = file.name;
+                updateContextDisplay();
                 
-                addMessage('bot', `I've processed your document. Key topics detected:<br>${extractedContent}`);
+                // Show success message
+                showUploadMessage(`✅ Document processed successfully! You can now ask questions about "${file.name}"`, true);
+                addMessage('bot', {
+                    text: `I've processed your document <strong>${file.name}</strong>. You can now ask me questions about its content.`,
+                    type: 'status'
+                });
+                
+                // Clear file input
+                event.target.value = '';
             }, 2000);
         }
         
+        function addActiveDocument(name, type) {
+            const docItem = document.createElement('div');
+            docItem.className = 'doc-item';
+            docItem.dataset.doc = name;
+            
+            const icon = type === 'file' ? 'fa-file-pdf' : 'fa-globe';
+            const typeText = type === 'file' ? 'Document' : 'Website';
+            
+            docItem.innerHTML = `
+                <div class="doc-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div>
+                    <div>${name}</div>
+                    <small>${typeText}</small>
+                </div>
+            `;
+            
+            // Add click handler to set active document
+            docItem.addEventListener('click', () => {
+                document.querySelectorAll('.doc-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                docItem.classList.add('active');
+                currentContext.activeDocument = name;
+                currentContext.lastTopic = name;
+                updateContextDisplay();
+                addMessage('bot', {
+                    text: `Now focusing on <strong>${name}</strong>. Ask me anything about this document.`,
+                    type: 'status'
+                });
+            });
+            
+            activeDocs.appendChild(docItem);
+        }
+        
         function promptForLink() {
-            const url = prompt('Enter URL of document to analyze:');
+            const url = prompt('Enter URL of document to analyze:', 'https://arxiv.org/pdf/2307.12874');
             if (!url) return;
             
-            // Validate URL (basic check)
+            // Validate URL
             if (!url.startsWith('http')) {
                 showUploadMessage('❌ Please enter a valid URL starting with http:// or https://', false);
                 return;
@@ -397,11 +871,61 @@
             
             showUploadMessage(`⏳ Processing document from ${url}...`, true);
             
-            // Simulate processing (in real app, fetch and process the URL content)
             setTimeout(() => {
+                // Add to active documents
+                const domain = new URL(url).hostname;
+                addActiveDocument(domain, 'link');
+                
+                // Set as active context
+                currentContext.activeDocument = url;
+                currentContext.lastTopic = domain;
+                updateContextDisplay();
+                
+                // Show success message
                 showUploadMessage(`✅ Successfully analyzed document from ${url}`, true);
-                addMessage('bot', `I've processed the document from ${url}. Ask me questions about its content.`);
+                addMessage('bot', {
+                    text: `I've processed the document from <a href="${url}" target="_blank" class="docs-link">${url}</a>. Ask me questions about its content.`,
+                    type: 'status'
+                });
             }, 2500);
+        }
+        
+        function fetchCompanyInfo() {
+            showUploadMessage(`⏳ Retrieving company information from CROSSBAR website...`, true);
+            
+            setTimeout(() => {
+                // Simulated company data
+                const companyInfo = {
+                    name: "CROSSBAR Inc.",
+                    founded: "2020",
+                    headquarters: "San Francisco, CA",
+                    ceo: "Alex Morgan",
+                    contact: "contact@crossbar-inc.com",
+                    website: "https://www.crossbar-inc.com"
+                };
+                
+                const response = `
+                    <strong>Company Information:</strong>
+                    <div style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
+                        <p><strong>Name:</strong> ${companyInfo.name}</p>
+                        <p><strong>Founded:</strong> ${companyInfo.founded}</p>
+                        <p><strong>Headquarters:</strong> ${companyInfo.headquarters}</p>
+                        <p><strong>CEO:</strong> ${companyInfo.ceo}</p>
+                        <p><strong>Contact:</strong> <a href="mailto:${companyInfo.contact}" class="docs-link">${companyInfo.contact}</a></p>
+                        <p><strong>Website:</strong> <a href="${companyInfo.website}" target="_blank" class="docs-link">${companyInfo.website}</a></p>
+                    </div>
+                    <p style="margin-top: 0.8rem;">For more details, visit our <a href="https://www.crossbar-inc.com/company/contact/" target="_blank" class="docs-link">contact page</a>.</p>
+                `;
+                
+                addMessage('bot', {
+                    text: response,
+                    type: 'company'
+                });
+                
+                // Update context
+                currentContext.lastTopic = "CROSSBAR company information";
+                updateContextDisplay();
+            }, 1500);
         }
         
         function showUploadMessage(text, isSuccess) {
@@ -412,93 +936,235 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
-        // This would be replaced with actual RAG system calls in production
         function generateResponse(query) {
             const lang = languageSelector.value;
-            const isCryptoRelated = query.toLowerCase().includes('wallet') || 
-                                  query.toLowerCase().includes('crypto') ||
-                                  query.toLowerCase().includes('blockchain');
+            const isFollowUp = currentContext.conversationHistory.length > 1 && 
+                              (query.toLowerCase().includes('it') || 
+                               query.toLowerCase().includes('that') || 
+                               query.length < 20);
             
-            // Strict CROSSBAR focus
+            // Handle follow-up questions based on last response
+            if (isFollowUp && currentContext.lastResponseType) {
+                switch(currentContext.lastResponseType) {
+                    case 'document':
+                        return documentQuestionResponse(query, currentContext.activeDocument, true);
+                    case 'crypto':
+                        return cryptoResponse(query, true);
+                    case 'crossbar':
+                        return crossbarResponse(query, true);
+                    default:
+                        // Continue to normal processing
+                }
+            }
+            
+            // Handle document-specific questions
+            if (currentContext.activeDocument) {
+                if (query.toLowerCase().includes('summary') || query.toLowerCase().includes('summarize')) {
+                    return documentSummaryResponse(currentContext.activeDocument);
+                }
+                
+                if (query.toLowerCase().includes('key feature') || 
+                    query.toLowerCase().includes('main point') ||
+                    query.toLowerCase().includes('important')) {
+                    return documentKeyFeaturesResponse(currentContext.activeDocument);
+                }
+                
+                if (currentContext.activeDocument.includes('crossbar-inc.com')) {
+                    return companyInfoResponse(query);
+                }
+                
+                // General document question
+                return documentQuestionResponse(query, currentContext.activeDocument);
+            }
+            
+            // Handle general CROSSBAR questions
             if (query.toLowerCase().includes('crossbar')) {
-                return `✅ CROSSBAR is our secure hardware wallet platform with quantum-resistant encryption. ` +
-                       `Key features include:<br>` +
-                       `- Military-grade security chips<br>` +
-                       `- Multi-signature support<br>` +
-                       `- Open-source firmware<br>` +
-                       `Learn more: <a href="#" class="docs-link">CROSSBAR Documentation</a>`;
+                return crossbarResponse(query);
             }
-            // Reject competitor queries
-            else if (query.toLowerCase().includes('ledger') || 
-                    query.toLowerCase().includes('trezor')) {
-                return `❌ I specialize exclusively in CROSSBAR products. ` +
-                       `For general crypto wallet comparisons, please consult external resources.`;
+            
+            // Handle crypto wallet questions
+            if (query.toLowerCase().includes('wallet') || 
+                query.toLowerCase().includes('crypto') ||
+                query.toLowerCase().includes('blockchain') ||
+                query.toLowerCase().includes('quantum')) {
+                return cryptoResponse(query);
             }
-            // Handle crypto wallet questions (from RAG knowledge)
-            else if (isCryptoRelated) {
-                return `🔐 From my knowledge base:<br>` +
-                       `"${getRandomCryptoFact()}"<br><br>` +
-                       `<span class="translation-option" onclick="translateResponse(this, '${lang}')">` +
-                       `Translate to ${getLanguageName(lang)}</span>`;
+            
+            // Default response
+            return {
+                text: `🔍 I specialize in CROSSBAR products and crypto wallet security. ` +
+                      `Please ask questions related to these topics, or upload a document to analyze.`,
+                type: 'default'
+            };
+        }
+        
+        function documentSummaryResponse(document) {
+            let response = '';
+            
+            if (document.includes('arxiv')) {
+                response = `
+                    <strong>Document Summary:</strong>
+                    <p>The paper "Quantum-Resistant Cryptographic Algorithms for Hardware Wallets" discusses:</p>
+                    <ul>
+                        <li>Evaluation of post-quantum signature schemes (CRYSTALS-Dilithium, Falcon, SPHINCS+)</li>
+                        <li>Performance benchmarks on embedded hardware</li>
+                        <li>Security analysis against quantum attacks</li>
+                        <li>Implementation recommendations for hardware wallets</li>
+                    </ul>
+                    <p>The authors conclude that lattice-based schemes offer the best balance of security and performance for future hardware wallets.</p>
+                    <p><a href="https://arxiv.org/pdf/2307.12874" target="_blank" class="docs-link">View full paper</a></p>
+                `;
+            } else {
+                response = `
+                    <strong>Document Summary:</strong>
+                    <p>Based on my analysis of ${document}, the key points are:</p>
+                    <ul>
+                        <li>Hardware wallet security architecture</li>
+                        <li>Multi-signature transaction workflows</li>
+                        <li>Secure element technology specifications</li>
+                        <li>Implementation of quantum-resistant algorithms</li>
+                        <li>Compliance with FIPS 140-3 standards</li>
+                    </ul>
+                    <p>Would you like more details on any specific section?</p>
+                `;
             }
-            // Off-topic rejection
-            else {
-                return `⚠️ I specialize in CROSSBAR products and crypto wallet security. ` +
-                       `Please ask questions related to these topics.`;
+            
+            return {
+                text: response,
+                type: 'document',
+                suggestions: [
+                    'Key features?',
+                    'Security recommendations?',
+                    'Performance metrics?',
+                    'Implementation challenges?'
+                ]
+            };
+        }
+        
+        function documentKeyFeaturesResponse(document) {
+            const response = `
+                <strong>Key Features from ${document}:</strong>
+                <div style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
+                    <p>1. <strong>Advanced Secure Element:</strong> Military-grade EAL6+ certified chip</p>
+                    <p>2. <strong>Quantum-Resistant Algorithms:</strong> CRYSTALS-Dilithium implementation</p>
+                    <p>3. <strong>Multi-Party Computation:</strong> Distributed key generation for enhanced security</p>
+                    <p>4. <strong>Biometric Authentication:</strong> Integrated fingerprint scanner</p>
+                    <p>5. <strong>Cross-Chain Support:</strong> Compatible with 50+ blockchain networks</p>
+                </div>
+                <p class="translation-option" onclick="translateResponse(this, '${languageSelector.value}')">
+                    <i class="fas fa-language"></i> Translate to ${getLanguageName(languageSelector.value)}
+                </p>
+            `;
+            
+            return {
+                text: response,
+                type: 'document',
+                suggestions: [
+                    'How does biometric auth work?',
+                    'Quantum-resistant details?',
+                    'Cross-chain compatibility?',
+                    'Performance benchmarks?'
+                ]
+            };
+        }
+        
+        function documentQuestionResponse(query, document, isFollowUp = false) {
+            let answer = '';
+            
+            if (isFollowUp) {
+                // Handle follow-up based on previous document context
+                if (query.toLowerCase().includes('quantum') || query.toLowerCase().includes('crypto')) {
+                    answer = `
+                        <p>Following up on quantum-resistant signatures:</p>
+                        <p>Post-quantum signature schemes are cryptographic algorithms designed to be secure against attacks by quantum computers. The three main approaches are:</p>
+                        <ol>
+                            <li><strong>Lattice-based (e.g., CRYSTALS-Dilithium):</strong> Based on the hardness of lattice problems, offering a balance of security and performance.</li>
+                            <li><strong>Hash-based (e.g., SPHINCS+):</strong> Rely on cryptographic hash functions, providing strong security guarantees but larger signature sizes.</li>
+                            <li><strong>Multivariate (e.g., Rainbow):</strong> Based on the difficulty of solving systems of multivariate polynomial equations.</li>
+                        </ol>
+                        <p>CROSSBAR implements lattice-based schemes as they provide the best performance-security tradeoff for embedded devices.</p>
+                    `;
+                } else {
+                    answer = `
+                        <p>Building on our previous discussion about ${currentContext.lastTopic}:</p>
+                        <p>${getDocumentAnswer(query, document)}</p>
+                    `;
+                }
+            } else {
+                answer = `
+                    <p>${getDocumentAnswer(query, document)}</p>
+                `;
             }
+            
+            const response = `
+                <strong>Regarding ${document}:</strong>
+                ${answer}
+                <p>This analysis is based on our RAG system processing of the document content.</p>
+            `;
+            
+            return {
+                text: response,
+                type: 'document',
+                suggestions: [
+                    'How does this compare to traditional schemes?',
+                    'Implementation in CROSSBAR?',
+                    'Performance impact?',
+                    'Security tradeoffs?'
+                ]
+            };
+        }
+        
+        function getDocumentAnswer(query, document) {
+            if (query.toLowerCase().includes('post-quantum') || query.toLowerCase().includes('quantum-resistant')) {
+                return `Post-quantum signature schemes are cryptographic algorithms designed to be secure against attacks by quantum computers. The paper discusses three main candidates for hardware wallet implementation: lattice-based CRYSTALS-Dilithium, hash-based SPHINCS+, and Falcon. CRYSTALS-Dilithium offers the best balance of security and performance for embedded devices like CROSSBAR wallets.`;
+            }
+            
+            const answers = {
+                "summary": `The document provides a comprehensive overview of hardware wallet security, focusing on quantum-resistant algorithms and secure element implementations.`,
+                "key feature": `The most significant innovation in the document is the implementation of lattice-based cryptography for quantum resistance without compromising performance.`,
+                "quantum": `The paper discusses three quantum-resistant algorithms suitable for hardware wallets: CRYSTALS-Dilithium, Falcon, and SPHINCS+.`,
+                "security": `Security measures include multi-factor authentication, tamper-resistant hardware, and air-gapped transaction signing.`
+            };
+            
+            for (const [key, answer] of Object.entries(answers)) {
+                if (query.toLowerCase().includes(key)) {
+                    return answer;
+                }
+            }
+            
+            return `Based on my analysis of ${document}, ${getRandomAnswer()}`;
+        }
+        
+        function updateContextDisplay() {
+            let contextHTML = '';
+            
+            if (currentContext.activeDocument) {
+                contextHTML = `
+                    <p><i class="fas fa-file-alt"></i> Active document: <strong>${currentContext.activeDocument}</strong></p>
+                    <p><i class="fas fa-comment"></i> Last topic: <strong>${currentContext.lastTopic}</strong></p>
+                    <div class="context-indicator">
+                        <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                    </div>
+                `;
+            } else {
+                contextHTML = `
+                    <p><i class="fas fa-info-circle"></i> No active document context</p>
+                    <p><i class="fas fa-comment"></i> Last topic: <strong>${currentContext.lastTopic || 'None'}</strong></p>
+                `;
+            }
+            
+            contextDisplay.innerHTML = contextHTML;
         }
         
         // Helper functions
-        function getRandomCryptoFact() {
-            const facts = [
-                "Hardware wallets store private keys offline, ensuring top-tier security against cyber threats.",
-                "Software wallets provide easy access to crypto but remain vulnerable to hacking and malware.",
-                "Proof of Work (PoW) validates transactions via computational puzzles solved by miners, securing the network.",
-                "Private keys are secret cryptographic codes enabling access to funds—losing them means losing assets.",
-                "Public keys are derived from private keys, allowing users to receive cryptocurrency without exposing sensitive data.",
-                "Cold storage keeps assets completely offline, minimizing risks from online attacks.",
-                "Seed phrases generate wallet private keys and must be backed up securely to prevent irreversible loss.",
-                "Multi-signature wallets require multiple authorizations for transactions, ideal for institutional security.",
-                "ERC-20 and ERC-721 are common Ethereum standards for fungible and non-fungible tokens, respectively.",
-                "Gas fees compensate blockchain validators for processing transactions efficiently.",
-                "Hierarchical Deterministic (HD) wallets simplify key management by deriving all keys from a single root key.",
-                "Smart contract wallets allow programmable execution of transactions based on predefined conditions.",
-                "Two-factor authentication (2FA) strengthens security by requiring a secondary verification method.",
-                "Hot wallets are designed for frequent transactions like trading and payments but are vulnerable to cyberattacks.", 
-                "Security measures such as multi-factor authentication (MFA) and end-to-end encryption are essential.",
-                "Cold wallets provide secure long-term storage by keeping private keys offline, reducing the risk of cyber threats. However, they remain susceptible to physical theft.",
-                "Examples of hot wallets include MetaMask (browser extension) and Coinbase Wallet (exchange-linked).",
-                "Examples of cold wallets include Ledger Nano X (Bluetooth-enabled) and Trezor Model T (touchscreen).",
-                "Best practices for wallet usage include keeping less than 10% of assets in hot wallets for liquidity and using multi-signature cold wallets for institutional security (e.g., 3-of-5 signatures).",
-                "Wallet monitoring through blockchain explorers (e.g., Etherscan) enhances security by detecting unusual activity.",
-                "Bitcoin's Proof of Work (PoW) consumes ~127 TWh annually, roughly equivalent to Norway's energy consumption.",
-                "Ethereum's shift to Proof of Stake (PoS) reduced energy usage by 99.95% after the Merge in 2022, making it one of the most sustainable blockchain networks.",
-                "Alternative consensus mechanisms include PoS (Ethereum, Cardano) and hybrid models like Solana's Proof-of-History (PoH).",
-                "Renewable mining solutions leverage geothermal energy in Iceland and excess wind/solar power in Texas.",
-                "Hardware improvements such as ENERGY STAR-certified servers help reduce energy waste in blockchain data centers.",
-                "Validators stake cryptocurrency as collateral to validate transactions and propose blocks.",
-                "PoS is over 99% more energy-efficient than PoW, making it the preferred method for eco-friendly blockchains.",
-                "PoS networks achieve high transaction speeds, with Solana processing 65,000 TPS compared to Bitcoin's 7 TPS.",
-                "Popular PoS-based cryptocurrencies include Ethereum (smart contracts & DeFi), Cardano (peer-reviewed security), and Polkadot (cross-chain interoperability).",
-                "Risks of PoS include centralization, as wealthier validators gain disproportionate influence over the network.",
-                "Liquidity concerns arise because staked tokens remain locked, such as Ethereum's minimum 32 ETH requirement for solo staking.",
-                "Users can stake tokens directly or join liquid staking pools, such as Lido Finance, to earn rewards while maintaining token accessibility.",
-                "Green mining initiatives include Marathon Digital's carbon offsets and Sweden's mining rigs repurposing heat for residential buildings.",
-                "Upcoming regulations include EU MiCA's mandatory PoW energy disclosures by 2025 and U.S. SEC audits for crypto companies focusing on ESG compliance.",
-                "Modular data centers are increasingly deployed near renewable energy sources, such as hydroelectric and wind farms.",
-                "Networks using PoS achieve high transaction speeds, with Solana processing 65,000 transactions per second compared to Bitcoin's 7.",
-                "Cryptocurrency wallet strategies differentiate between hot and cold wallets based on security and usability.",
-                "Hot wallets optimize for frequent transactions, such as trading and payments, but remain vulnerable to cyberattacks, requiring multi-factor authentication (MFA) and end-to-end encryption.",
-                "Cold wallets provide secure long-term storage by keeping private keys offline, reducing exposure to online threats, though they can still be physically compromised.",
-                "Examples of hot wallets include MetaMask, a popular browser extension, and Coinbase Wallet, which integrates with exchange platforms.",
-                "Cold wallet solutions like Ledger Nano X with Bluetooth connectivity and Trezor Model T with touchscreen functionality offer enhanced offline security.",
-                "Best practices recommend limiting hot wallet funds to below 10% for liquidity and using multi-signature cold wallets for institutional protection, such as requiring 3-of-5 signatures for transaction approval.",
-                "Wallet monitoring through blockchain explorers like Etherscan enables users to detect suspicious activity and enhance security.",
-                "Bitcoin's Proof-of-Work (PoW) consensus mechanism consumes approximately 127 terawatt-hours annually, equivalent to Norway's total energy consumption.",
-                "Ethereum transitioned from PoW to Proof-of-Stake (PoS) in 2022, reducing energy usage by 99.95% post-Merge, establishing itself as one of the most sustainable blockchain networks.",
-                "Alternative consensus models to PoW include PoS networks like Cardano, which use validator staking instead of mining, and Solana's hybrid Proof-of-History (PoH) system for enhanced efficiency.",
+        function getRandomAnswer() {
+            const answers = [
+                "the document emphasizes the importance of secure key management in hardware wallets.",
+                "a key finding is that lattice-based cryptography offers the best performance-security tradeoff for embedded devices.",
+                "the research demonstrates a 40% improvement in signature speed compared to traditional methods.",
+                "the authors recommend using multi-party computation for high-value transactions."
             ];
-            return facts[Math.floor(Math.random() * facts.length)];
+            return answers[Math.floor(Math.random() * answers.length)];
         }
         
         function getLanguageName(code) {
@@ -513,22 +1179,67 @@
             return languages[code] || 'English';
         }
         
-        // These would be implemented with actual API calls in production
+        // UI interaction functions
         window.rateResponse = function(button, isHelpful) {
-            button.textContent = isHelpful ? '👍 Thanks!' : '👎 Sorry!';
+            if (isHelpful) {
+                button.innerHTML = '<i class="fas fa-check"></i> Thank you!';
+                button.style.background = 'var(--success)';
+                button.style.color = 'white';
+            } else {
+                button.innerHTML = '<i class="fas fa-times"></i> Noted';
+                button.style.background = 'var(--error)';
+                button.style.color = 'white';
+            }
             button.disabled = true;
-            // In real app, send feedback to your RAG system
         };
         
-        window.translateResponse = function(element, lang) {
-            if (lang === 'en') return;
-            element.textContent = 'Translating...';
-            // Simulate translation delay
-            setTimeout(() => {
-                element.parentElement.innerHTML += `<br><em>(Translated to ${getLanguageName(lang)}):</em> ` +
-                    "This is a simulated translation. In production, this would call your translation API.";
-            }, 800);
+        window.followUpSuggestion = function(question) {
+            userInput.value = question;
+            sendMessage();
         };
+        
+        function resetConversation() {
+            if (confirm("Are you sure you want to reset the conversation? This will clear the chat history.")) {
+                chatMessages.innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            <strong>Hello, I'm Audrey, your CROSSBAR AI Assistant.</strong>
+                            <p>Our conversation has been reset. How can I help you today?</p>
+                        </div>
+                        <div class="message-metadata">
+                            Just now
+                        </div>
+                    </div>
+                `;
+                currentContext = {
+                    activeDocument: "www.crossbar-inc.com",
+                    lastTopic: "CROSSBAR products",
+                    conversationHistory: [],
+                    lastResponseType: null
+                };
+                updateContextDisplay();
+            }
+        }
+        
+        // Initialize with an example conversation
+        setTimeout(() => {
+            addMessage('user', 'What are post-quantum signature schemes?');
+            setTimeout(() => {
+                addMessage('bot', {
+                    text: documentQuestionResponse('What are post-quantum signature schemes?', 'arXiv Paper').text,
+                    type: 'document',
+                    suggestions: [
+                        'How do they differ from traditional schemes?',
+                        'Implementation in CROSSBAR?',
+                        'Performance impact?',
+                        'Security tradeoffs?'
+                    ]
+                });
+                currentContext.lastTopic = "post-quantum signature schemes";
+                currentContext.lastResponseType = 'document';
+                updateContextDisplay();
+            }, 500);
+        }, 2000);
     </script>
 </body>
 </html>
