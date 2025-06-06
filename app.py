@@ -104,7 +104,7 @@ def generate_summary(content, max_length=200):
 
 @app.route('/')
 def serve_index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('.', 'rag-0605.html')
 
 @app.route('/<path:filename>')
 def serve_file(filename):

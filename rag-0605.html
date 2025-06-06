@@ -10,6 +10,7 @@
             --primary: #FF8C00;  /* Warm orange */
             --primary-light: #FFA726;
             --primary-dark: #EF6C00;
+            --secondary: #FFCA28; /* Complementary yellow */
             --text: #333333;
             --bg: #FFF8F0;       /* Soft yellow-orange */
             --card-bg: #FFFFFF;
@@ -18,7 +19,6 @@
             --error: #F44336;
             --info: #2196F3;
             --doc-purple: #7E57C2;
-            --sidebar-bg: #1a237e;
         }
         
         * {
@@ -39,8 +39,8 @@
         
         /* Header styles */
         header {
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -56,12 +56,12 @@
             gap: 0.5rem;
             font-weight: 700;
             font-size: 1.5rem;
-            color: var(--primary-dark);
+            color: white;
         }
         
         .logo-icon {
-            background: var(--primary);
-            color: white;
+            background: var(--secondary);
+            color: var(--primary-dark);
             width: 36px;
             height: 36px;
             border-radius: 8px;
@@ -78,16 +78,17 @@
         
         nav a {
             text-decoration: none;
-            color: var(--text);
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
-            transition: color 0.2s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 0.3rem;
         }
         
         nav a:hover {
-            color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
         }
         
         /* Main container */
@@ -103,7 +104,7 @@
         /* Sidebar Navigation */
         .sidebar {
             width: 280px;
-            background: linear-gradient(135deg, var(--sidebar-bg) 0%, #283593 100%);
+            background: linear-gradient(135deg, #2c1f00 0%, #3d2c00 100%);
             color: white;
             padding: 20px;
             display: flex;
@@ -111,7 +112,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        .logo {
+        .logo-container {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -120,14 +121,15 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .logo-icon {
+        .logo-icon-sidebar {
             font-size: 28px;
-            color: var(--primary-light);
+            color: var(--secondary);
         }
         
         .logo-text {
             font-size: 22px;
             font-weight: 700;
+            color: var(--secondary);
         }
         
         .nav-section {
@@ -137,7 +139,7 @@
         .section-title {
             font-size: 14px;
             text-transform: uppercase;
-            color: #bbdefb;
+            color: #ffd54f;
             margin-bottom: 15px;
             letter-spacing: 1px;
         }
@@ -153,11 +155,12 @@
         }
         
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 167, 38, 0.1);
         }
         
         .nav-item.active {
-            background: var(--primary);
+            background: rgba(255, 167, 38, 0.2);
+            border-left: 4px solid var(--secondary);
         }
         
         .nav-icon {
@@ -165,6 +168,7 @@
             margin-right: 12px;
             width: 24px;
             text-align: center;
+            color: var(--secondary);
         }
         
         /* Main Content Area */
@@ -188,6 +192,13 @@
             font-size: 24px;
             font-weight: 700;
             color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-title i {
+            color: var(--primary);
         }
         
         .user-controls {
@@ -209,6 +220,8 @@
         
         .control-btn:hover {
             background: #f1f3f9;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         /* Chat Container */
@@ -248,6 +261,7 @@
             background: #f1f5ff;
             font-size: 14px;
             border-bottom: 1px solid var(--border);
+            color: var(--text);
         }
         
         .chat-messages {
@@ -257,6 +271,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background: #fcf8f3;
         }
         
         .message {
@@ -349,6 +364,13 @@
             font-size: 16px;
             resize: none;
             height: 50px;
+            background: #fffdf9;
+        }
+        
+        .user-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
         }
         
         .send-btn {
@@ -368,6 +390,8 @@
         
         .send-btn:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .input-actions {
@@ -394,6 +418,7 @@
             background: var(--primary-light);
             color: white;
             border-color: var(--primary-light);
+            transform: translateY(-2px);
         }
         
         .input-btn.primary {
@@ -446,10 +471,12 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s ease;
+            border: 1px solid var(--border);
         }
         
         .doc-item:hover {
             background: rgba(255, 140, 0, 0.05);
+            border-color: var(--primary-light);
         }
         
         .doc-item.active {
@@ -460,7 +487,7 @@
         .doc-icon {
             width: 36px;
             height: 36px;
-            background: var(--doc-purple);
+            background: var(--primary);
             color: white;
             border-radius: 8px;
             display: flex;
@@ -485,6 +512,7 @@
         .keyword-item:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: var(--primary-light);
         }
         
         .keyword-header {
@@ -499,8 +527,8 @@
         }
         
         .keyword-count {
-            background: #e3f2fd;
-            color: var(--primary);
+            background: #fff3e0;
+            color: var(--primary-dark);
             border-radius: 20px;
             padding: 2px 8px;
             font-size: 12px;
@@ -509,17 +537,18 @@
         
         .keyword-sections {
             font-size: 13px;
-            color: var(--text-light);
+            color: #777;
         }
         
         .keyword-sections i {
             margin-right: 5px;
+            color: var(--primary);
         }
         
         /* Upload prompt */
         .upload-prompt {
             background: #fff8e1;
-            border: 1px solid #ffd54f;
+            border: 1px solid var(--secondary);
             border-radius: 8px;
             padding: 20px;
             margin-top: 20px;
@@ -544,6 +573,7 @@
         
         .concept-list li {
             margin-bottom: 5px;
+            color: var(--primary-dark);
         }
         
         .prompt-actions {
@@ -562,7 +592,7 @@
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: var(--text-light);
+            color: var(--primary);
         }
         
         .suggestion-list {
@@ -572,8 +602,8 @@
         }
         
         .suggestion-item {
-            background: #e3f2fd;
-            color: var(--primary);
+            background: #fff3e0;
+            color: var(--primary-dark);
             padding: 8px 12px;
             border-radius: 20px;
             font-size: 13px;
@@ -582,7 +612,7 @@
         }
         
         .suggestion-item:hover {
-            background: #bbdefb;
+            background: #ffe0b2;
         }
         
         .action-item {
@@ -600,7 +630,7 @@
             display: flex;
             gap: 6px;
             align-items: center;
-            color: var(--text-light);
+            color: var(--primary);
             font-style: italic;
         }
         
@@ -758,8 +788,8 @@
     <div class="container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
-            <div class="logo">
-                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+            <div class="logo-container">
+                <div class="logo-icon-sidebar"><i class="fas fa-shield-alt"></i></div>
                 <div class="logo-text">CROSSBAR</div>
             </div>
             
@@ -818,7 +848,7 @@
         <!-- Main Content Area -->
         <div class="main-content">
             <div class="header">
-                <h1 class="page-title">Audrey AI Assistant</h1>
+                <h1 class="page-title"><i class="fas fa-robot"></i> Audrey AI Assistant</h1>
                 <div class="user-controls">
                     <div class="control-btn">
                         <i class="fas fa-history"></i>
@@ -939,7 +969,42 @@
                         <div class="panel-header">Document Keywords</div>
                         <div class="panel-content">
                             <div class="keywords-grid" id="keywords-display">
-                                <!-- Keywords will be dynamically inserted here -->
+                                <div class="keyword-item">
+                                    <div class="keyword-header">
+                                        <div class="keyword-name">Quantum-Resistant</div>
+                                        <div class="keyword-count">28 mentions</div>
+                                    </div>
+                                    <div class="keyword-sections">
+                                        <i class="fas fa-file-alt"></i> Sections: 1.1, 3.1, 4.2
+                                    </div>
+                                </div>
+                                <div class="keyword-item">
+                                    <div class="keyword-header">
+                                        <div class="keyword-name">Hardware Wallets</div>
+                                        <div class="keyword-count">42 mentions</div>
+                                    </div>
+                                    <div class="keyword-sections">
+                                        <i class="fas fa-file-alt"></i> Sections: 1.0, 3.4, 5.1
+                                    </div>
+                                </div>
+                                <div class="keyword-item">
+                                    <div class="keyword-header">
+                                        <div class="keyword-name">Cryptography</div>
+                                        <div class="keyword-count">35 mentions</div>
+                                    </div>
+                                    <div class="keyword-sections">
+                                        <i class="fas fa-file-alt"></i> Sections: 2.3, 4.2
+                                    </div>
+                                </div>
+                                <div class="keyword-item">
+                                    <div class="keyword-header">
+                                        <div class="keyword-name">Security</div>
+                                        <div class="keyword-count">47 mentions</div>
+                                    </div>
+                                    <div class="keyword-sections">
+                                        <i class="fas fa-file-alt"></i> Sections: 3.2, 4.1, 5.3
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -954,7 +1019,7 @@
                                     </div>
                                     <div>
                                         <div style="font-weight: 500;">Content Retrieval</div>
-                                        <div style="font-size: 13px; color: var(--text-light);">Scraping & extracting document content</div>
+                                        <div style="font-size: 13px; color: var(--text);">Scraping & extracting document content</div>
                                     </div>
                                 </div>
                                 
@@ -964,7 +1029,7 @@
                                     </div>
                                     <div>
                                         <div style="font-weight: 500;">Vector Embeddings</div>
-                                        <div style="font-size: 13px; color: var(--text-light);">Creating semantic representations</div>
+                                        <div style="font-size: 13px; color: var(--text);">Creating semantic representations</div>
                                     </div>
                                 </div>
                                 
@@ -974,7 +1039,7 @@
                                     </div>
                                     <div>
                                         <div style="font-weight: 500;">Similarity Search</div>
-                                        <div style="font-size: 13px; color: var(--text-light);">FAISS-based retrieval</div>
+                                        <div style="font-size: 13px; color: var(--text);">FAISS-based retrieval</div>
                                     </div>
                                 </div>
                                 
@@ -984,7 +1049,7 @@
                                     </div>
                                     <div>
                                         <div style="font-weight: 500;">Response Generation</div>
-                                        <div style="font-size: 13px; color: var(--text-light);">Context-aware LLM synthesis</div>
+                                        <div style="font-size: 13px; color: var(--text);">Context-aware LLM synthesis</div>
                                     </div>
                                 </div>
                             </div>
@@ -1010,25 +1075,9 @@
     <input type="file" id="file-upload" style="display: none;">
 
     <script>
-        // Configuration - Enhanced with fallback URLs
-        const API_BASE_URLS = [
-            window.location.origin,
-            'http://localhost:5000',
-            'https://your-production-domain.com'
-        ];
-        let ACTIVE_API_BASE = API_BASE_URLS[0];
+        // Configuration
+        const API_BASE_URL = 'https://your-backend-api.com';
         
-        const ENDPOINTS = {
-            ask: '/ask',
-            upload: '/upload',
-            status: '/status',
-            initialContext: '/initial-context',
-            processDocument: '/process-document',
-            retrieveContext: '/retrieve-context',
-            updateContext: '/update-context',
-            addDocument: '/add-document'
-        };
-
         // DOM Elements
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
@@ -1040,36 +1089,6 @@
         const languageSelector = document.getElementById('language-selector');
         const activeDocs = document.getElementById('active-docs');
         const keywordsDisplay = document.getElementById('keywords-display');
-        
-        // App state - Dynamic Context Version
-        let currentContext = {
-            // Active conversation state
-            conversationHistory: [],
-            lastResponseType: null,
-            
-            // Document knowledge base (initially empty)
-            documents: {},
-            
-            // Dynamic context tracking
-            currentFocus: {
-                document: null,       // Currently focused document ID
-                topic: "",            // Current discussion topic
-                entities: [],         // Recognized entities in conversation
-                keywords: [],         // Important keywords from conversation
-                temporalContext: {    // Time-based context
-                    lastUpdated: new Date(),
-                    expires: null     // When context should be refreshed
-                }
-            },
-            
-            // Retrieval settings
-            retrievalConfig: {
-                similarityThreshold: 0.75,
-                maxKeywords: 5,
-                contextWindow: 5,     // Last 5 messages used for context
-                maxDocuments: 10      // Max documents to keep in context
-            }
-        };
         
         // Initialize event listeners
         sendBtn.addEventListener('click', sendMessage);
@@ -1085,165 +1104,42 @@
         companyInfoBtn.addEventListener('click', fetchCompanyInfo);
         fileUpload.addEventListener('change', handleFileUpload);
         
-        // New function: Test backend connectivity
-        async function findWorkingBackend() {
-            for (const url of API_BASE_URLS) {
-                try {
-                    const response = await fetch(`${url}${ENDPOINTS.status}`, {
-                        method: 'GET',
-                        headers: {'X-Test-Connection': 'true'},
-                        timeout: 3000
-                    });
-                    
-                    if (response.ok) {
-                        return url;
-                    }
-                } catch (e) {
-                    console.log(`Backend at ${url} unavailable: ${e.message}`);
-                }
-            }
-            return null;
-        }        
-
-        // Enhanced initialization
-        window.onload = async function() {
-            // Show connection status immediately
-            addMessage('bot', {
-                text: "⌛ Connecting to document processing system...",
-                type: 'status'
-            });
+        // Initialize application
+        window.onload = function() {
+            // Add sample documents to UI
+            const sampleDocs = [
+                { id: "doc-001", name: "arXiv:2307.12874", type: "research_paper" },
+                { id: "doc-002", name: "CROSSBAR Security Whitepaper", type: "whitepaper" },
+                { id: "doc-003", name: "NIST Post-Quantum Report", type: "website" }
+            ];
             
-            try {
-                // Find working backend
-                const workingBackend = await findWorkingBackend();
-                
-                if (!workingBackend) {
-                    throw new Error("No backend servers available. Using offline mode.");
-                }
-                
-                ACTIVE_API_BASE = workingBackend;
-                console.log(`Using backend: ${ACTIVE_API_BASE}`);
-                
-                // Update status message
-                chatMessages.lastChild.querySelector('.message-content').innerHTML = 
-                    `✅ Connected to backend at ${new URL(ACTIVE_API_BASE).hostname}`;
-                
-                // Load initial context
-                const response = await fetch(`${ACTIVE_API_BASE}${ENDPOINTS.initialContext}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Backend error: ${response.status} ${response.statusText}`);
-                }
-                
-                const contextData = await response.json();
-                
-                // Initialize context
-                currentContext.documents = contextData.documents.reduce((acc, doc) => {
-                    acc[doc.id] = doc;
-                    return acc;
-                }, {});
-                
-                currentContext.currentFocus = contextData.currentFocus;
-                
-                // Add documents to UI
-                contextData.documents.forEach(doc => addDocumentToUI(doc));
-                
-                // Set active document
-                if (contextData.currentFocus.document) {
-                    const activeDoc = document.querySelector(`.doc-item[data-doc-id="${contextData.currentFocus.document}"]`);
-                    if (activeDoc) {
-                        activeDoc.classList.add('active');
-                        updateKeywordsDisplay();
-                    }
-                }
-                
-                // Show welcome message
-                addMessage('bot', {
-                    text: "System initialized. I'm ready to answer your questions!",
-                    type: 'status'
-                });
-                
-            } catch (error) {
-                console.error("Initialization failed:", error);
-                
-                // Update status message
-                if (chatMessages.lastChild) {
-                    chatMessages.lastChild.querySelector('.message-content').innerHTML = 
-                        `⚠️ ${error.message}`;
-                }
-                
-                // Show offline mode instructions
-                addMessage('bot', {
-                    text: "Running in offline mode. Some features may be limited.<br><br>" +
-                        "To enable full functionality:<br>" +
-                        "1. Ensure backend server is running<br>" +
-                        "2. Check your network connection<br>" +
-                        "3. Verify CORS settings on server",
-                    type: 'error'
-                });
-                
-                // Fallback to sample documents
-                await initSampleDocuments();
-                updateContextDisplay();
-                updateKeywordsDisplay();
-                
-                // Add offline mode indicator
-                const offlineIndicator = document.createElement('div');
-                offlineIndicator.className = 'offline-indicator';
-                offlineIndicator.innerHTML = `
-                    <i class="fas fa-wifi-slash"></i> Offline Mode
-                    <button onclick="window.location.reload()">Retry Connection</button>
-                `;
-                document.body.appendChild(offlineIndicator);
-            }
+            sampleDocs.forEach(doc => addDocumentToUI(doc));
+            
+            // Set first document as active
+            document.querySelector('.doc-item').classList.add('active');
         };
 
-        // Add document to UI
+        // Helper functions
         function addDocumentToUI(doc) {
             const docItem = document.createElement('div');
             docItem.className = 'doc-item';
             docItem.dataset.docId = doc.id;
-            
             docItem.innerHTML = `
-                <div class="doc-icon">
-                    ${getFileIcon(doc.name)}
-                </div>
+                <div class="doc-icon">${getFileIcon(doc.name)}</div>
                 <div class="doc-info">
                     <div class="doc-name">${doc.name}</div>
                     <div class="doc-type">${doc.type}</div>
                 </div>
-                <div class="doc-menu" onclick="showDocMenu(event, '${doc.id}')">
-                    <i class="fas fa-ellipsis-v"></i>
-                </div>
             `;
             
             docItem.addEventListener('click', () => {
-                document.querySelectorAll('.doc-item').forEach(el => {
-                    el.classList.remove('active');
-                });
+                document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
                 docItem.classList.add('active');
                 
-                // Update context with selected document
-                currentContext.currentFocus.document = doc.id;
-                currentContext.currentFocus.topic = doc.name;
+                // Update context
+                updateContextDisplay(doc.name);
                 
-                // Send context update to backend
-                fetch(`${API_BASE_URL}${ENDPOINTS.updateContext}`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        context: {
-                            currentFocus: {
-                                document: doc.id,
-                                topic: doc.name
-                            }
-                        }
-                    })
-                });
-                
-                updateContextDisplay();
-                updateKeywordsDisplay();
-                
+                // Show status message
                 addMessage('bot', {
                     text: `Now focusing on <strong>${doc.name}</strong>. Ask me anything about this document.`,
                     type: 'status'
@@ -1253,301 +1149,46 @@
             activeDocs.appendChild(docItem);
         }
 
-        // Update keywords display
-        function updateKeywordsDisplay() {
-            const docId = currentContext.currentFocus.document;
-            if (!docId || !currentContext.documents[docId]) return;
-            
-            const doc = currentContext.documents[docId];
-            keywordsDisplay.innerHTML = '';
-            
-            if (doc.keywords) {
-                Object.entries(doc.keywords).forEach(([keyword, data]) => {
-                    const keywordItem = document.createElement('div');
-                    keywordItem.className = 'keyword-item';
-                    
-                    keywordItem.innerHTML = `
-                        <div class="keyword-header">
-                            <div class="keyword-name">${keyword}</div>
-                            <div class="keyword-count">${data.count || 0} mentions</div>
-                        </div>
-                    `;
-                    
-                    // Add click handler to search for this keyword
-                    keywordItem.addEventListener('click', () => {
-                        userInput.value = `Tell me about ${keyword} in ${doc.name}`;
-                        sendMessage();
-                    });
-                    
-                    keywordsDisplay.appendChild(keywordItem);
-                });
-            }
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: 'file-pdf',
+                doc: 'file-word',
+                docx: 'file-word',
+                txt: 'file-alt',
+                ppt: 'file-powerpoint',
+                pptx: 'file-powerpoint',
+                xls: 'file-excel',
+                xlsx: 'file-excel',
+                json: 'file-code'
+            };
+            return `<i class="fas fa-${icons[ext] || 'file'}"></i>`;
         }
 
-        // Initialize with sample documents (fallback)
-        async function initSampleDocuments() {
-            const sampleDocs = [
-                {
-                    id: "doc-001",
-                    name: "arXiv:2307.12874",
-                    type: "research_paper",
-                    source: "https://arxiv.org/pdf/2307.12874",
-                    content: "This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms for resource-constrained hardware wallets. We benchmark CRYSTALS-Dilithium, Falcon, and SPHINCS+ on ARM Cortex-M4 microcontrollers, analyzing performance, memory footprint, and power consumption. Our results demonstrate that lattice-based schemes (particularly CRYSTALS-Dilithium) offer the optimal balance between security against quantum attacks and computational efficiency, with signature times under 2.5ms and verification under 1ms. We propose hardware-accelerated implementations that maintain battery life while enhancing security.",
-                    keywords: {
-                        "quantum-resistant": {count: 28, sections: ['1.1', '3.1', '4.2']},
-                        "lattice cryptography": {count: 22, sections: ['2.3', '3.4']},
-                        "hardware wallets": {count: 42, sections: ['1.0', '3.4', '5.1']},
-                        "cryptographic protocols": {count: 18, sections: ['2.3', '4.2']}
-                    }
-                },
-                {
-                    id: "doc-002",
-                    name: "CROSSBAR Security Whitepaper",
-                    type: "whitepaper",
-                    source: "internal",
-                    content: "The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security, focusing on quantum-resistant cryptography, secure element implementation, and tamper-resistant design. Key features include: 1) EAL6+ certified secure element, 2) Multi-factor authentication combining biometrics and PIN, 3) Self-destruct mechanism upon tampering detection, 4) Hardware-accelerated cryptographic operations, 5) Open-source firmware verification.",
-                    keywords: {
-                        "secure element": {count: 15, sections: ['4.3', '5.2']},
-                        "biometric authentication": {count: 17, sections: ['3.2', '4.1']},
-                        "quantum-resistant": {count: 12, sections: ['2.1', '3.5']},
-                        "tamper resistance": {count: 19, sections: ['4.2', '6.1']}
-                    }
-                }
-            ];
-
-            for (const doc of sampleDocs) {
-                // Process each document
-                const processedDoc = await processDocument(doc);
-                currentContext.documents[doc.id] = processedDoc;
-                addDocumentToUI(processedDoc);
-            }
-            
-            // Set the first document as active
-            if (sampleDocs.length > 0) {
-                currentContext.currentFocus.document = sampleDocs[0].id;
-                currentContext.currentFocus.topic = sampleDocs[0].name;
-                updateKeywordsDisplay();
-            }
-        }
-
-        // Process document content
-        async function processDocument(doc) {
-            try {
-                // Send to backend for NLP processing
-                const response = await fetch(`${API_BASE_URL}${ENDPOINTS.processDocument}`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ 
-                        content: doc.content,
-                        metadata: {
-                            name: doc.name,
-                            type: doc.type,
-                            source: doc.source
-                        }
-                    })
-                });
-                
-                const { keywords, summary, entities } = await response.json();
-                
-                return {
-                    ...doc,
-                    summary: summary || "Document summary not available",
-                    keywords: keywords || {},
-                    entities: entities || [],
-                    processedAt: new Date()
-                };
-            } catch (error) {
-                console.error("Document processing failed:", error);
-                return {
-                    ...doc,
-                    summary: "Document processing failed",
-                    keywords: {},
-                    entities: [],
-                    processedAt: new Date()
-                };
-            }
-        }
-
-        // Add new handler for rare concept action
-        window.handleRareConceptAction = function(concepts) {
-            // Show prominent upload prompt
-            const uploadPrompt = document.createElement('div');
-            uploadPrompt.className = 'upload-prompt';
-            uploadPrompt.innerHTML = `
-                <div class="prompt-header">
-                    <i class="fas fa-file-upload"></i>
-                    <h3>Document Upload Recommended</h3>
-                </div>
-                <div class="prompt-content">
-                    <p>The following concepts need more detailed documentation:</p>
-                    <ul class="concept-list">
-                        ${concepts.map(c => `<li>${c}</li>`).join('')}
-                    </ul>
-                    <div class="prompt-actions">
-                        <button class="input-btn primary" onclick="focusUploadButton()">
-                            <i class="fas fa-upload"></i> Upload Document
-                        </button>
-                        <button class="input-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
-                            Not Now
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Insert after chat messages
-            chatMessages.parentNode.insertBefore(uploadPrompt, chatMessages.nextSibling);
-            
-            // Create prompt in input area
-            userInput.value = `I need documents explaining: ${concepts.join(', ')}`;
-        };
-
-        window.focusUploadButton = function() {
-            // Remove any existing prompts
-            document.querySelectorAll('.upload-prompt').forEach(el => el.remove());
-            
-            // Highlight upload button
-            uploadBtn.classList.add('pulse');
-            uploadBtn.innerHTML = '<i class="fas fa-file-upload"></i> Upload Document Now';
-            
-            // Auto-click the upload button after a delay
-            setTimeout(() => {
-                uploadBtn.click();
-                uploadBtn.classList.remove('pulse');
-                uploadBtn.innerHTML = '<i class="fas fa-file-upload"></i> Upload Document';
-            }, 500);
-        };
-
-        // Enhanced fetch with retries and timeouts
-        async function robustFetch(url, options = {}, retries = 2, timeout = 5000) {
-            return new Promise(async (resolve, reject) => {
-                const timer = setTimeout(() => {
-                    reject(new Error(`Request timed out after ${timeout}ms`));
-                }, timeout);
-                
-                try {
-                    const response = await fetch(url, options);
-                    clearTimeout(timer);
-                    
-                    if (response.ok) {
-                        resolve(response);
-                    } else if (retries > 0 && response.status >= 500) {
-                        // Retry server errors
-                        console.log(`Retrying (${retries} left)...`);
-                        setTimeout(async () => {
-                            resolve(await robustFetch(url, options, retries - 1, timeout));
-                        }, 1000);
-                    } else {
-                        reject(new Error(`HTTP ${response.status} ${response.statusText}`));
-                    }
-                } catch (error) {
-                    clearTimeout(timer);
-                    
-                    if (retries > 0) {
-                        // Retry network errors
-                        console.log(`Retrying (${retries} left)...`);
-                        setTimeout(async () => {
-                            resolve(await robustFetch(url, options, retries - 1, timeout));
-                        }, 1000);
-                    } else {
-                        reject(error);
-                    }
-                }
-            });
-        }       
-
-        // Enhanced sendMessage with connection recovery
-        async function sendMessage() {
+        // Core functionality
+        function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
             
             // Add user message to history
-            currentContext.conversationHistory.push({
-                role: "user",
-                content: message,
-                timestamp: new Date()
-            });
-            
-            // Add to UI
             addMessage('user', message);
             userInput.value = '';
             
             // Show typing indicator
             const typingIndicator = showTypingIndicator();
             
-            try {
-                // Retrieve dynamic context
-                const context = await retrieveRelevantContext(message);
-                
-                // Generate response with context
-                const response = await robustFetch(
-                    `${ACTIVE_API_BASE}${ENDPOINTS.ask}`,
-                    {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({
-                            query: message,
-                            context: context
-                        })
-                    }
-                );
-                
-                const data = await response.json();
-                
-                // Update context with response data
-                currentContext.conversationHistory.push({
-                    role: "assistant",
-                    content: data.answer,
-                    timestamp: new Date()
-                });
-                
-                // Update UI
+            // Simulate response after delay
+            setTimeout(() => {
                 chatMessages.removeChild(typingIndicator);
+                
+                // Generate response
+                const response = generateResponse(message);
                 addMessage('bot', {
-                    text: data.answer,
+                    text: response,
                     type: 'document',
-                    suggestions: data.suggestions || generateDynamicSuggestions()
+                    suggestions: generateDynamicSuggestions()
                 });
-                
-                // Update document/keyword displays
-                updateContextDisplay();
-                updateKeywordsDisplay();
-                
-            } catch (error) {
-                // Error handling
-                chatMessages.removeChild(typingIndicator);
-                
-                let errorMessage = error.message;
-                let recoveryTip = "";
-                
-                if (error.message.includes("Failed to fetch") || 
-                    error.message.includes("NetworkError")) {
-                    errorMessage = "Network connection failed";
-                    recoveryTip = "<br><br>Please check your internet connection and try again.";
-                } 
-                else if (error.message.includes("timed out")) {
-                    errorMessage = "Server response timed out";
-                    recoveryTip = "<br><br>The server is taking too long to respond. Please try again later.";
-                }
-                else if (error.message.includes("CORS")) {
-                    errorMessage = "Cross-origin request blocked";
-                    recoveryTip = "<br><br>This is usually a server configuration issue.";
-                }
-                
-                addMessage('bot', {
-                    text: `❌ ${errorMessage}${recoveryTip}`,
-                    type: 'error'
-                });
-                
-                // Attempt to find a new backend
-                const newBackend = await findWorkingBackend();
-                if (newBackend) {
-                    ACTIVE_API_BASE = newBackend;
-                    addMessage('bot', {
-                        text: `🔁 Reconnected to backend at ${new URL(ACTIVE_API_BASE).hostname}`,
-                        type: 'status'
-                    });
-                }
-            }
+            }, 1500);
         }
 
         function showTypingIndicator() {
@@ -1585,13 +1226,7 @@
                     </div>
                 `;
             } else {
-                // Bot message
                 let messageContent = content.text;
-                
-                // If it's an error, highlight it
-                if (content.type === 'error') {
-                    messageContent = `<div class="error-message">${content.text}</div>`;
-                }
                 
                 messageDiv.innerHTML = `
                     <div class="message-content">
@@ -1614,19 +1249,27 @@
                 
                 // Add follow-up suggestions for document responses
                 if (content.type === 'document' && content.suggestions) {
+                    let suggestionsHTML = '';
+                    content.suggestions.forEach(s => {
+                        if (typeof s === 'object' && s.isAction) {
+                            suggestionsHTML += `
+                                <div class="suggestion-item action-item" 
+                                     onclick="handleRareConceptAction(['${s.concepts.join("','")}'])">
+                                    <i class="fas fa-file-upload"></i> ${s.text}
+                                </div>`;
+                        } else {
+                            suggestionsHTML += `
+                                <div class="suggestion-item" onclick="followUpSuggestion('${s}')">
+                                    ${s}
+                                </div>`;
+                        }
+                    });
+                    
                     messageDiv.innerHTML += `
                         <div class="follow-up-suggestion">
                             <div class="suggestion-title">Follow-up suggestions:</div>
                             <div class="suggestion-list">
-                                ${content.suggestions.map(s => {
-                                    if (typeof s === 'object' && s.isAction) {
-                                        return `<div class="suggestion-item action-item" 
-                                                onclick="handleRareConceptAction(['${s.concepts.join("','")}'])">
-                                            <i class="fas fa-file-upload"></i> ${s.text}
-                                        </div>`;
-                                    }
-                                    return `<div class="suggestion-item" onclick="followUpSuggestion('${s}')">${s}</div>`;
-                                }).join('')}
+                                ${suggestionsHTML}
                             </div>
                         </div>
                     `;
@@ -1637,292 +1280,74 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function handleFileUpload(event) {
+        function generateResponse(query) {
+            const responses = [
+                `Quantum-resistant algorithms are cryptographic systems that are secure against attacks by quantum computers. CROSSBAR uses lattice-based cryptography which is considered one of the most promising approaches. Our hardware wallets implement CRYSTALS-Dilithium for signatures and Kyber for key encapsulation.`,
+                `Hardware wallets provide the highest level of security for cryptocurrency storage. CROSSBAR wallets feature EAL6+ certified secure elements, biometric authentication, and tamper-resistant design. Our security whitepaper details the multi-layered approach we take to protect your digital assets.`,
+                `Post-quantum cryptography is essential for future-proofing blockchain security. The NIST standardization process has identified several promising algorithms, with lattice-based schemes being particularly suitable for embedded systems like hardware wallets due to their efficiency.`,
+                `CROSSBAR's security architecture uses a defense-in-depth approach. We combine hardware security modules, secure boot, encrypted storage, and remote attestation to create a comprehensive security solution. Our approach exceeds industry standards for cryptocurrency storage.`
+            ];
+            
+            const randomIndex = Math.floor(Math.random() * responses.length);
+            return responses[randomIndex];
+        }
+
+        function generateDynamicSuggestions() {
+            return [
+                "What are the advantages of lattice-based cryptography?",
+                "How does CROSSBAR compare to other hardware wallets?",
+                "Explain the key exchange mechanism in quantum-resistant systems",
+                {
+                    text: "Upload document about zero-knowledge proofs",
+                    isAction: true,
+                    concepts: ["zero-knowledge proofs", "zk-SNARKs"]
+                }
+            ];
+        }
+
+        function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            // Validate file type
-            const validTypes = [
-                'application/pdf', 
-                'text/plain', 
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/json'
-            ];
-            
-            const validExtensions = ['.pdf', '.txt', '.docx', '.doc', '.pptx', '.xlsx', '.json'];
-            const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-            
-            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
-                showUploadMessage(`❌ Unsupported file type: ${file.name}`, false);
-                return;
-            }
-
-            // File size validation (100MB max)
-            const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-            if (file.size > MAX_FILE_SIZE) {
-                showUploadMessage(`❌ File too large (${formatFileSize(file.size)}). Max size: 100MB`, false);
-                return;
-            }
-            
             // Show processing message
-            const processingId = 'processing-' + Date.now();
-            showUploadMessage(
-                `⏳ Processing "${file.name}" (${formatFileSize(file.size)})...`, 
-                true,
-                processingId
-            );
+            showUploadMessage(`⏳ Processing "${file.name}"...`, true);
             
-            try {
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("original_filename", file.name);
-                formData.append("upload_timestamp", new Date().toISOString());
-                formData.append("content_type", file.type);
+            // Simulate processing delay
+            setTimeout(() => {
+                // Create document object
+                const docId = `doc-${Date.now()}`;
+                const doc = {
+                    id: docId,
+                    name: file.name,
+                    type: file.type.split('/')[1] || 'Document',
+                    source: 'upload'
+                };
                 
-                // Upload with progress tracking
-                const result = await xhrUploadWithProgress(
-                    `${API_BASE_URL}${ENDPOINTS.upload}`, 
-                    formData,
-                    (progress) => {
-                        updateUploadMessage(
-                            processingId,
-                            `⏳ Uploading "${file.name}" (${progress}%)...`
-                        );
-                    }
-                );
+                // Add to UI
+                addDocumentToUI(doc);
                 
-                if (result.success) {
-                    // Create document object
-                    const docId = `doc-${Date.now()}`;
-                    const doc = {
-                        id: docId,
-                        name: file.name,
-                        type: file.type.split('/')[1] || 'Document',
-                        source: 'upload',
-                        content: result.summary || "Uploaded document content",
-                        keywords: result.keywords || generateKeywordsForUploadedFile(file.name)
-                    };
-                    
-                    // Process document
-                    const processedDoc = await processDocument(doc);
-                    currentContext.documents[docId] = processedDoc;
-                    
-                    // Add to UI
-                    addDocumentToUI(processedDoc);
-                    
-                    // Set as active context
-                    document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
-                    const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
-                    if (newDocItem) {
-                        newDocItem.classList.add('active');
-                    }
-                    
-                    currentContext.currentFocus.document = docId;
-                    currentContext.currentFocus.topic = file.name;
-                    updateContextDisplay();
-                    updateKeywordsDisplay();
-                    
-                    // Show success message
-                    updateUploadMessage(processingId, `✅ Successfully processed "${file.name}"`);
-                    addMessage('bot', {
-                        text: `I've processed the document <strong>${file.name}</strong>. Ask me questions about its content.`,
-                        type: 'status'
-                    });
-                    
-                } else {
-                    let errorMsg = result.error || 'Server error';
-                    if (result.error.includes('disk space')) {
-                        errorMsg += ' - Check server storage';
-                    } else if (result.error.includes('file size')) {
-                        errorMsg += ' - Verify server config limits';
-                    }
-                    throw new Error(errorMsg);
-                }
+                // Set as active context
+                document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+                const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
+                if (newDocItem) newDocItem.classList.add('active');
                 
-            } catch (error) {
-                showUploadMessage(
-                    `❌ Upload failed: ${error.message}`,
-                    false,
-                    processingId
-                );
-                console.error("Upload error:", error);
-            } finally {
-                event.target.value = '';
-            }
-        }
-        
-        // Enhanced XMLHttpRequest with CORS handling
-        function xhrUploadWithProgress(url, formData, onProgress) {
-            return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.timeout = 300000; // 5-minute timeout
+                updateContextDisplay(doc.name);
                 
-                // Configure CORS
-                xhr.withCredentials = true;
-                
-                xhr.open("POST", url);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                
-                // Progress handler
-                xhr.upload.addEventListener("progress", (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        onProgress(percent);
-                    }
+                // Show success message
+                showUploadMessage(`✅ Successfully processed "${file.name}"`, true);
+                addMessage('bot', {
+                    text: `I've processed the document <strong>${file.name}</strong>. Ask me questions about its content.`,
+                    type: 'status'
                 });
-                
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        try {
-                            resolve(JSON.parse(xhr.responseText));
-                        } catch (e) {
-                            reject(new Error("Invalid server response"));
-                        }
-                    } else {
-                        const errorInfo = {
-                            status: xhr.status,
-                            statusText: xhr.statusText,
-                            response: xhr.responseText
-                        };
-                        
-                        let errorMsg = "Network error. Possible causes: ";
-                        
-                        if (xhr.status === 0) {
-                            errorMsg += "Firewall blocking, server offline, or CORS misconfiguration";
-                        } else if (xhr.status === 404) {
-                            errorMsg += "Endpoint routing issue";
-                        } else {
-                            errorMsg += `HTTP error ${xhr.status}`;
-                        }
-                        
-                        reject(new Error(`${errorMsg} | Details: ${JSON.stringify(errorInfo)}`));
-                    }
-                };
-                
-                xhr.onerror = () => {
-                    reject(new Error("Network error. Check connection or try again later."));
-                };
-                
-                xhr.ontimeout = () => {
-                    reject(new Error("Request timed out. Try a smaller file or check your connection."));
-                };
-                
-                try {
-                    xhr.send(formData);
-                } catch (error) {
-                    reject(new Error(`XHR send failed: ${error.message} (Check server connectivity and CORS headers)`));
-                }
-            });
-        }
-            
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const icons = {
-                pdf: 'file-pdf',
-                doc: 'file-word',
-                docx: 'file-word',
-                txt: 'file-alt',
-                ppt: 'file-powerpoint',
-                pptx: 'file-powerpoint',
-                xls: 'file-excel',
-                xlsx: 'file-excel',
-                json: 'file-code'
-            };
-            return `<i class="fas fa-${icons[ext] || 'file'}"></i>`;
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' bytes';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-        }
-
-        // Generate suggestions based on current context
-        function generateDynamicSuggestions() {
-            const suggestions = [];
-            const { document, topic, entities, keywords } = currentContext.currentFocus;
-            const currentDoc = document ? currentContext.documents[document] : null;
-            
-            // Document-based suggestions
-            if (currentDoc) {
-                suggestions.push(`Summarize the key points in ${currentDoc.name}`);
-                suggestions.push(`Explain the main concepts in ${currentDoc.name}`);
-                
-                if (currentDoc.keywords) {
-                    const topKeyword = Object.keys(currentDoc.keywords)[0];
-                    if (topKeyword) {
-                        suggestions.push(`Tell me more about ${topKeyword} in this document`);
-                    }
-                }
-            }
-            
-            // Topic-based suggestions
-            if (topic) {
-                suggestions.push(`How does this relate to ${topic}?`);
-                suggestions.push(`Compare this to other approaches in ${topic}`);
-            }
-            
-            // Entity-based suggestions
-            if (entities.length > 0) {
-                suggestions.push({
-                    text: `Explain ${entities[0]} in more detail`,
-                    isAction: true,
-                    concepts: [entities[0]]
-                });
-            }
-            
-            // Keyword-based suggestions
-            if (keywords.length > 0) {
-                suggestions.push(`How does ${keywords[0]} work?`);
-                suggestions.push(`What are the implications of ${keywords[0]}?`);
-            }
-            
-            // Fallback suggestions
-            if (suggestions.length === 0) {
-                suggestions.push("Can you elaborate on this?");
-                suggestions.push("Provide more details about this concept");
-            }
-            
-            return suggestions.slice(0, 3); // Return top 3 suggestions
-        }      
-
-        function generateKeywordsForUploadedFile(filename) {
-            // Simulate keyword extraction based on filename
-            const commonKeywords = {
-                "security": {count: Math.floor(Math.random() * 20) + 5},
-                "cryptography": {count: Math.floor(Math.random() * 15) + 5},
-                "implementation": {count: Math.floor(Math.random() * 10) + 3}
-            };
-            
-            if (filename.toLowerCase().includes('quantum')) {
-                commonKeywords["quantum-resistant"] = {count: Math.floor(Math.random() * 25) + 10};
-            }
-            
-            if (filename.toLowerCase().includes('wallet')) {
-                commonKeywords["hardware wallet"] = {count: Math.floor(Math.random() * 30) + 15};
-            }
-            
-            return commonKeywords;
-        }
-
-        function updateUploadMessage(id, newText) {
-            const msg = document.querySelector(`.upload-message[data-id="${id}"]`);
-            if (msg) {
-                msg.innerHTML = newText;
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+            }, 2000);
         }
         
         function promptForLink() {
             const url = prompt('Enter URL of document to analyze:', 'https://arxiv.org/pdf/2307.12874');
             if (!url) return;
             
-            // Validate URL
             if (!url.startsWith('http')) {
-                showUploadMessage('❌ Please enter a valid URL starting with http:// or https://', false);
+                showUploadMessage('❌ Please enter a valid URL', false);
                 return;
             }
             
@@ -1935,13 +1360,8 @@
                     id: docId,
                     name: "Web Document",
                     type: "website",
-                    source: url,
-                    content: `Content from ${url}`,
-                    keywords: generateKeywordsForUploadedFile(url)
+                    source: url
                 };
-                
-                // Add to context
-                currentContext.documents[docId] = doc;
                 
                 // Add to UI
                 addDocumentToUI(doc);
@@ -1949,89 +1369,28 @@
                 // Set as active context
                 document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
                 const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
-                if (newDocItem) {
-                    newDocItem.classList.add('active');
-                }
+                if (newDocItem) newDocItem.classList.add('active');
                 
-                currentContext.currentFocus.document = docId;
-                currentContext.currentFocus.topic = "Web Document";
-                updateContextDisplay();
-                updateKeywordsDisplay();
+                updateContextDisplay("Web Document");
                 
-                // Show success message
-                showUploadMessage(`✅ Successfully analyzed document from ${url}`, true);
+                showUploadMessage(`✅ Successfully analyzed document`, true);
                 addMessage('bot', {
-                    text: `I've processed the document from <a href="${url}" target="_blank">${url}</a>. Ask me questions about its content.`,
+                    text: `Processed document from <a href="${url}" target="_blank">${url}</a>`,
                     type: 'status'
                 });
             }, 1500);
         }
         
-        // Dynamic context retrieval engine
-        async function retrieveRelevantContext(userQuery) {
-            try {
-                // 1. Prepare context payload
-                const payload = {
-                    query: userQuery,
-                    context: {
-                        currentFocus: currentContext.currentFocus,
-                        recentMessages: currentContext.conversationHistory
-                            .slice(-currentContext.retrievalConfig.contextWindow),
-                        allDocuments: Object.keys(currentContext.documents)
-                    }
-                };
-                
-                // 2. Retrieve from backend
-                const response = await fetch(`${API_BASE_URL}${ENDPOINTS.retrieveContext}`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Context retrieval failed: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                // 3. Update context with retrieval results
-                currentContext.currentFocus = {
-                    ...currentContext.currentFocus,
-                    document: result.documentId || currentContext.currentFocus.document,
-                    topic: result.topic || currentContext.currentFocus.topic,
-                    entities: [...new Set([
-                        ...currentContext.currentFocus.entities,
-                        ...(result.entities || [])
-                    ])],
-                    keywords: [...new Set([
-                        ...currentContext.currentFocus.keywords,
-                        ...(result.keywords || [])
-                    ])]
-                };
-                
-                return result;
-            } catch (error) {
-                console.error("Context retrieval error:", error);
-                return {
-                    documentId: currentContext.currentFocus.document,
-                    topic: currentContext.currentFocus.topic,
-                    entities: [],
-                    keywords: []
-                };
-            }
-        }
-
         function fetchCompanyInfo() {
             showUploadMessage(`⏳ Retrieving company information...`, true);
             
             setTimeout(() => {
-                // Simulated company data
                 const companyInfo = {
                     name: "CROSSBAR Inc.",
-                    founded: "2018",
-                    headquarters: "San Francisco, CA",
-                    ceo: "Alex Morgan",
-                    contact: "contact@crossbar-inc.com",
+                    founded: "2010",
+                    headquarters: "Santa Clara, CA",
+                    investors: "Artiman, Kleiner Perkins, Caufield & Byers, Northern Light",
+                    contact: "(408) 884-0281",
                     website: "https://www.crossbar-inc.com"
                 };
                 
@@ -2041,57 +1400,40 @@
                         <p><strong>Name:</strong> ${companyInfo.name}</p>
                         <p><strong>Founded:</strong> ${companyInfo.founded}</p>
                         <p><strong>Headquarters:</strong> ${companyInfo.headquarters}</p>
-                        <p><strong>CEO:</strong> ${companyInfo.ceo}</p>
-                        <p><strong>Contact:</strong> <a href="mailto:${companyInfo.contact}" class="docs-link">${companyInfo.contact}</a></p>
-                        <p><strong>Website:</strong> <a href="${companyInfo.website}" target="_blank" class="docs-link">${companyInfo.website}</a></p>
+                        <p><strong>Investors:</strong> ${companyInfo.investors}</p>
+                        <p><strong>Contact:</strong> <a href="mailto:${companyInfo.contact}">${companyInfo.contact}</a></p>
+                        <p><strong>Website:</strong> <a href="${companyInfo.website}" target="_blank">${companyInfo.website}</a></p>
                     </div>
-                    <p style="margin-top: 0.8rem;">For more details, visit our <a href="${companyInfo.website}" target="_blank" class="docs-link">website</a>.</p>
                 `;
                 
                 addMessage('bot', {
                     text: response,
                     type: 'company'
                 });
-                
-                // Update context
-                currentContext.currentFocus.topic = "Company information";
-                updateContextDisplay();
             }, 1500);
         }
         
-        function showUploadMessage(text, isSuccess, id = null) {
-            // Remove any existing message with same ID
-            if (id) {
-                document.querySelectorAll(`.upload-message[data-id="${id}"]`).forEach(el => el.remove());
-            }
-            
+        function showUploadMessage(text, isSuccess) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `upload-message ${isSuccess ? 'success' : 'error'}`;
-            if (id) msgDiv.dataset.id = id;
             msgDiv.innerHTML = text;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // Remove after delay if not a persistent message
-            if (!id) {
-                setTimeout(() => {
-                    if (msgDiv.parentNode) {
-                        chatMessages.removeChild(msgDiv);
-                    }
-                }, 5000);
-            }
+            // Remove after delay
+            setTimeout(() => {
+                if (msgDiv.parentNode) {
+                    chatMessages.removeChild(msgDiv);
+                }
+            }, 5000);
         }
 
-        function updateContextDisplay() {
+        function updateContextDisplay(docName) {
             const contextDisplay = document.querySelector('.context-display');
             if (contextDisplay) {
-                const docId = currentContext.currentFocus.document;
-                const doc = docId ? currentContext.documents[docId] : null;
-                const docName = doc ? doc.name : 'None';
-                
                 contextDisplay.innerHTML = `
                     <p><i class="fas fa-file-alt"></i> Active document: <strong>${docName}</strong></p>
-                    <p><i class="fas fa-comment"></i> Current topic: <strong>${currentContext.currentFocus.topic}</strong></p>
+                    <p><i class="fas fa-comment"></i> Current topic: <strong>Document Analysis</strong></p>
                     <div class="context-indicator">
                         <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
                     </div>
@@ -2103,11 +1445,11 @@
         window.rateResponse = function(button, isHelpful) {
             if (isHelpful) {
                 button.innerHTML = '<i class="fas fa-check"></i> Thank you!';
-                button.style.background = 'var(--success)';
+                button.style.background = '#4CAF50';
                 button.style.color = 'white';
             } else {
                 button.innerHTML = '<i class="fas fa-times"></i> Noted';
-                button.style.background = 'var(--error)';
+                button.style.background = '#F44336';
                 button.style.color = 'white';
             }
             button.disabled = true;
@@ -2118,109 +1460,48 @@
             sendMessage();
         };
 
-        // Document menu functions
-        window.showDocMenu = function(event, docId) {
-            event.stopPropagation();
-            
-            // Remove any existing menus
-            document.querySelectorAll('.doc-context-menu').forEach(el => el.remove());
-            
-            const menu = document.createElement('div');
-            menu.className = 'doc-context-menu';
-            menu.style.top = `${event.clientY}px`;
-            menu.style.left = `${event.clientX}px`;
-            
-            menu.innerHTML = `
-                <div class="menu-item" onclick="renameDocument('${docId}')">
-                    <i class="fas fa-edit"></i> Rename
+        window.handleRareConceptAction = function(concepts) {
+            // Show prominent upload prompt
+            const uploadPrompt = document.createElement('div');
+            uploadPrompt.className = 'upload-prompt';
+            uploadPrompt.innerHTML = `
+                <div class="prompt-header">
+                    <i class="fas fa-file-upload"></i>
+                    <h3>Document Upload Recommended</h3>
                 </div>
-                <div class="menu-item" onclick="removeDocument('${docId}')">
-                    <i class="fas fa-trash"></i> Remove
-                </div>
-                <div class="menu-item" onclick="exportDocument('${docId}')">
-                    <i class="fas fa-download"></i> Export
+                <div class="prompt-content">
+                    <p>The following concepts need more detailed documentation:</p>
+                    <ul class="concept-list">
+                        ${concepts.map(c => `<li>${c}</li>`).join('')}
+                    </ul>
+                    <div class="prompt-actions">
+                        <button class="input-btn primary" onclick="focusUploadButton()">
+                            <i class="fas fa-upload"></i> Upload Document
+                        </button>
+                        <button class="input-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            Not Now
+                        </button>
+                    </div>
                 </div>
             `;
             
-            document.body.appendChild(menu);
+            // Insert after chat messages
+            chatMessages.parentNode.insertBefore(uploadPrompt, chatMessages.nextSibling);
+        };
+
+        window.focusUploadButton = function() {
+            // Remove any existing prompts
+            document.querySelectorAll('.upload-prompt').forEach(el => el.remove());
             
-            // Close menu when clicking elsewhere
-            const closeMenu = () => {
-                menu.remove();
-                document.removeEventListener('click', closeMenu);
-            };
+            // Highlight upload button
+            uploadBtn.classList.add('pulse');
             
+            // Auto-click the upload button after a delay
             setTimeout(() => {
-                document.addEventListener('click', closeMenu);
-            }, 100);
-        };
-
-        window.renameDocument = function(docId) {
-            const newName = prompt("Enter new name for document:", currentContext.documents[docId].name);
-            if (newName && newName !== currentContext.documents[docId].name) {
-                // Update in UI
-                const docItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
-                if (docItem) {
-                    docItem.querySelector('.doc-name').textContent = newName;
-                }
-                
-                // Update in context
-                currentContext.documents[docId].name = newName;
-                
-                // Update context display if this is the active document
-                if (currentContext.currentFocus.document === docId) {
-                    updateContextDisplay();
-                }
-            }
-        };
-
-        window.removeDocument = function(docId) {
-            if (confirm(`Are you sure you want to remove "${currentContext.documents[docId].name}" from your documents?`)) {
-                // Remove from UI
-                const docItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
-                if (docItem) docItem.remove();
-                
-                // Remove from current context if active
-                if (currentContext.currentFocus.document === docId) {
-                    currentContext.currentFocus.document = null;
-                    currentContext.currentFocus.topic = "";
-                    updateContextDisplay();
-                }
-                
-                // Remove from documents state
-                delete currentContext.documents[docId];
-                
-                updateKeywordsDisplay();
-                
-                addMessage('bot', {
-                    text: `Document has been removed.`,
-                    type: 'status'
-                });
-            }
-        };
-
-        window.exportDocument = function(docId) {
-            const doc = currentContext.documents[docId];
-            if (doc) {
-                // Create a blob from the document content
-                const blob = new Blob([doc.content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                
-                // Create download link
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${doc.name}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 0);
-            }
+                uploadBtn.click();
+                uploadBtn.classList.remove('pulse');
+            }, 500);
         };
     </script>
-
 </body>
 </html>
