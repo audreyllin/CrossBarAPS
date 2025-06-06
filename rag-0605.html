@@ -1010,6 +1010,25 @@
     <input type="file" id="file-upload" style="display: none;">
 
     <script>
+        // Configuration - Enhanced with fallback URLs
+        const API_BASE_URLS = [
+            window.location.origin,
+            'http://localhost:5000',
+            'https://your-production-domain.com'
+        ];
+        let ACTIVE_API_BASE = API_BASE_URLS[0];
+        
+        const ENDPOINTS = {
+            ask: '/ask',
+            upload: '/upload',
+            status: '/status',
+            initialContext: '/initial-context',
+            processDocument: '/process-document',
+            retrieveContext: '/retrieve-context',
+            updateContext: '/update-context',
+            addDocument: '/add-document'
+        };
+
         // DOM Elements
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
@@ -1022,43 +1041,33 @@
         const activeDocs = document.getElementById('active-docs');
         const keywordsDisplay = document.getElementById('keywords-display');
         
-        // App state
+        // App state - Dynamic Context Version
         let currentContext = {
-            activeDocument: "arXiv:2307.12874",
-            lastTopic: "Quantum-Resistant Algorithms",
+            // Active conversation state
             conversationHistory: [],
             lastResponseType: null,
-            documents: {
-                "arXiv:2307.12874": {
-                    type: "research_paper",
-                    content: "This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms for resource-constrained hardware wallets. We benchmark CRYSTALS-Dilithium, Falcon, and SPHINCS+ on ARM Cortex-M4 microcontrollers, analyzing performance, memory footprint, and power consumption. Our results demonstrate that lattice-based schemes (particularly CRYSTALS-Dilithium) offer the optimal balance between security against quantum attacks and computational efficiency, with signature times under 2.5ms and verification under 1ms. We propose hardware-accelerated implementations that maintain battery life while enhancing security.",
-                    keywords: {
-                        "quantum-resistant": {count: 28, sections: ['1.1', '3.1', '4.2']},
-                        "lattice cryptography": {count: 22, sections: ['2.3', '3.4']},
-                        "hardware wallets": {count: 42, sections: ['1.0', '3.4', '5.1']},
-                        "cryptographic protocols": {count: 18, sections: ['2.3', '4.2']}
-                    }
-                },
-                "CROSSBAR Security Whitepaper": {
-                    type: "whitepaper",
-                    content: "The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security, focusing on quantum-resistant cryptography, secure element implementation, and tamper-resistant design. Key features include: 1) EAL6+ certified secure element, 2) Multi-factor authentication combining biometrics and PIN, 3) Self-destruct mechanism upon tampering detection, 4) Hardware-accelerated cryptographic operations, 5) Open-source firmware verification.",
-                    keywords: {
-                        "secure element": {count: 15, sections: ['4.3', '5.2']},
-                        "biometric authentication": {count: 17, sections: ['3.2', '4.1']},
-                        "quantum-resistant": {count: 12, sections: ['2.1', '3.5']},
-                        "tamper resistance": {count: 19, sections: ['4.2', '6.1']}
-                    }
-                },
-                "NIST Post-Quantum Report": {
-                    type: "report",
-                    content: "The NIST report on post-quantum cryptography standardization process evaluates candidate algorithms for standardization. The report focuses on four main categories: 1) Lattice-based cryptography (CRYSTALS-Kyber, CRYSTALS-Dilithium), 2) Hash-based signatures (SPHINCS+), 3) Code-based cryptography (Classic McEliece), and 4) Multivariate cryptography (Rainbow). The report provides detailed security analyses and implementation considerations for each algorithm.",
-                    keywords: {
-                        "NIST standardization": {count: 32, sections: ['1.0', '2.1']},
-                        "lattice-based": {count: 28, sections: ['3.1', '4.2']},
-                        "security analysis": {count: 21, sections: ['2.3', '5.1']},
-                        "implementation": {count: 18, sections: ['3.4', '4.2']}
-                    }
+            
+            // Document knowledge base (initially empty)
+            documents: {},
+            
+            // Dynamic context tracking
+            currentFocus: {
+                document: null,       // Currently focused document ID
+                topic: "",            // Current discussion topic
+                entities: [],         // Recognized entities in conversation
+                keywords: [],         // Important keywords from conversation
+                temporalContext: {    // Time-based context
+                    lastUpdated: new Date(),
+                    expires: null     // When context should be refreshed
                 }
+            },
+            
+            // Retrieval settings
+            retrievalConfig: {
+                similarityThreshold: 0.75,
+                maxKeywords: 5,
+                contextWindow: 5,     // Last 5 messages used for context
+                maxDocuments: 10      // Max documents to keep in context
             }
         };
         
@@ -1076,30 +1085,289 @@
         companyInfoBtn.addEventListener('click', fetchCompanyInfo);
         fileUpload.addEventListener('change', handleFileUpload);
         
-        // Initialize with sample documents and conversation
-        window.onload = function() {
-            // Set keywords for active document
-            updateKeywordsDisplay();
+        // New function: Test backend connectivity
+        async function findWorkingBackend() {
+            for (const url of API_BASE_URLS) {
+                try {
+                    const response = await fetch(`${url}${ENDPOINTS.status}`, {
+                        method: 'GET',
+                        headers: {'X-Test-Connection': 'true'},
+                        timeout: 3000
+                    });
+                    
+                    if (response.ok) {
+                        return url;
+                    }
+                } catch (e) {
+                    console.log(`Backend at ${url} unavailable: ${e.message}`);
+                }
+            }
+            return null;
+        }        
+
+        // Enhanced initialization
+        window.onload = async function() {
+            // Show connection status immediately
+            addMessage('bot', {
+                text: "⌛ Connecting to document processing system...",
+                type: 'status'
+            });
             
-            // Add document click handlers
-            document.querySelectorAll('.doc-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.doc-item').forEach(el => {
-                        el.classList.remove('active');
-                    });
-                    item.classList.add('active');
-                    currentContext.activeDocument = item.dataset.doc;
-                    currentContext.lastTopic = item.dataset.doc;
-                    updateContextDisplay();
-                    updateKeywordsDisplay();
-                    addMessage('bot', {
-                        text: `Now focusing on <strong>${item.dataset.doc}</strong>. Ask me anything about this document.`,
-                        type: 'status'
-                    });
+            try {
+                // Find working backend
+                const workingBackend = await findWorkingBackend();
+                
+                if (!workingBackend) {
+                    throw new Error("No backend servers available. Using offline mode.");
+                }
+                
+                ACTIVE_API_BASE = workingBackend;
+                console.log(`Using backend: ${ACTIVE_API_BASE}`);
+                
+                // Update status message
+                chatMessages.lastChild.querySelector('.message-content').innerHTML = 
+                    `✅ Connected to backend at ${new URL(ACTIVE_API_BASE).hostname}`;
+                
+                // Load initial context
+                const response = await fetch(`${ACTIVE_API_BASE}${ENDPOINTS.initialContext}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status} ${response.statusText}`);
+                }
+                
+                const contextData = await response.json();
+                
+                // Initialize context
+                currentContext.documents = contextData.documents.reduce((acc, doc) => {
+                    acc[doc.id] = doc;
+                    return acc;
+                }, {});
+                
+                currentContext.currentFocus = contextData.currentFocus;
+                
+                // Add documents to UI
+                contextData.documents.forEach(doc => addDocumentToUI(doc));
+                
+                // Set active document
+                if (contextData.currentFocus.document) {
+                    const activeDoc = document.querySelector(`.doc-item[data-doc-id="${contextData.currentFocus.document}"]`);
+                    if (activeDoc) {
+                        activeDoc.classList.add('active');
+                        updateKeywordsDisplay();
+                    }
+                }
+                
+                // Show welcome message
+                addMessage('bot', {
+                    text: "System initialized. I'm ready to answer your questions!",
+                    type: 'status'
+                });
+                
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                
+                // Update status message
+                if (chatMessages.lastChild) {
+                    chatMessages.lastChild.querySelector('.message-content').innerHTML = 
+                        `⚠️ ${error.message}`;
+                }
+                
+                // Show offline mode instructions
+                addMessage('bot', {
+                    text: "Running in offline mode. Some features may be limited.<br><br>" +
+                        "To enable full functionality:<br>" +
+                        "1. Ensure backend server is running<br>" +
+                        "2. Check your network connection<br>" +
+                        "3. Verify CORS settings on server",
+                    type: 'error'
+                });
+                
+                // Fallback to sample documents
+                await initSampleDocuments();
+                updateContextDisplay();
+                updateKeywordsDisplay();
+                
+                // Add offline mode indicator
+                const offlineIndicator = document.createElement('div');
+                offlineIndicator.className = 'offline-indicator';
+                offlineIndicator.innerHTML = `
+                    <i class="fas fa-wifi-slash"></i> Offline Mode
+                    <button onclick="window.location.reload()">Retry Connection</button>
+                `;
+                document.body.appendChild(offlineIndicator);
+            }
+        };
+
+        // Add document to UI
+        function addDocumentToUI(doc) {
+            const docItem = document.createElement('div');
+            docItem.className = 'doc-item';
+            docItem.dataset.docId = doc.id;
+            
+            docItem.innerHTML = `
+                <div class="doc-icon">
+                    ${getFileIcon(doc.name)}
+                </div>
+                <div class="doc-info">
+                    <div class="doc-name">${doc.name}</div>
+                    <div class="doc-type">${doc.type}</div>
+                </div>
+                <div class="doc-menu" onclick="showDocMenu(event, '${doc.id}')">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            `;
+            
+            docItem.addEventListener('click', () => {
+                document.querySelectorAll('.doc-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                docItem.classList.add('active');
+                
+                // Update context with selected document
+                currentContext.currentFocus.document = doc.id;
+                currentContext.currentFocus.topic = doc.name;
+                
+                // Send context update to backend
+                fetch(`${API_BASE_URL}${ENDPOINTS.updateContext}`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        context: {
+                            currentFocus: {
+                                document: doc.id,
+                                topic: doc.name
+                            }
+                        }
+                    })
+                });
+                
+                updateContextDisplay();
+                updateKeywordsDisplay();
+                
+                addMessage('bot', {
+                    text: `Now focusing on <strong>${doc.name}</strong>. Ask me anything about this document.`,
+                    type: 'status'
                 });
             });
-        };
-        
+            
+            activeDocs.appendChild(docItem);
+        }
+
+        // Update keywords display
+        function updateKeywordsDisplay() {
+            const docId = currentContext.currentFocus.document;
+            if (!docId || !currentContext.documents[docId]) return;
+            
+            const doc = currentContext.documents[docId];
+            keywordsDisplay.innerHTML = '';
+            
+            if (doc.keywords) {
+                Object.entries(doc.keywords).forEach(([keyword, data]) => {
+                    const keywordItem = document.createElement('div');
+                    keywordItem.className = 'keyword-item';
+                    
+                    keywordItem.innerHTML = `
+                        <div class="keyword-header">
+                            <div class="keyword-name">${keyword}</div>
+                            <div class="keyword-count">${data.count || 0} mentions</div>
+                        </div>
+                    `;
+                    
+                    // Add click handler to search for this keyword
+                    keywordItem.addEventListener('click', () => {
+                        userInput.value = `Tell me about ${keyword} in ${doc.name}`;
+                        sendMessage();
+                    });
+                    
+                    keywordsDisplay.appendChild(keywordItem);
+                });
+            }
+        }
+
+        // Initialize with sample documents (fallback)
+        async function initSampleDocuments() {
+            const sampleDocs = [
+                {
+                    id: "doc-001",
+                    name: "arXiv:2307.12874",
+                    type: "research_paper",
+                    source: "https://arxiv.org/pdf/2307.12874",
+                    content: "This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms for resource-constrained hardware wallets. We benchmark CRYSTALS-Dilithium, Falcon, and SPHINCS+ on ARM Cortex-M4 microcontrollers, analyzing performance, memory footprint, and power consumption. Our results demonstrate that lattice-based schemes (particularly CRYSTALS-Dilithium) offer the optimal balance between security against quantum attacks and computational efficiency, with signature times under 2.5ms and verification under 1ms. We propose hardware-accelerated implementations that maintain battery life while enhancing security.",
+                    keywords: {
+                        "quantum-resistant": {count: 28, sections: ['1.1', '3.1', '4.2']},
+                        "lattice cryptography": {count: 22, sections: ['2.3', '3.4']},
+                        "hardware wallets": {count: 42, sections: ['1.0', '3.4', '5.1']},
+                        "cryptographic protocols": {count: 18, sections: ['2.3', '4.2']}
+                    }
+                },
+                {
+                    id: "doc-002",
+                    name: "CROSSBAR Security Whitepaper",
+                    type: "whitepaper",
+                    source: "internal",
+                    content: "The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security, focusing on quantum-resistant cryptography, secure element implementation, and tamper-resistant design. Key features include: 1) EAL6+ certified secure element, 2) Multi-factor authentication combining biometrics and PIN, 3) Self-destruct mechanism upon tampering detection, 4) Hardware-accelerated cryptographic operations, 5) Open-source firmware verification.",
+                    keywords: {
+                        "secure element": {count: 15, sections: ['4.3', '5.2']},
+                        "biometric authentication": {count: 17, sections: ['3.2', '4.1']},
+                        "quantum-resistant": {count: 12, sections: ['2.1', '3.5']},
+                        "tamper resistance": {count: 19, sections: ['4.2', '6.1']}
+                    }
+                }
+            ];
+
+            for (const doc of sampleDocs) {
+                // Process each document
+                const processedDoc = await processDocument(doc);
+                currentContext.documents[doc.id] = processedDoc;
+                addDocumentToUI(processedDoc);
+            }
+            
+            // Set the first document as active
+            if (sampleDocs.length > 0) {
+                currentContext.currentFocus.document = sampleDocs[0].id;
+                currentContext.currentFocus.topic = sampleDocs[0].name;
+                updateKeywordsDisplay();
+            }
+        }
+
+        // Process document content
+        async function processDocument(doc) {
+            try {
+                // Send to backend for NLP processing
+                const response = await fetch(`${API_BASE_URL}${ENDPOINTS.processDocument}`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ 
+                        content: doc.content,
+                        metadata: {
+                            name: doc.name,
+                            type: doc.type,
+                            source: doc.source
+                        }
+                    })
+                });
+                
+                const { keywords, summary, entities } = await response.json();
+                
+                return {
+                    ...doc,
+                    summary: summary || "Document summary not available",
+                    keywords: keywords || {},
+                    entities: entities || [],
+                    processedAt: new Date()
+                };
+            } catch (error) {
+                console.error("Document processing failed:", error);
+                return {
+                    ...doc,
+                    summary: "Document processing failed",
+                    keywords: {},
+                    entities: [],
+                    processedAt: new Date()
+                };
+            }
+        }
+
         // Add new handler for rare concept action
         window.handleRareConceptAction = function(concepts) {
             // Show prominent upload prompt
@@ -1149,11 +1417,57 @@
             }, 500);
         };
 
+        // Enhanced fetch with retries and timeouts
+        async function robustFetch(url, options = {}, retries = 2, timeout = 5000) {
+            return new Promise(async (resolve, reject) => {
+                const timer = setTimeout(() => {
+                    reject(new Error(`Request timed out after ${timeout}ms`));
+                }, timeout);
+                
+                try {
+                    const response = await fetch(url, options);
+                    clearTimeout(timer);
+                    
+                    if (response.ok) {
+                        resolve(response);
+                    } else if (retries > 0 && response.status >= 500) {
+                        // Retry server errors
+                        console.log(`Retrying (${retries} left)...`);
+                        setTimeout(async () => {
+                            resolve(await robustFetch(url, options, retries - 1, timeout));
+                        }, 1000);
+                    } else {
+                        reject(new Error(`HTTP ${response.status} ${response.statusText}`));
+                    }
+                } catch (error) {
+                    clearTimeout(timer);
+                    
+                    if (retries > 0) {
+                        // Retry network errors
+                        console.log(`Retrying (${retries} left)...`);
+                        setTimeout(async () => {
+                            resolve(await robustFetch(url, options, retries - 1, timeout));
+                        }, 1000);
+                    } else {
+                        reject(error);
+                    }
+                }
+            });
+        }       
+
+        // Enhanced sendMessage with connection recovery
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
             
-            // Add user message to chat
+            // Add user message to history
+            currentContext.conversationHistory.push({
+                role: "user",
+                content: message,
+                timestamp: new Date()
+            });
+            
+            // Add to UI
             addMessage('user', message);
             userInput.value = '';
             
@@ -1161,49 +1475,81 @@
             const typingIndicator = showTypingIndicator();
             
             try {
-                // Send to backend
-                // Change this in your sendMessage() function:
-                const response = await fetch("http://localhost:5000/ask", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ query: message })
-                });
+                // Retrieve dynamic context
+                const context = await retrieveRelevantContext(message);
+                
+                // Generate response with context
+                const response = await robustFetch(
+                    `${ACTIVE_API_BASE}${ENDPOINTS.ask}`,
+                    {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            query: message,
+                            context: context
+                        })
+                    }
+                );
                 
                 const data = await response.json();
                 
-                // Remove typing indicator
-                chatMessages.removeChild(typingIndicator);
+                // Update context with response data
+                currentContext.conversationHistory.push({
+                    role: "assistant",
+                    content: data.answer,
+                    timestamp: new Date()
+                });
                 
-                // Add bot response
+                // Update UI
+                chatMessages.removeChild(typingIndicator);
                 addMessage('bot', {
                     text: data.answer,
                     type: 'document',
-                    suggestions: data.documents ? [
-                        'Explain this in more detail',
-                        'Show related sections',
-                        'What are the key points?'
-                    ] : []
+                    suggestions: data.suggestions || generateDynamicSuggestions()
                 });
                 
-                // Update context
-                if (data.documents && data.documents.length > 0) {
-                    currentContext.activeDocument = data.documents[0];
-                }
-                currentContext.lastTopic = message;
+                // Update document/keyword displays
                 updateContextDisplay();
                 updateKeywordsDisplay();
                 
             } catch (error) {
+                // Error handling
                 chatMessages.removeChild(typingIndicator);
+                
+                let errorMessage = error.message;
+                let recoveryTip = "";
+                
+                if (error.message.includes("Failed to fetch") || 
+                    error.message.includes("NetworkError")) {
+                    errorMessage = "Network connection failed";
+                    recoveryTip = "<br><br>Please check your internet connection and try again.";
+                } 
+                else if (error.message.includes("timed out")) {
+                    errorMessage = "Server response timed out";
+                    recoveryTip = "<br><br>The server is taking too long to respond. Please try again later.";
+                }
+                else if (error.message.includes("CORS")) {
+                    errorMessage = "Cross-origin request blocked";
+                    recoveryTip = "<br><br>This is usually a server configuration issue.";
+                }
+                
                 addMessage('bot', {
-                    text: "Sorry, I couldn't process your request. Please try again.",
+                    text: `❌ ${errorMessage}${recoveryTip}`,
                     type: 'error'
                 });
+                
+                // Attempt to find a new backend
+                const newBackend = await findWorkingBackend();
+                if (newBackend) {
+                    ACTIVE_API_BASE = newBackend;
+                    addMessage('bot', {
+                        text: `🔁 Reconnected to backend at ${new URL(ACTIVE_API_BASE).hostname}`,
+                        type: 'status'
+                    });
+                }
             }
         }
-        
+
         function showTypingIndicator() {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message bot-message';
@@ -1240,9 +1586,16 @@
                 `;
             } else {
                 // Bot message
+                let messageContent = content.text;
+                
+                // If it's an error, highlight it
+                if (content.type === 'error') {
+                    messageContent = `<div class="error-message">${content.text}</div>`;
+                }
+                
                 messageDiv.innerHTML = `
                     <div class="message-content">
-                        ${content.text}
+                        ${messageContent}
                     </div>
                     ${content.type !== 'status' ? `
                     <div class="feedback">
@@ -1283,7 +1636,7 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        
+
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1293,138 +1646,273 @@
                 'application/pdf', 
                 'text/plain', 
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/msword'
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/json'
             ];
             
-            if (!validTypes.includes(file.type)) {
+            const validExtensions = ['.pdf', '.txt', '.docx', '.doc', '.pptx', '.xlsx', '.json'];
+            const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
                 showUploadMessage(`❌ Unsupported file type: ${file.name}`, false);
+                return;
+            }
+
+            // File size validation (100MB max)
+            const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+            if (file.size > MAX_FILE_SIZE) {
+                showUploadMessage(`❌ File too large (${formatFileSize(file.size)}). Max size: 100MB`, false);
                 return;
             }
             
             // Show processing message
-            showUploadMessage(`⏳ Processing "${file.name}" using our RAG system...`, true);
+            const processingId = 'processing-' + Date.now();
+            showUploadMessage(
+                `⏳ Processing "${file.name}" (${formatFileSize(file.size)})...`, 
+                true,
+                processingId
+            );
             
             try {
                 const formData = new FormData();
                 formData.append("file", file);
+                formData.append("original_filename", file.name);
+                formData.append("upload_timestamp", new Date().toISOString());
+                formData.append("content_type", file.type);
                 
-                const response = await fetch("/upload", {
-                    method: "POST",
-                    body: formData
-                });
-                
-                const result = await response.json();
+                // Upload with progress tracking
+                const result = await xhrUploadWithProgress(
+                    `${API_BASE_URL}${ENDPOINTS.upload}`, 
+                    formData,
+                    (progress) => {
+                        updateUploadMessage(
+                            processingId,
+                            `⏳ Uploading "${file.name}" (${progress}%)...`
+                        );
+                    }
+                );
                 
                 if (result.success) {
-                    // Add to active documents
-                    const docItem = document.createElement('div');
-                    docItem.className = 'doc-item';
-                    docItem.dataset.doc = file.name;
-                    
-                    docItem.innerHTML = `
-                        <div class="doc-icon">
-                            <i class="fas fa-file-pdf"></i>
-                        </div>
-                        <div class="doc-info">
-                            <div class="doc-name">${file.name}</div>
-                            <div class="doc-type">Document</div>
-                        </div>
-                    `;
-                    
-                    docItem.addEventListener('click', () => {
-                        document.querySelectorAll('.doc-item').forEach(el => {
-                            el.classList.remove('active');
-                        });
-                        docItem.classList.add('active');
-                        currentContext.activeDocument = file.name;
-                        currentContext.lastTopic = file.name;
-                        updateContextDisplay();
-                        updateKeywordsDisplay();
-                        addMessage('bot', {
-                            text: `Now focusing on <strong>${file.name}</strong>. Ask me anything about this document.`,
-                            type: 'status'
-                        });
-                    });
-                    
-                    activeDocs.appendChild(docItem);
-                    
-                    // Add to documents state
-                    currentContext.documents[file.name] = {
-                        type: "uploaded_file",
-                        content: `Content processed from ${file.name}`,
-                        keywords: generateKeywordsForUploadedFile(file.name)
+                    // Create document object
+                    const docId = `doc-${Date.now()}`;
+                    const doc = {
+                        id: docId,
+                        name: file.name,
+                        type: file.type.split('/')[1] || 'Document',
+                        source: 'upload',
+                        content: result.summary || "Uploaded document content",
+                        keywords: result.keywords || generateKeywordsForUploadedFile(file.name)
                     };
                     
+                    // Process document
+                    const processedDoc = await processDocument(doc);
+                    currentContext.documents[docId] = processedDoc;
+                    
+                    // Add to UI
+                    addDocumentToUI(processedDoc);
+                    
                     // Set as active context
-                    currentContext.activeDocument = file.name;
-                    currentContext.lastTopic = file.name;
+                    document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+                    const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
+                    if (newDocItem) {
+                        newDocItem.classList.add('active');
+                    }
+                    
+                    currentContext.currentFocus.document = docId;
+                    currentContext.currentFocus.topic = file.name;
                     updateContextDisplay();
                     updateKeywordsDisplay();
                     
                     // Show success message
-                    showUploadMessage(`✅ Document processed successfully! You can now ask questions about "${file.name}"`, true);
+                    updateUploadMessage(processingId, `✅ Successfully processed "${file.name}"`);
                     addMessage('bot', {
-                        text: `I've processed your document <strong>${file.name}</strong>. You can now ask me questions about its content.`,
+                        text: `I've processed the document <strong>${file.name}</strong>. Ask me questions about its content.`,
                         type: 'status'
                     });
+                    
                 } else {
-                    showUploadMessage(`❌ Error processing document: ${result.error || 'Unknown error'}`, false);
+                    let errorMsg = result.error || 'Server error';
+                    if (result.error.includes('disk space')) {
+                        errorMsg += ' - Check server storage';
+                    } else if (result.error.includes('file size')) {
+                        errorMsg += ' - Verify server config limits';
+                    }
+                    throw new Error(errorMsg);
                 }
                 
             } catch (error) {
-                showUploadMessage(`❌ Error uploading document: ${error.message}`, false);
+                showUploadMessage(
+                    `❌ Upload failed: ${error.message}`,
+                    false,
+                    processingId
+                );
+                console.error("Upload error:", error);
             } finally {
-                // Clear file input
                 event.target.value = '';
             }
         }
         
+        // Enhanced XMLHttpRequest with CORS handling
+        function xhrUploadWithProgress(url, formData, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.timeout = 300000; // 5-minute timeout
+                
+                // Configure CORS
+                xhr.withCredentials = true;
+                
+                xhr.open("POST", url);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                
+                // Progress handler
+                xhr.upload.addEventListener("progress", (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        onProgress(percent);
+                    }
+                });
+                
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            resolve(JSON.parse(xhr.responseText));
+                        } catch (e) {
+                            reject(new Error("Invalid server response"));
+                        }
+                    } else {
+                        const errorInfo = {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseText
+                        };
+                        
+                        let errorMsg = "Network error. Possible causes: ";
+                        
+                        if (xhr.status === 0) {
+                            errorMsg += "Firewall blocking, server offline, or CORS misconfiguration";
+                        } else if (xhr.status === 404) {
+                            errorMsg += "Endpoint routing issue";
+                        } else {
+                            errorMsg += `HTTP error ${xhr.status}`;
+                        }
+                        
+                        reject(new Error(`${errorMsg} | Details: ${JSON.stringify(errorInfo)}`));
+                    }
+                };
+                
+                xhr.onerror = () => {
+                    reject(new Error("Network error. Check connection or try again later."));
+                };
+                
+                xhr.ontimeout = () => {
+                    reject(new Error("Request timed out. Try a smaller file or check your connection."));
+                };
+                
+                try {
+                    xhr.send(formData);
+                } catch (error) {
+                    reject(new Error(`XHR send failed: ${error.message} (Check server connectivity and CORS headers)`));
+                }
+            });
+        }
+            
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: 'file-pdf',
+                doc: 'file-word',
+                docx: 'file-word',
+                txt: 'file-alt',
+                ppt: 'file-powerpoint',
+                pptx: 'file-powerpoint',
+                xls: 'file-excel',
+                xlsx: 'file-excel',
+                json: 'file-code'
+            };
+            return `<i class="fas fa-${icons[ext] || 'file'}"></i>`;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+        }
+
+        // Generate suggestions based on current context
+        function generateDynamicSuggestions() {
+            const suggestions = [];
+            const { document, topic, entities, keywords } = currentContext.currentFocus;
+            const currentDoc = document ? currentContext.documents[document] : null;
+            
+            // Document-based suggestions
+            if (currentDoc) {
+                suggestions.push(`Summarize the key points in ${currentDoc.name}`);
+                suggestions.push(`Explain the main concepts in ${currentDoc.name}`);
+                
+                if (currentDoc.keywords) {
+                    const topKeyword = Object.keys(currentDoc.keywords)[0];
+                    if (topKeyword) {
+                        suggestions.push(`Tell me more about ${topKeyword} in this document`);
+                    }
+                }
+            }
+            
+            // Topic-based suggestions
+            if (topic) {
+                suggestions.push(`How does this relate to ${topic}?`);
+                suggestions.push(`Compare this to other approaches in ${topic}`);
+            }
+            
+            // Entity-based suggestions
+            if (entities.length > 0) {
+                suggestions.push({
+                    text: `Explain ${entities[0]} in more detail`,
+                    isAction: true,
+                    concepts: [entities[0]]
+                });
+            }
+            
+            // Keyword-based suggestions
+            if (keywords.length > 0) {
+                suggestions.push(`How does ${keywords[0]} work?`);
+                suggestions.push(`What are the implications of ${keywords[0]}?`);
+            }
+            
+            // Fallback suggestions
+            if (suggestions.length === 0) {
+                suggestions.push("Can you elaborate on this?");
+                suggestions.push("Provide more details about this concept");
+            }
+            
+            return suggestions.slice(0, 3); // Return top 3 suggestions
+        }      
+
         function generateKeywordsForUploadedFile(filename) {
             // Simulate keyword extraction based on filename
             const commonKeywords = {
-                "security": {count: Math.floor(Math.random() * 20) + 5, sections: ['1.1', '2.3']},
-                "cryptography": {count: Math.floor(Math.random() * 15) + 5, sections: ['3.1']},
-                "implementation": {count: Math.floor(Math.random() * 10) + 3, sections: ['4.2']}
+                "security": {count: Math.floor(Math.random() * 20) + 5},
+                "cryptography": {count: Math.floor(Math.random() * 15) + 5},
+                "implementation": {count: Math.floor(Math.random() * 10) + 3}
             };
             
             if (filename.toLowerCase().includes('quantum')) {
-                commonKeywords["quantum-resistant"] = {count: Math.floor(Math.random() * 25) + 10, sections: ['1.0', '3.4']};
+                commonKeywords["quantum-resistant"] = {count: Math.floor(Math.random() * 25) + 10};
             }
             
             if (filename.toLowerCase().includes('wallet')) {
-                commonKeywords["hardware wallet"] = {count: Math.floor(Math.random() * 30) + 15, sections: ['2.1', '5.1']};
+                commonKeywords["hardware wallet"] = {count: Math.floor(Math.random() * 30) + 15};
             }
             
             return commonKeywords;
         }
-        
-        function updateKeywordsDisplay() {
-            const currentDoc = currentContext.documents[currentContext.activeDocument];
-            if (!currentDoc || !currentDoc.keywords) return;
-            
-            keywordsDisplay.innerHTML = '';
-            
-            for (const [keyword, data] of Object.entries(currentDoc.keywords)) {
-                const keywordItem = document.createElement('div');
-                keywordItem.className = 'keyword-item';
-                
-                keywordItem.innerHTML = `
-                    <div class="keyword-header">
-                        <div class="keyword-name">${keyword}</div>
-                        <div class="keyword-count">${data.count} mentions</div>
-                    </div>
-                    <div class="keyword-sections">
-                        <i class="fas fa-bookmark"></i> Sections: ${data.sections.join(', ')}
-                    </div>
-                `;
-                
-                // Add click handler to search for this keyword
-                keywordItem.addEventListener('click', () => {
-                    userInput.value = `Tell me about ${keyword} in ${currentContext.activeDocument}`;
-                    sendMessage();
-                });
-                
-                keywordsDisplay.appendChild(keywordItem);
+
+        function updateUploadMessage(id, newText) {
+            const msg = document.querySelector(`.upload-message[data-id="${id}"]`);
+            if (msg) {
+                msg.innerHTML = newText;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
         
@@ -1441,54 +1929,98 @@
             showUploadMessage(`⏳ Processing document from ${url}...`, true);
             
             setTimeout(() => {
-                // Add to active documents
-                const docName = `arXiv:2307.12874`;
-                const docItem = document.createElement('div');
-                docItem.className = 'doc-item';
-                docItem.dataset.doc = docName;
+                // Create document object
+                const docId = `doc-${Date.now()}`;
+                const doc = {
+                    id: docId,
+                    name: "Web Document",
+                    type: "website",
+                    source: url,
+                    content: `Content from ${url}`,
+                    keywords: generateKeywordsForUploadedFile(url)
+                };
                 
-                docItem.innerHTML = `
-                    <div class="doc-icon">
-                        <i class="fas fa-globe"></i>
-                    </div>
-                    <div class="doc-info">
-                        <div class="doc-name">${docName}</div>
-                        <div class="doc-type">Website</div>
-                    </div>
-                `;
+                // Add to context
+                currentContext.documents[docId] = doc;
                 
-                docItem.addEventListener('click', () => {
-                    document.querySelectorAll('.doc-item').forEach(el => {
-                        el.classList.remove('active');
-                    });
-                    docItem.classList.add('active');
-                    currentContext.activeDocument = docName;
-                    currentContext.lastTopic = "Quantum-Resistant Algorithms";
-                    updateContextDisplay();
-                    updateKeywordsDisplay();
-                    addMessage('bot', {
-                        text: `Now focusing on <strong>${docName}</strong>. Ask me anything about this document.`,
-                        type: 'status'
-                    });
-                });
-                
-                activeDocs.appendChild(docItem);
+                // Add to UI
+                addDocumentToUI(doc);
                 
                 // Set as active context
-                currentContext.activeDocument = docName;
-                currentContext.lastTopic = "Quantum-Resistant Algorithms";
+                document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+                const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
+                if (newDocItem) {
+                    newDocItem.classList.add('active');
+                }
+                
+                currentContext.currentFocus.document = docId;
+                currentContext.currentFocus.topic = "Web Document";
                 updateContextDisplay();
                 updateKeywordsDisplay();
                 
                 // Show success message
                 showUploadMessage(`✅ Successfully analyzed document from ${url}`, true);
                 addMessage('bot', {
-                    text: `I've processed the document <a href="${url}" target="_blank" class="docs-link">${docName}</a>. Ask me questions about its content.`,
+                    text: `I've processed the document from <a href="${url}" target="_blank">${url}</a>. Ask me questions about its content.`,
                     type: 'status'
                 });
-            }, 2500);
+            }, 1500);
         }
         
+        // Dynamic context retrieval engine
+        async function retrieveRelevantContext(userQuery) {
+            try {
+                // 1. Prepare context payload
+                const payload = {
+                    query: userQuery,
+                    context: {
+                        currentFocus: currentContext.currentFocus,
+                        recentMessages: currentContext.conversationHistory
+                            .slice(-currentContext.retrievalConfig.contextWindow),
+                        allDocuments: Object.keys(currentContext.documents)
+                    }
+                };
+                
+                // 2. Retrieve from backend
+                const response = await fetch(`${API_BASE_URL}${ENDPOINTS.retrieveContext}`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Context retrieval failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                // 3. Update context with retrieval results
+                currentContext.currentFocus = {
+                    ...currentContext.currentFocus,
+                    document: result.documentId || currentContext.currentFocus.document,
+                    topic: result.topic || currentContext.currentFocus.topic,
+                    entities: [...new Set([
+                        ...currentContext.currentFocus.entities,
+                        ...(result.entities || [])
+                    ])],
+                    keywords: [...new Set([
+                        ...currentContext.currentFocus.keywords,
+                        ...(result.keywords || [])
+                    ])]
+                };
+                
+                return result;
+            } catch (error) {
+                console.error("Context retrieval error:", error);
+                return {
+                    documentId: currentContext.currentFocus.document,
+                    topic: currentContext.currentFocus.topic,
+                    entities: [],
+                    keywords: []
+                };
+            }
+        }
+
         function fetchCompanyInfo() {
             showUploadMessage(`⏳ Retrieving company information...`, true);
             
@@ -1522,50 +2054,49 @@
                 });
                 
                 // Update context
-                currentContext.lastTopic = "Company information";
+                currentContext.currentFocus.topic = "Company information";
                 updateContextDisplay();
             }, 1500);
         }
         
-        function showUploadMessage(text, isSuccess) {
+        function showUploadMessage(text, isSuccess, id = null) {
+            // Remove any existing message with same ID
+            if (id) {
+                document.querySelectorAll(`.upload-message[data-id="${id}"]`).forEach(el => el.remove());
+            }
+            
             const msgDiv = document.createElement('div');
             msgDiv.className = `upload-message ${isSuccess ? 'success' : 'error'}`;
-            msgDiv.textContent = text;
+            if (id) msgDiv.dataset.id = id;
+            msgDiv.innerHTML = text;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // Remove after delay
-            setTimeout(() => {
-                if (msgDiv.parentNode) {
-                    chatMessages.removeChild(msgDiv);
-                }
-            }, 5000);
+            // Remove after delay if not a persistent message
+            if (!id) {
+                setTimeout(() => {
+                    if (msgDiv.parentNode) {
+                        chatMessages.removeChild(msgDiv);
+                    }
+                }, 5000);
+            }
         }
-        
+
         function updateContextDisplay() {
             const contextDisplay = document.querySelector('.context-display');
             if (contextDisplay) {
+                const docId = currentContext.currentFocus.document;
+                const doc = docId ? currentContext.documents[docId] : null;
+                const docName = doc ? doc.name : 'None';
+                
                 contextDisplay.innerHTML = `
-                    <p><i class="fas fa-file-alt"></i> Active document: <strong>${currentContext.activeDocument}</strong></p>
-                    <p><i class="fas fa-comment"></i> Last topic: <strong>${currentContext.lastTopic}</strong></p>
+                    <p><i class="fas fa-file-alt"></i> Active document: <strong>${docName}</strong></p>
+                    <p><i class="fas fa-comment"></i> Current topic: <strong>${currentContext.currentFocus.topic}</strong></p>
                     <div class="context-indicator">
                         <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
                     </div>
                 `;
             }
-        }
-        
-        // Helper functions
-        function getLanguageName(code) {
-            const languages = {
-                'en': 'English',
-                'zh': 'Chinese',
-                'es': 'Spanish',
-                'fr': 'French',
-                'de': 'German',
-                'ja': 'Japanese'
-            };
-            return languages[code] || 'English';
         }
         
         // UI interaction functions
@@ -1586,6 +2117,110 @@
             userInput.value = question;
             sendMessage();
         };
+
+        // Document menu functions
+        window.showDocMenu = function(event, docId) {
+            event.stopPropagation();
+            
+            // Remove any existing menus
+            document.querySelectorAll('.doc-context-menu').forEach(el => el.remove());
+            
+            const menu = document.createElement('div');
+            menu.className = 'doc-context-menu';
+            menu.style.top = `${event.clientY}px`;
+            menu.style.left = `${event.clientX}px`;
+            
+            menu.innerHTML = `
+                <div class="menu-item" onclick="renameDocument('${docId}')">
+                    <i class="fas fa-edit"></i> Rename
+                </div>
+                <div class="menu-item" onclick="removeDocument('${docId}')">
+                    <i class="fas fa-trash"></i> Remove
+                </div>
+                <div class="menu-item" onclick="exportDocument('${docId}')">
+                    <i class="fas fa-download"></i> Export
+                </div>
+            `;
+            
+            document.body.appendChild(menu);
+            
+            // Close menu when clicking elsewhere
+            const closeMenu = () => {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            };
+            
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 100);
+        };
+
+        window.renameDocument = function(docId) {
+            const newName = prompt("Enter new name for document:", currentContext.documents[docId].name);
+            if (newName && newName !== currentContext.documents[docId].name) {
+                // Update in UI
+                const docItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
+                if (docItem) {
+                    docItem.querySelector('.doc-name').textContent = newName;
+                }
+                
+                // Update in context
+                currentContext.documents[docId].name = newName;
+                
+                // Update context display if this is the active document
+                if (currentContext.currentFocus.document === docId) {
+                    updateContextDisplay();
+                }
+            }
+        };
+
+        window.removeDocument = function(docId) {
+            if (confirm(`Are you sure you want to remove "${currentContext.documents[docId].name}" from your documents?`)) {
+                // Remove from UI
+                const docItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
+                if (docItem) docItem.remove();
+                
+                // Remove from current context if active
+                if (currentContext.currentFocus.document === docId) {
+                    currentContext.currentFocus.document = null;
+                    currentContext.currentFocus.topic = "";
+                    updateContextDisplay();
+                }
+                
+                // Remove from documents state
+                delete currentContext.documents[docId];
+                
+                updateKeywordsDisplay();
+                
+                addMessage('bot', {
+                    text: `Document has been removed.`,
+                    type: 'status'
+                });
+            }
+        };
+
+        window.exportDocument = function(docId) {
+            const doc = currentContext.documents[docId];
+            if (doc) {
+                // Create a blob from the document content
+                const blob = new Blob([doc.content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${doc.name}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 0);
+            }
+        };
     </script>
+
 </body>
 </html>

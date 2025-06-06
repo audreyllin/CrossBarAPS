@@ -1,239 +1,330 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.llms import HuggingFaceHub
 import os
+import json
+import uuid
+from datetime import datetime
+import logging
 from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__, static_folder='.', static_url_path='')
-CORS(app, resources={
-    r"/*": {"origins": "*"}  # Allow all origins for development
-})
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configuration
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DOCUMENT_DIR = "documents"
-TEMP_DOWNLOAD_DIR = "temp_downloads"
+METADATA_FILE = os.path.join(DOCUMENT_DIR, "metadata.json")
+CONTEXT_FILE = os.path.join(DOCUMENT_DIR, "context.json")
 
-# Set USER_AGENT for web requests
-os.environ['USER_AGENT'] = 'MyLocalRAG/1.0'
-
-# Initialize models
-try:
-    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-    llm = HuggingFaceEndpoint(
-        repo_id="google/flan-t5-large",
-        huggingfacehub_api_token="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"
-    )
-except Exception as e:
-    print(f"Error initializing models: {e}")
-    raise
-
-# Document store setup
-document_store = None
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200
-)
-
-def initialize_document_store():
-    global document_store
-    if os.path.exists(f"{DOCUMENT_DIR}/faiss_index"):
-        document_store = FAISS.load_local(DOCUMENT_DIR, embeddings)
-    else:
-        document_store = FAISS.from_texts(["System initialized"], embeddings)
-        document_store.save_local(DOCUMENT_DIR)
+def init_storage():
+    """Initialize document storage directories"""
+    os.makedirs(DOCUMENT_DIR, exist_ok=True)
     
-    return RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=document_store.as_retriever(),
-        return_source_documents=True
-    )
+    # Create metadata file if not exists
+    if not os.path.exists(METADATA_FILE):
+        with open(METADATA_FILE, 'w') as f:
+            json.dump({"documents": []}, f)
+    
+    # Create context file if not exists
+    if not os.path.exists(CONTEXT_FILE):
+        with open(CONTEXT_FILE, 'w') as f:
+            json.dump({
+                "currentFocus": {
+                    "document": None,
+                    "topic": "General",
+                    "entities": [],
+                    "keywords": []
+                }
+            }, f)
 
-qa_chain = initialize_document_store()
-
-def process_web_content(url):
-    """Download and process web content without storing permanently"""
+def load_metadata():
+    """Load document metadata from file"""
     try:
-        os.makedirs(TEMP_DOWNLOAD_DIR, exist_ok=True)
-        loader = WebBaseLoader(url)
-        documents = loader.load()
-        splits = text_splitter.split_documents(documents)
-        
-        temp_store = FAISS.from_documents(splits, embeddings)
-        
+        with open(METADATA_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {"documents": []}
+
+def save_metadata(metadata):
+    """Save document metadata to file"""
+    with open(METADATA_FILE, 'w') as f:
+        json.dump(metadata, f, indent=2)
+
+def load_context():
+    """Load context state from file"""
+    try:
+        with open(CONTEXT_FILE, 'r') as f:
+            return json.load(f)
+    except:
         return {
-            "temp_store": temp_store,
-            "documents": splits
+            "currentFocus": {
+                "document": None,
+                "topic": "General",
+                "entities": [],
+                "keywords": []
+            }
         }
-    except Exception as e:
-        print(f"Error processing web content: {e}")
-        raise
+
+def save_context(context):
+    """Save context state to file"""
+    with open(CONTEXT_FILE, 'w') as f:
+        json.dump(context, f, indent=2)
+
+def extract_keywords(content):
+    """Basic keyword extraction"""
+    from collections import defaultdict
+    import re
+    
+    # Simple word frequency analysis
+    words = re.findall(r'\b\w{4,}\b', content.lower())
+    word_counts = defaultdict(int)
+    for word in words:
+        word_counts[word] += 1
+    
+    # Return top 10 keywords
+    sorted_words = sorted(word_counts.items(), key=lambda x: x[1], reverse=True)
+    return {word: {"count": count} for word, count in sorted_words[:10]}
+
+def generate_summary(content, max_length=200):
+    """Generate document summary"""
+    sentences = content.split('.')
+    summary = ""
+    for sentence in sentences:
+        if len(summary) + len(sentence) < max_length:
+            summary += sentence + '.'
+        else:
+            break
+    return summary.strip()
 
 @app.route('/')
 def serve_index():
-    return send_from_directory('.', 'rag-0605.html')
+    return send_from_directory('.', 'index.html')
 
 @app.route('/<path:filename>')
 def serve_file(filename):
     return send_from_directory('.', filename)
 
-@app.route("/ask", methods=["POST"])
-def ask():
+@app.route("/initial-context", methods=["GET"])
+def get_initial_context():
+    """Provide initial context to frontend"""
     try:
-        data = request.get_json()
-        query = data.get("query")
-        if not query:
-            return jsonify({"error": "No query provided"}), 400
+        context = load_context()
+        metadata = load_metadata()
         
-        result = qa_chain({"query": query})
-        return jsonify({
-            "answer": result["result"],
-            "documents": [doc.metadata.get("source", "local") for doc in result["source_documents"]],
-            "source": "local"
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/upload", methods=["POST"])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "Empty filename"}), 400
-    
-    try:
-        temp_path = os.path.join(TEMP_DOWNLOAD_DIR, file.filename)
-        file.save(temp_path)
-        
-        with open(temp_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        splits = text_splitter.split_text(content)
-        
-        global document_store
-        document_store.add_texts(
-            splits,
-            metadatas=[{"source": file.filename} for _ in splits]
-        )
-        document_store.save_local(DOCUMENT_DIR)
-        os.remove(temp_path)
-        
-        return jsonify({
-            "success": True,
-            "filename": file.filename,
-            "chunks": len(splits)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/add_url", methods=["POST"])
-def add_url():
-    data = request.get_json()
-    url = data.get("url")
-    if not url:
-        return jsonify({"error": "No URL provided"}), 400
-    
-    try:
-        web_content = process_web_content(url)
-        web_qa = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=web_content["temp_store"].as_retriever()
-        )
-        result = web_qa({"query": "Summarize the key points"})
-        
-        return jsonify({
-            "answer": result["result"],
-            "source": url,
-            "temporary": True
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# NEW ENDPOINTS FOR TESTING AND DEBUGGING
-@app.route("/test_retrieval", methods=["POST"])
-def test_retrieval():
-    """Manually test retrieval with a specific query"""
-    try:
-        data = request.get_json()
-        query = data.get("query", "supersingular isogenies")  # Default to paper topic
-        k = data.get("k", 3)  # Number of results to return
-        
-        # Direct retrieval without LLM
-        docs = document_store.similarity_search(query, k=k)
-        
-        return jsonify({
-            "query": query,
-            "results": [{
-                "content": doc.page_content,
-                "source": doc.metadata.get("source", "unknown"),
-                "score": None  # FAISS doesn't return scores by default
-            } for doc in docs]
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/reingest_test", methods=["POST"])
-def reingest_test_document():
-    """Re-ingest a small test document to verify the pipeline"""
-    try:
-        test_text = """
-        Quantum-resistant cryptography uses mathematical constructions like 
-        supersingular isogenies to create encryption that cannot be broken by 
-        quantum computers. The paper arXiv:2307.12874 proposes a new 
-        public-key cryptosystem based on these principles.
-        """
-        
-        splits = text_splitter.split_text(test_text)
-        
-        global document_store
-        document_store.add_texts(
-            splits,
-            metadatas=[{"source": "test_document"} for _ in splits]
-        )
-        document_store.save_local(DOCUMENT_DIR)
-        
-        return jsonify({
-            "success": True,
-            "message": "Test document re-ingested",
-            "chunks": len(splits)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/get_document_stats", methods=["GET"])
-def get_document_stats():
-    """Get statistics about the stored documents"""
-    try:
-        if not os.path.exists(f"{DOCUMENT_DIR}/faiss_index"):
-            return jsonify({"error": "No document store exists yet"}), 404
+        # If no documents, add sample documents
+        if not metadata["documents"]:
+            sample_docs = [
+                {
+                    "id": "doc-001",
+                    "name": "arXiv:2307.12874",
+                    "type": "research_paper",
+                    "source": "https://arxiv.org/pdf/2307.12874",
+                    "content": "This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms...",
+                    "keywords": extract_keywords("This paper presents a comprehensive evaluation of post-quantum cryptographic algorithms..."),
+                    "summary": "Evaluation of post-quantum cryptographic algorithms for hardware wallets",
+                    "created_at": datetime.now().isoformat()
+                },
+                {
+                    "id": "doc-002",
+                    "name": "CROSSBAR Security Whitepaper",
+                    "type": "whitepaper",
+                    "source": "internal",
+                    "content": "The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security...",
+                    "keywords": extract_keywords("The CROSSBAR Security Whitepaper outlines our approach to hardware wallet security..."),
+                    "summary": "Hardware wallet security with quantum-resistant cryptography",
+                    "created_at": datetime.now().isoformat()
+                }
+            ]
+            metadata["documents"] = sample_docs
+            save_metadata(metadata)
             
-        index = FAISS.load_local(DOCUMENT_DIR, embeddings)
+            # Update context with first document
+            context["currentFocus"]["document"] = "doc-001"
+            context["currentFocus"]["topic"] = "Quantum-Resistant Algorithms"
+            save_context(context)
+        
         return jsonify({
-            "document_count": index.index.ntotal,
-            "embedding_dim": index.index.d,
-            "index_type": str(type(index.index))
+            "documents": metadata["documents"],
+            "currentFocus": context["currentFocus"]
         })
     except Exception as e:
+        logger.error(f"Error in /initial-context: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route("/process-document", methods=["POST"])
+def process_document():
+    """Process document content and extract metadata"""
+    try:
+        data = request.json
+        content = data.get("content", "")
+        
+        # Process document content
+        keywords = extract_keywords(content)
+        summary = generate_summary(content)
+        
+        return jsonify({
+            "keywords": keywords,
+            "summary": summary,
+            "entities": list(keywords.keys())[:5],  # Top 5 entities
+            "processed_at": datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Document processing error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/retrieve-context", methods=["POST"])
+def retrieve_context():
+    """Retrieve relevant context based on query"""
+    try:
+        data = request.json
+        query = data.get("query", "")
+        
+        # In a real implementation, this would use semantic search
+        # For demo, we return mock results
+        return jsonify({
+            "documentId": "doc-001",
+            "topic": "Quantum-Resistant Algorithms",
+            "entities": ["quantum-resistant", "hardware wallets", "cryptography"],
+            "keywords": ["security", "implementation", "analysis"],
+            "suggestedFocus": {
+                "document": "doc-001",
+                "topic": "Quantum-Resistant Algorithms"
+            }
+        })
+    except Exception as e:
+        logger.error(f"Context retrieval error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/update-context", methods=["POST"])
+def update_context():
+    """Update context state from frontend"""
+    try:
+        data = request.json
+        new_context = data.get("context", {})
+        
+        # Validate and update context
+        if "currentFocus" in new_context:
+            current_context = load_context()
+            current_context["currentFocus"] = {
+                **current_context["currentFocus"],
+                **new_context["currentFocus"]
+            }
+            save_context(current_context)
+            return jsonify({"success": True})
+        return jsonify({"error": "Invalid context format"}), 400
+    except Exception as e:
+        logger.error(f"Context update error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/add-document", methods=["POST"])
+def add_document():
+    """Add a new document to the system"""
+    try:
+        data = request.json
+        document = data.get("document", {})
+        
+        # Validate document
+        if not all(key in document for key in ["name", "type", "content"]):
+            return jsonify({"error": "Missing required document fields"}), 400
+        
+        # Generate document ID
+        doc_id = f"doc-{uuid.uuid4().hex[:8]}"
+        document["id"] = doc_id
+        document["created_at"] = datetime.now().isoformat()
+        
+        # Process document if needed
+        if "keywords" not in document:
+            document["keywords"] = extract_keywords(document["content"])
+        if "summary" not in document:
+            document["summary"] = generate_summary(document["content"])
+        
+        # Add to metadata
+        metadata = load_metadata()
+        metadata["documents"].append(document)
+        save_metadata(metadata)
+        
+        return jsonify({
+            "success": True,
+            "documentId": doc_id
+        })
+    except Exception as e:
+        logger.error(f"Document addition error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/status', methods=['GET', 'OPTIONS'])
+def status_check():
+    """Health check endpoint"""
+    if request.method == 'OPTIONS':
+        # Handle preflight request
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', '*')
+        response.headers.add('Access-Control-Allow-Methods', '*')
+        return response
+    
+    return jsonify({
+        "status": "ok",
+        "message": "Service is running",
+        "timestamp": datetime.now().isoformat(),
+        "system": "Document Assistant API",
+        "version": "1.0.0"
+    }), 200
+
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    """Handle user questions with document context"""
+    try:
+        data = request.json
+        query = data.get("query", "")
+        context = data.get("context", {})
+        
+        # In production: Use NLP to generate response
+        return jsonify({
+            "answer": f"Received your query: '{query}' about document {context.get('documentId', 'N/A')}",
+            "suggestions": [
+                "Can you elaborate on this?",
+                "What specific aspect are you interested in?",
+                "Would you like to compare this to other documents?"
+            ]
+        })
+    except Exception as e:
+        logger.error(f"Question handling error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    """Handle file uploads"""
+    try:
+        # In production: Process uploaded file
+        return jsonify({
+            "success": True,
+            "summary": "Document processed successfully",
+            "keywords": {"security": {"count": 15}, "cryptography": {"count": 12}}
+        })
+    except Exception as e:
+        logger.error(f"File upload error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.after_request
+def add_cors_headers(response):
+    if request.method == 'OPTIONS':
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Max-Age'] = '86400'
+    return response
 
 if __name__ == "__main__":
-    os.makedirs(DOCUMENT_DIR, exist_ok=True)
-    os.makedirs(TEMP_DOWNLOAD_DIR, exist_ok=True)
+    init_storage()
     app.run(
         host="0.0.0.0",
         port=5000,
         debug=True,
-        ssl_context='adhoc'
+        threaded=True
     )
