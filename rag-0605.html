@@ -1149,7 +1149,7 @@
             }, 500);
         };
 
-        function sendMessage() {
+        async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
             
@@ -1157,34 +1157,51 @@
             addMessage('user', message);
             userInput.value = '';
             
-            // Update conversation history
-            currentContext.conversationHistory.push({ role: 'user', content: message });
-            
             // Show typing indicator
             const typingIndicator = showTypingIndicator();
             
-            // Simulate processing delay
-            setTimeout(() => {
+            try {
+                // Send to backend
+                // Change this in your sendMessage() function:
+                const response = await fetch("http://localhost:5000/ask", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ query: message })
+                });
+                
+                const data = await response.json();
+                
                 // Remove typing indicator
                 chatMessages.removeChild(typingIndicator);
                 
-                // Generate response
-                const response = generateResponse(message);
-                addMessage('bot', response);
+                // Add bot response
+                addMessage('bot', {
+                    text: data.answer,
+                    type: 'document',
+                    suggestions: data.documents ? [
+                        'Explain this in more detail',
+                        'Show related sections',
+                        'What are the key points?'
+                    ] : []
+                });
                 
-                // Update context with last response type
-                currentContext.lastResponseType = response.type;
-                currentContext.conversationHistory.push({ role: 'assistant', content: response.text });
-                
-                // Update context display
+                // Update context
+                if (data.documents && data.documents.length > 0) {
+                    currentContext.activeDocument = data.documents[0];
+                }
+                currentContext.lastTopic = message;
                 updateContextDisplay();
-                
-                // Update keywords if document changed
                 updateKeywordsDisplay();
                 
-                // Scroll to bottom
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1500);
+            } catch (error) {
+                chatMessages.removeChild(typingIndicator);
+                addMessage('bot', {
+                    text: "Sorry, I couldn't process your request. Please try again.",
+                    type: 'error'
+                });
+            }
         }
         
         function showTypingIndicator() {
@@ -1267,7 +1284,7 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
-        function handleFileUpload(event) {
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
@@ -1284,65 +1301,82 @@
                 return;
             }
             
-            // Simulate upload processing
+            // Show processing message
             showUploadMessage(`⏳ Processing "${file.name}" using our RAG system...`, true);
             
-            setTimeout(() => {
-                // Add to active documents
-                const docItem = document.createElement('div');
-                docItem.className = 'doc-item';
-                docItem.dataset.doc = file.name;
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
                 
-                docItem.innerHTML = `
-                    <div class="doc-icon">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
-                    <div class="doc-info">
-                        <div class="doc-name">${file.name}</div>
-                        <div class="doc-type">Document</div>
-                    </div>
-                `;
+                const response = await fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                });
                 
-                docItem.addEventListener('click', () => {
-                    document.querySelectorAll('.doc-item').forEach(el => {
-                        el.classList.remove('active');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Add to active documents
+                    const docItem = document.createElement('div');
+                    docItem.className = 'doc-item';
+                    docItem.dataset.doc = file.name;
+                    
+                    docItem.innerHTML = `
+                        <div class="doc-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="doc-info">
+                            <div class="doc-name">${file.name}</div>
+                            <div class="doc-type">Document</div>
+                        </div>
+                    `;
+                    
+                    docItem.addEventListener('click', () => {
+                        document.querySelectorAll('.doc-item').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        docItem.classList.add('active');
+                        currentContext.activeDocument = file.name;
+                        currentContext.lastTopic = file.name;
+                        updateContextDisplay();
+                        updateKeywordsDisplay();
+                        addMessage('bot', {
+                            text: `Now focusing on <strong>${file.name}</strong>. Ask me anything about this document.`,
+                            type: 'status'
+                        });
                     });
-                    docItem.classList.add('active');
+                    
+                    activeDocs.appendChild(docItem);
+                    
+                    // Add to documents state
+                    currentContext.documents[file.name] = {
+                        type: "uploaded_file",
+                        content: `Content processed from ${file.name}`,
+                        keywords: generateKeywordsForUploadedFile(file.name)
+                    };
+                    
+                    // Set as active context
                     currentContext.activeDocument = file.name;
                     currentContext.lastTopic = file.name;
                     updateContextDisplay();
                     updateKeywordsDisplay();
+                    
+                    // Show success message
+                    showUploadMessage(`✅ Document processed successfully! You can now ask questions about "${file.name}"`, true);
                     addMessage('bot', {
-                        text: `Now focusing on <strong>${file.name}</strong>. Ask me anything about this document.`,
+                        text: `I've processed your document <strong>${file.name}</strong>. You can now ask me questions about its content.`,
                         type: 'status'
                     });
-                });
+                } else {
+                    showUploadMessage(`❌ Error processing document: ${result.error || 'Unknown error'}`, false);
+                }
                 
-                activeDocs.appendChild(docItem);
-                
-                // Add to documents state with simulated content
-                currentContext.documents[file.name] = {
-                    type: "uploaded_file",
-                    content: `This is the processed content of ${file.name}. In a real implementation, this would be extracted from the uploaded document using OCR or text extraction.`,
-                    keywords: generateKeywordsForUploadedFile(file.name)
-                };
-                
-                // Set as active context
-                currentContext.activeDocument = file.name;
-                currentContext.lastTopic = file.name;
-                updateContextDisplay();
-                updateKeywordsDisplay();
-                
-                // Show success message
-                showUploadMessage(`✅ Document processed successfully! You can now ask questions about "${file.name}"`, true);
-                addMessage('bot', {
-                    text: `I've processed your document <strong>${file.name}</strong>. You can now ask me questions about its content.`,
-                    type: 'status'
-                });
-                
+            } catch (error) {
+                showUploadMessage(`❌ Error uploading document: ${error.message}`, false);
+            } finally {
                 // Clear file input
                 event.target.value = '';
-            }, 2000);
+            }
         }
         
         function generateKeywordsForUploadedFile(filename) {
@@ -1508,265 +1542,6 @@
             }, 5000);
         }
         
-        function generateResponse(query) {
-            const isFollowUp = currentContext.conversationHistory.length > 1 && 
-                              (query.toLowerCase().includes('it') || 
-                               query.toLowerCase().includes('that') || 
-                               query.length < 20);
-            
-            // Handle document-specific questions
-            if (currentContext.activeDocument && currentContext.documents[currentContext.activeDocument]) {
-                if (query.toLowerCase().includes('summary') || query.toLowerCase().includes('summarize')) {
-                    return documentSummaryResponse(currentContext.activeDocument);
-                }
-                
-                if (query.toLowerCase().includes('abstract')) {
-                    return documentAbstractResponse(currentContext.activeDocument);
-                }
-                
-                if (query.toLowerCase().includes('conclusion')) {
-                    return documentConclusionResponse(currentContext.activeDocument);
-                }
-                
-                if (query.toLowerCase().includes('key feature') || 
-                    query.toLowerCase().includes('main point') ||
-                    query.toLowerCase().includes('important')) {
-                    return documentKeyFeaturesResponse(currentContext.activeDocument);
-                }
-                
-                // General document question
-                return documentQuestionResponse(query, currentContext.activeDocument, isFollowUp);
-            }
-            
-            // Default response
-            return {
-                text: `🔍 I specialize in technical document analysis. ` +
-                      `Please ask questions related to document content, or upload a document to analyze.`,
-                type: 'default'
-            };
-        }
-        
-        function documentSummaryResponse(document) {
-            const docData = currentContext.documents[document];
-            let response = '';
-            
-            if (document.includes('arxiv')) {
-                response = `
-                    <strong>Document Summary: Quantum-Resistant Cryptographic Algorithms</strong>
-                    <p>${docData.content.substring(0, 300)}...</p>
-                    
-                    <p><strong>Key Findings:</strong></p>
-                    <ul>
-                        <li>Lattice-based cryptography offers optimal performance-security tradeoffs</li>
-                        <li>CRYSTALS-Dilithium showed 40% better performance than traditional ECC</li>
-                        <li>Recommended for next-gen hardware wallets</li>
-                    </ul>
-                    
-                    <p><a href="https://arxiv.org/pdf/2307.12874" target="_blank" class="docs-link">View full paper</a></p>
-                `;
-            } else {
-                response = `
-                    <strong>Document Summary:</strong>
-                    <p>Based on my analysis of ${document}, the key points are:</p>
-                    <ul>
-                        ${Object.keys(docData.keywords).slice(0, 5).map(k => `<li>${k}</li>`).join('')}
-                    </ul>
-                    <p>Would you like more details on any specific section?</p>
-                `;
-            }
-            
-            return {
-                text: response,
-                type: 'document',
-                suggestions: [
-                    'Show me the abstract?',
-                    'What are the key features?',
-                    'Explain the security recommendations',
-                    'What are the performance metrics?'
-                ]
-            };
-        }
-        
-        function documentAbstractResponse(document) {
-            const docData = currentContext.documents[document];
-            const response = `
-                <strong>Abstract:</strong>
-                <div style="margin-top: 0.8rem; padding: 1rem; background: #f8f8f8; border-radius: 8px; font-style: italic;">
-                    <p>"${docData.content.substring(0, 500)}"</p>
-                </div>
-                <p class="translation-option" style="margin-top: 10px; display: inline-block; color: var(--primary); cursor: pointer;">
-                    <i class="fas fa-language"></i> Translate to ${getLanguageName(languageSelector.value)}
-                </p>
-            `;
-            
-            return {
-                text: response,
-                type: 'document',
-                suggestions: [
-                    'What is the main contribution?',
-                    'Explain the methodology',
-                    'Show conclusion',
-                    'Key findings?'
-                ]
-            };
-        }
-        
-        function documentConclusionResponse(document) {
-            const docData = currentContext.documents[document];
-            const response = `
-                <strong>Conclusion:</strong>
-                <div style="margin-top: 0.8rem; padding: 1rem; background: #f8f8f8; border-radius: 8px;">
-                    <p>${docData.content.substring(0, 300)}...</p>
-                    
-                    <ul>
-                        <li>Lattice cryptography achieves optimal balance between security and performance</li>
-                        <li>Hardware acceleration reduces signature times by 65% with minimal power impact</li>
-                        <li>Multi-party computation enhances security for high-value transactions</li>
-                        <li>Implementation requires careful consideration of memory constraints</li>
-                    </ul>
-                </div>
-            `;
-            
-            return {
-                text: response,
-                type: 'document',
-                suggestions: [
-                    'What are the limitations?',
-                    'Future research directions?',
-                    'How does this compare to traditional methods?',
-                    'Practical implementation recommendations?'
-                ]
-            };
-        }
-        
-        function documentKeyFeaturesResponse(document) {
-            const docData = currentContext.documents[document];
-            const response = `
-                <strong>Key Features:</strong>
-                <div style="margin-top: 0.8rem; background: #f8f8f8; padding: 1rem; border-radius: 8px;">
-                    ${Object.keys(docData.keywords).slice(0, 5).map((k, i) => 
-                        `<p>${i+1}. <strong>${k}:</strong> Mentioned ${docData.keywords[k].count} times in sections ${docData.keywords[k].sections.join(', ')}</p>`
-                    ).join('')}
-                </div>
-                <p class="translation-option" style="margin-top: 10px; display: inline-block; color: var(--primary); cursor: pointer;">
-                    <i class="fas fa-language"></i> Translate to ${getLanguageName(languageSelector.value)}
-                </p>
-            `;
-            
-            return {
-                text: response,
-                type: 'document',
-                suggestions: [
-                    'How does quantum resistance work?',
-                    'Explain secure key storage',
-                    'Performance benchmarks?',
-                    'Compatibility details?'
-                ]
-            };
-        }
-
-        function documentQuestionResponse(query, document, isFollowUp = false) {
-            const docData = currentContext.documents[document];
-            let answer = '';
-            
-            if (isFollowUp) {
-                // Handle follow-up based on previous document context
-                if (query.toLowerCase().includes('quantum') || query.toLowerCase().includes('crypto')) {
-                    answer = `
-                        <p>Following up on quantum-resistant cryptography:</p>
-                        <p>${docData.content.substring(0, 300)}...</p>
-                    `;
-                } else {
-                    answer = getDocumentAnswer(query, document);
-                }
-            } else {
-                answer = getDocumentAnswer(query, document);
-            }
-            
-            const response = `
-                <strong>Regarding ${document}:</strong>
-                ${answer}
-                <p>This analysis is based on our RAG system processing of the document content.</p>
-            `;
-            
-            // Get keywords from document
-            const keywords = docData.keywords;
-            
-            // Analyze query for relevant keywords
-            const queryKeywords = [];
-            for (const [keyword, data] of Object.entries(keywords)) {
-                if (query.toLowerCase().includes(keyword.toLowerCase())) {
-                    queryKeywords.push({keyword, ...data});
-                }
-            }
-            
-            // Generate smart follow-up suggestions
-            const suggestions = generateSmartSuggestions(query, keywords, queryKeywords);
-            
-            return {
-                text: response,
-                type: 'document',
-                suggestions: suggestions
-            };
-        }
-
-        function generateSmartSuggestions(query, allKeywords, matchedKeywords) {
-            const baseSuggestions = [
-                'How does this compare to traditional methods?',
-                'Implementation challenges?',
-                'Performance impact?',
-                'Security tradeoffs?'
-            ];
-            
-            // For concepts mentioned only once or twice
-            const rareConcepts = [];
-            for (const [keyword, data] of Object.entries(allKeywords)) {
-                if (data.count <= 2 && query.toLowerCase().includes(keyword.toLowerCase())) {
-                    rareConcepts.push(keyword);
-                }
-            }
-            
-            // For concepts with significant coverage
-            const deepDiveSuggestions = matchedKeywords
-                .filter(k => k.count > 5)
-                .map(k => `Explain ${k.keyword} in more detail?`);
-            
-            // Build suggestions
-            let suggestions = [...baseSuggestions, ...deepDiveSuggestions];
-            
-            // Add special suggestion for rare concepts
-            if (rareConcepts.length > 0) {
-                suggestions.push({
-                    text: `The ${rareConcepts.join(', ')} ${rareConcepts.length > 1 ? 'are' : 'is'} mentioned briefly. Upload specialized documents?`,
-                    isAction: true,
-                    concepts: rareConcepts
-                });
-            }
-            
-            return suggestions;
-        }
-        
-        async function getAnswer() {
-            const query = document.getElementById("queryBox").value;
-            if (!query) return alert("Please enter a question.");
-
-            const responseBox = document.getElementById("response");
-            responseBox.innerHTML = "Processing...";
-            
-            try {
-                const response = await fetch("http://127.0.0.1:5000/ask", { 
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query })
-                });
-
-                const data = await response.json();
-                responseBox.innerHTML = `<strong>AI Response:</strong> ${data.answer}`;
-            } catch (error) {
-                responseBox.innerHTML = "Error retrieving answer.";
-            }
-        }
-
         function updateContextDisplay() {
             const contextDisplay = document.querySelector('.context-display');
             if (contextDisplay) {
@@ -1811,95 +1586,6 @@
             userInput.value = question;
             sendMessage();
         };
-    </script>
-
-    <!-- Backend integration script -->
-    <script>
-        // This would be replaced with actual API calls in production
-        class AIService {
-            constructor() {
-                // Simulated FAISS index and embeddings
-                this.documents = [
-                    "Crypto wallets securely store private keys.",
-                    "Cold wallets are offline and provide enhanced security.",
-                    "Our company provides enterprise-grade wallet solutions."
-                ];
-                
-                // Simulated embedding model
-                this.embeddingModel = {
-                    encode: function(text) {
-                        // In a real implementation, this would call the actual embedding model
-                        // For demo purposes, we'll return a random vector
-                        return Array(384).fill(0).map(() => Math.random());
-                    }
-                };
-                
-                // Simulated FAISS index
-                this.faissIndex = {
-                    search: function(vectors, k) {
-                        // Simulate nearest neighbor search
-                        return {
-                            distances: [Array(k).fill(0.1)],
-                            indices: [Array(k).fill(0).map((_, i) => i % this.documents.length)]
-                        };
-                    },
-                    ntotal: this.documents.length
-                };
-                
-                // Simulated LLM
-                this.llm = {
-                    generate: function(prompt) {
-                        // In a real implementation, this would call the actual LLM
-                        return "This is a simulated response based on the query: " + prompt;
-                    }
-                };
-            }
-            
-            async retrieveDocuments(query, k=3) {
-                // Simulate document retrieval
-                const queryVector = this.embeddingModel.encode(query);
-                const { distances, indices } = this.faissIndex.search([queryVector], k);
-                
-                return indices[0].map(idx => ({
-                    text: this.documents[idx],
-                    distance: distances[0][idx]
-                }));
-            }
-            
-            async generateAnswer(query, context) {
-                // Simulate RAG response generation
-                const retrieved = await this.retrieveDocuments(query);
-                const contextStr = context ? `Context: ${context}\n\n` : '';
-                const prompt = `${contextStr}Question: ${query}\n\nRelevant documents:\n${retrieved.map(d => `- ${d.text}`).join('\n')}`;
-                
-                return this.llm.generate(prompt);
-            }
-            
-            async computeSimilarity(query, document) {
-                // Simulate similarity computation
-                const queryVector = this.embeddingModel.encode(query);
-                const docVector = this.embeddingModel.encode(document);
-                
-                // Calculate cosine similarity
-                const dotProduct = queryVector.reduce((sum, val, i) => sum + val * docVector[i], 0);
-                const queryMagnitude = Math.sqrt(queryVector.reduce((sum, val) => sum + val * val, 0));
-                const docMagnitude = Math.sqrt(docVector.reduce((sum, val) => sum + val * val, 0));
-                const cosineSim = dotProduct / (queryMagnitude * docMagnitude);
-                
-                // Calculate Euclidean distance
-                const euclideanDist = Math.sqrt(
-                    queryVector.reduce((sum, val, i) => sum + Math.pow(val - docVector[i], 2), 0)
-                );
-                
-                return {
-                    cosine: cosineSim,
-                    euclidean: euclideanDist
-                };
-            }
-        }
-        
-        // Initialize the AI service
-        const aiService = new AIService();
     </script>
 </body>
 </html>
