@@ -179,13 +179,20 @@
             padding: 20px;
         }
         
-        .header {
+        /* Fixed header section */
+        .fixed-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
+            padding: 15px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 80px; /* Below main header */
+            z-index: 90;
+            border: 1px solid var(--border);
         }
         
         .page-title {
@@ -230,6 +237,7 @@
             flex: 1;
             gap: 20px;
             min-height: 0;
+            height: calc(100vh - 250px); /* Adjust based on fixed elements */
         }
         
         .chat-area {
@@ -240,6 +248,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
+            position: relative;
         }
         
         .chat-header {
@@ -262,6 +271,24 @@
             font-size: 14px;
             border-bottom: 1px solid var(--border);
             color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .clear-history {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .clear-history:hover {
+            background: #d32f2f;
         }
         
         .chat-messages {
@@ -349,6 +376,9 @@
             padding: 15px;
             border-top: 1px solid var(--border);
             background: white;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
         }
         
         .input-container {
@@ -437,6 +467,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            max-height: 100%;
+            overflow-y: auto;
         }
         
         .panel-card {
@@ -451,6 +483,9 @@
             background: #f8f9fa;
             border-bottom: 1px solid var(--border);
             font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 80;
         }
         
         .panel-content {
@@ -672,6 +707,29 @@
             border-left-color: var(--error);
         }
         
+        /* Document summary styles */
+        .document-summary {
+            background: #f0f7ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid var(--info);
+        }
+        
+        .summary-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .summary-content {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
         /* Footer */
         footer {
             background: var(--card-bg);
@@ -745,6 +803,10 @@
             .send-btn {
                 width: 100%;
                 padding: 0.8rem;
+            }
+            
+            .fixed-header {
+                top: 130px; /* Adjust for mobile header height */
             }
         }
         
@@ -827,10 +889,6 @@
                     <div class="nav-icon"><i class="fas fa-key"></i></div>
                     <div>Keyword Extraction</div>
                 </div>
-                <div class="nav-item">
-                    <div class="nav-icon"><i class="fas fa-sync-alt"></i></div>
-                    <div>RAG Processing</div>
-                </div>
             </div>
             
             <div class="nav-section" style="margin-top: auto;">
@@ -847,7 +905,8 @@
         
         <!-- Main Content Area -->
         <div class="main-content">
-            <div class="header">
+            <!-- Fixed header section -->
+            <div class="fixed-header">
                 <h1 class="page-title"><i class="fas fa-robot"></i> Audrey AI Assistant</h1>
                 <div class="user-controls">
                     <div class="control-btn">
@@ -874,11 +933,16 @@
                     </div>
                     
                     <div class="context-display">
-                        <p><i class="fas fa-file-alt"></i> Active document: <strong>arXiv:2307.12874</strong></p>
-                        <p><i class="fas fa-comment"></i> Last topic: <strong>Quantum-Resistant Algorithms</strong></p>
-                        <div class="context-indicator">
-                            <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                        <div>
+                            <p><i class="fas fa-file-alt"></i> Active document: <strong>arXiv:2307.12874</strong></p>
+                            <p><i class="fas fa-comment"></i> Last topic: <strong>Quantum-Resistant Algorithms</strong></p>
+                            <div class="context-indicator">
+                                <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                            </div>
                         </div>
+                        <button class="clear-history" id="clear-history">
+                            <i class="fas fa-trash"></i> Clear History
+                        </button>
                     </div>
                     
                     <div class="chat-messages" id="chat-messages">
@@ -893,6 +957,15 @@
                                     <li>Communicate in multiple languages</li>
                                 </ul>
                                 <p>Try asking about post-quantum signature schemes or upload a document!</p>
+                                
+                                <div class="document-summary">
+                                    <div class="summary-header">
+                                        <i class="fas fa-file-alt"></i> Document Summary (arXiv:2307.12874)
+                                    </div>
+                                    <div class="summary-content">
+                                        This paper discusses quantum-resistant cryptographic algorithms and their implementation in modern security systems. Key findings include the vulnerability of current cryptographic systems to quantum attacks and the effectiveness of lattice-based cryptography as a quantum-resistant solution.
+                                    </div>
+                                </div>
                             </div>
                             <div class="message-metadata">
                                 Just now
@@ -1078,6 +1151,28 @@
         // Configuration
         const API_BASE_URL = 'https://your-backend-api.com';
         
+        // Document knowledge base
+        const documentKnowledge = {
+            "arXiv:2307.12874": {
+                abstract: "This paper presents a comprehensive analysis of quantum-resistant cryptographic algorithms. We evaluate several post-quantum signature schemes including lattice-based, hash-based, and multivariate approaches. Our findings indicate that lattice-based cryptography provides the best balance of security and performance for hardware implementations.",
+                conclusion: "Quantum computing poses a significant threat to current cryptographic systems. Our research demonstrates that lattice-based cryptography, specifically CRYSTALS-Dilithium, offers a practical solution for quantum-resistant security. Future work will focus on optimizing these algorithms for embedded systems like hardware wallets.",
+                keywords: ["quantum-resistant", "cryptography", "lattice-based", "security", "post-quantum"],
+                sections: ["Introduction", "Quantum Threat Analysis", "Algorithm Evaluation", "Hardware Implementation", "Conclusion"]
+            },
+            "CROSSBAR Security Whitepaper": {
+                abstract: "This whitepaper details the security architecture of CROSSBAR hardware wallets. We implement multiple layers of protection including secure elements, biometric authentication, and tamper-resistant design. Our approach exceeds industry standards for cryptocurrency storage.",
+                conclusion: "CROSSBAR's security architecture provides unprecedented protection for digital assets. By combining hardware security modules with advanced cryptographic protocols, we create a solution that resists both physical and remote attacks. Future updates will incorporate quantum-resistant algorithms.",
+                keywords: ["hardware wallet", "security", "cryptocurrency", "biometric", "tamper-resistant"],
+                sections: ["Architecture Overview", "Secure Element", "Authentication", "Cryptography", "Future Development"]
+            },
+            "NIST Post-Quantum Report": {
+                abstract: "This report summarizes NIST's evaluation of post-quantum cryptographic algorithms. After multiple rounds of analysis, four algorithms have been selected for standardization: CRYSTALS-Kyber, CRYSTALS-Dilithium, FALCON, and SPHINCS+.",
+                conclusion: "The transition to post-quantum cryptography is essential for long-term security. NIST recommends organizations begin planning their migration to quantum-resistant algorithms. The selected standards provide a solid foundation for secure communications in the quantum era.",
+                keywords: ["NIST", "post-quantum", "cryptography", "standardization", "quantum-resistant"],
+                sections: ["Evaluation Process", "Selected Algorithms", "Implementation Considerations", "Migration Strategy"]
+            }
+        };
+        
         // DOM Elements
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
@@ -1089,6 +1184,7 @@
         const languageSelector = document.getElementById('language-selector');
         const activeDocs = document.getElementById('active-docs');
         const keywordsDisplay = document.getElementById('keywords-display');
+        const clearHistoryBtn = document.getElementById('clear-history');
         
         // Initialize event listeners
         sendBtn.addEventListener('click', sendMessage);
@@ -1103,6 +1199,7 @@
         pasteLinkBtn.addEventListener('click', promptForLink);
         companyInfoBtn.addEventListener('click', fetchCompanyInfo);
         fileUpload.addEventListener('change', handleFileUpload);
+        clearHistoryBtn.addEventListener('click', clearChatHistory);
         
         // Initialize application
         window.onload = function() {
@@ -1128,7 +1225,7 @@
                 <div class="doc-icon">${getFileIcon(doc.name)}</div>
                 <div class="doc-info">
                     <div class="doc-name">${doc.name}</div>
-                    <div class="doc-type">${doc.type}</div>
+                    <div class="doc-type">${getDocType(doc.name)}</div>
                 </div>
             `;
             
@@ -1139,30 +1236,36 @@
                 // Update context
                 updateContextDisplay(doc.name);
                 
+                // Update keywords display
+                updateKeywords(doc.name);
+                
                 // Show status message
                 addMessage('bot', {
                     text: `Now focusing on <strong>${doc.name}</strong>. Ask me anything about this document.`,
                     type: 'status'
                 });
+                
+                // Add document summary
+                if (documentKnowledge[doc.name]) {
+                    addDocumentSummary(doc.name);
+                }
             });
             
             activeDocs.appendChild(docItem);
         }
+        
+        function getDocType(filename) {
+            if (filename.includes('arXiv')) return 'Research Paper';
+            if (filename.includes('Whitepaper')) return 'PDF Document';
+            if (filename.includes('NIST')) return 'Official Report';
+            return 'Document';
+        }
 
         function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const icons = {
-                pdf: 'file-pdf',
-                doc: 'file-word',
-                docx: 'file-word',
-                txt: 'file-alt',
-                ppt: 'file-powerpoint',
-                pptx: 'file-powerpoint',
-                xls: 'file-excel',
-                xlsx: 'file-excel',
-                json: 'file-code'
-            };
-            return `<i class="fas fa-${icons[ext] || 'file'}"></i>`;
+            if (filename.includes('arXiv')) return '<i class="fas fa-globe"></i>';
+            if (filename.includes('Whitepaper')) return '<i class="fas fa-file-pdf"></i>';
+            if (filename.includes('NIST')) return '<i class="fas fa-link"></i>';
+            return '<i class="fas fa-file"></i>';
         }
 
         // Core functionality
@@ -1181,14 +1284,75 @@
             setTimeout(() => {
                 chatMessages.removeChild(typingIndicator);
                 
-                // Generate response
-                const response = generateResponse(message);
+                // Generate response using RAG simulation
+                const response = simulateRAGResponse(message);
                 addMessage('bot', {
                     text: response,
                     type: 'document',
                     suggestions: generateDynamicSuggestions()
                 });
             }, 1500);
+        }
+        
+        function simulateRAGResponse(query) {
+            const activeDoc = document.querySelector('.doc-item.active .doc-name').textContent;
+            const docData = documentKnowledge[activeDoc] || {};
+            
+            // Simulate RAG processing
+            let response = '';
+            
+            if (query.toLowerCase().includes('abstract')) {
+                response = `<strong>Abstract from ${activeDoc}:</strong><br>${docData.abstract || 'Abstract not available for this document.'}`;
+            }
+            else if (query.toLowerCase().includes('conclusion')) {
+                response = `<strong>Conclusion from ${activeDoc}:</strong><br>${docData.conclusion || 'Conclusion not available for this document.'}`;
+            }
+            else if (query.toLowerCase().includes('section') || query.toLowerCase().includes('content')) {
+                response = `<strong>Document Sections for ${activeDoc}:</strong><br>${docData.sections ? docData.sections.join(', ') : 'Section data not available.'}`;
+            }
+            else {
+                // Simulate semantic search
+                const keywords = docData.keywords || [];
+                const matchedKeywords = keywords.filter(kw => 
+                    query.toLowerCase().includes(kw.toLowerCase())
+                );
+                
+                if (matchedKeywords.length > 0) {
+                    response = `Based on ${activeDoc}, here's what I found about ${matchedKeywords.join(', ')}:<br>`;
+                    matchedKeywords.forEach(kw => {
+                        response += `<br><strong>${kw}:</strong> `;
+                        response += getKeywordExplanation(kw, activeDoc);
+                    });
+                } else {
+                    // Default response
+                    const responses = [
+                        `Quantum-resistant algorithms are cryptographic systems that are secure against attacks by quantum computers. CROSSBAR uses lattice-based cryptography which is considered one of the most promising approaches. Our hardware wallets implement CRYSTALS-Dilithium for signatures and Kyber for key encapsulation.`,
+                        `Hardware wallets provide the highest level of security for cryptocurrency storage. CROSSBAR wallets feature EAL6+ certified secure elements, biometric authentication, and tamper-resistant design. Our security whitepaper details the multi-layered approach we take to protect your digital assets.`,
+                        `Post-quantum cryptography is essential for future-proofing blockchain security. The NIST standardization process has identified several promising algorithms, with lattice-based schemes being particularly suitable for embedded systems like hardware wallets due to their efficiency.`,
+                        `CROSSBAR's security architecture uses a defense-in-depth approach. We combine hardware security modules, secure boot, encrypted storage, and remote attestation to create a comprehensive security solution. Our approach exceeds industry standards for cryptocurrency storage.`
+                    ];
+                    
+                    const randomIndex = Math.floor(Math.random() * responses.length);
+                    response = responses[randomIndex];
+                }
+            }
+            
+            return response;
+        }
+        
+        function getKeywordExplanation(keyword, docName) {
+            const explanations = {
+                "quantum-resistant": "Refers to cryptographic algorithms that are secure against attacks by quantum computers. These algorithms are based on mathematical problems that are believed to be difficult for quantum computers to solve.",
+                "cryptography": "The practice and study of techniques for secure communication in the presence of adversaries. Modern cryptography includes symmetric-key, asymmetric-key, and hash functions.",
+                "lattice-based": "A type of cryptography based on the hardness of lattice problems. Lattice-based cryptography is considered a leading candidate for post-quantum security.",
+                "security": "In the context of hardware wallets, security refers to the protection of private keys and resistance to physical and remote attacks.",
+                "post-quantum": "Cryptographic algorithms designed to be secure against attacks by both classical and quantum computers.",
+                "hardware wallet": "A physical device designed to securely store cryptocurrency private keys offline.",
+                "biometric": "Authentication method that uses unique biological characteristics such as fingerprints or facial recognition.",
+                "tamper-resistant": "Designed to resist physical attacks and make unauthorized access extremely difficult."
+            };
+            
+            return explanations[keyword] || `I found references to "${keyword}" in ${docName}, but no detailed explanation is available. Would you like me to search for more information?`;
         }
 
         function showTypingIndicator() {
@@ -1280,29 +1444,43 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function generateResponse(query) {
-            const responses = [
-                `Quantum-resistant algorithms are cryptographic systems that are secure against attacks by quantum computers. CROSSBAR uses lattice-based cryptography which is considered one of the most promising approaches. Our hardware wallets implement CRYSTALS-Dilithium for signatures and Kyber for key encapsulation.`,
-                `Hardware wallets provide the highest level of security for cryptocurrency storage. CROSSBAR wallets feature EAL6+ certified secure elements, biometric authentication, and tamper-resistant design. Our security whitepaper details the multi-layered approach we take to protect your digital assets.`,
-                `Post-quantum cryptography is essential for future-proofing blockchain security. The NIST standardization process has identified several promising algorithms, with lattice-based schemes being particularly suitable for embedded systems like hardware wallets due to their efficiency.`,
-                `CROSSBAR's security architecture uses a defense-in-depth approach. We combine hardware security modules, secure boot, encrypted storage, and remote attestation to create a comprehensive security solution. Our approach exceeds industry standards for cryptocurrency storage.`
-            ];
-            
-            const randomIndex = Math.floor(Math.random() * responses.length);
-            return responses[randomIndex];
-        }
-
         function generateDynamicSuggestions() {
+            const activeDoc = document.querySelector('.doc-item.active .doc-name').textContent;
+            const docData = documentKnowledge[activeDoc] || {};
+            
             return [
-                "What are the advantages of lattice-based cryptography?",
-                "How does CROSSBAR compare to other hardware wallets?",
-                "Explain the key exchange mechanism in quantum-resistant systems",
+                "What is the abstract of this document?",
+                "Summarize the conclusion",
+                "What are the main sections?",
+                "Explain quantum-resistant cryptography",
                 {
-                    text: "Upload document about zero-knowledge proofs",
+                    text: "Upload related document",
                     isAction: true,
-                    concepts: ["zero-knowledge proofs", "zk-SNARKs"]
+                    concepts: ["quantum computing", "cryptography"]
                 }
             ];
+        }
+        
+        function addDocumentSummary(docName) {
+            const docData = documentKnowledge[docName];
+            if (!docData) return;
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'document-summary';
+            summaryDiv.innerHTML = `
+                <div class="summary-header">
+                    <i class="fas fa-file-alt"></i> Document Summary (${docName})
+                </div>
+                <div class="summary-content">
+                    ${docData.abstract || 'Summary not available for this document.'}
+                </div>
+            `;
+            
+            // Add to the first bot message or create a new one
+            const firstBotMessage = document.querySelector('.bot-message');
+            if (firstBotMessage) {
+                firstBotMessage.querySelector('.message-content').appendChild(summaryDiv);
+            }
         }
 
         function handleFileUpload(event) {
@@ -1333,12 +1511,26 @@
                 
                 updateContextDisplay(doc.name);
                 
+                // Simulate document analysis
+                documentKnowledge[doc.name] = {
+                    abstract: "This document discusses advanced cryptographic techniques for hardware security modules. Key topics include key management, secure boot processes, and resistance to side-channel attacks.",
+                    conclusion: "Implementing robust security measures in hardware requires a multi-layered approach. Future developments should focus on quantum-resistant algorithms and improved tamper detection mechanisms.",
+                    keywords: ["cryptography", "hardware", "security", "key management", "side-channel"],
+                    sections: ["Introduction", "Architecture", "Implementation", "Results", "Conclusion"]
+                };
+                
+                // Update keywords
+                updateKeywords(doc.name);
+                
                 // Show success message
                 showUploadMessage(`✅ Successfully processed "${file.name}"`, true);
                 addMessage('bot', {
                     text: `I've processed the document <strong>${file.name}</strong>. Ask me questions about its content.`,
                     type: 'status'
                 });
+                
+                // Add document summary
+                addDocumentSummary(doc.name);
             }, 2000);
         }
         
@@ -1354,11 +1546,14 @@
             showUploadMessage(`⏳ Processing document from ${url}...`, true);
             
             setTimeout(() => {
+                // Extract document name from URL
+                const docName = url.split('/').pop().replace('.pdf', '') || "Web Document";
+                
                 // Create document object
                 const docId = `doc-${Date.now()}`;
                 const doc = {
                     id: docId,
-                    name: "Web Document",
+                    name: docName,
                     type: "website",
                     source: url
                 };
@@ -1371,13 +1566,27 @@
                 const newDocItem = document.querySelector(`.doc-item[data-doc-id="${docId}"]`);
                 if (newDocItem) newDocItem.classList.add('active');
                 
-                updateContextDisplay("Web Document");
+                updateContextDisplay(docName);
+                
+                // Simulate document analysis
+                documentKnowledge[docName] = {
+                    abstract: "This online resource provides up-to-date information about cryptographic standards and best practices. It includes guidelines for implementing secure systems and recommendations for algorithm selection.",
+                    conclusion: "Staying current with cryptographic developments is essential for maintaining security. Resources like this provide valuable guidance for developers and security professionals.",
+                    keywords: ["cryptography", "standards", "security", "implementation", "guidelines"],
+                    sections: ["Introduction", "Standards", "Implementation", "Case Studies", "Resources"]
+                };
+                
+                // Update keywords
+                updateKeywords(docName);
                 
                 showUploadMessage(`✅ Successfully analyzed document`, true);
                 addMessage('bot', {
                     text: `Processed document from <a href="${url}" target="_blank">${url}</a>`,
                     type: 'status'
                 });
+                
+                // Add document summary
+                addDocumentSummary(docName);
             }, 1500);
         }
         
@@ -1390,7 +1599,7 @@
                     founded: "2010",
                     headquarters: "Santa Clara, CA",
                     investors: "Artiman, Kleiner Perkins, Caufield & Byers, Northern Light",
-                    contact: "(408) 884-0281",
+                    contact: "info@crossbar-inc.com",
                     website: "https://www.crossbar-inc.com"
                 };
                 
@@ -1432,13 +1641,67 @@
             const contextDisplay = document.querySelector('.context-display');
             if (contextDisplay) {
                 contextDisplay.innerHTML = `
-                    <p><i class="fas fa-file-alt"></i> Active document: <strong>${docName}</strong></p>
-                    <p><i class="fas fa-comment"></i> Current topic: <strong>Document Analysis</strong></p>
-                    <div class="context-indicator">
-                        <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                    <div>
+                        <p><i class="fas fa-file-alt"></i> Active document: <strong>${docName}</strong></p>
+                        <p><i class="fas fa-comment"></i> Current topic: <strong>Document Analysis</strong></p>
+                        <div class="context-indicator">
+                            <i class="fas fa-sync-alt"></i> Context maintained for follow-up questions
+                        </div>
+                    </div>
+                    <button class="clear-history" id="clear-history">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                `;
+                
+                // Reattach event listener
+                document.getElementById('clear-history').addEventListener('click', clearChatHistory);
+            }
+        }
+        
+        function updateKeywords(docName) {
+            const docData = documentKnowledge[docName];
+            if (!docData || !docData.keywords) return;
+            
+            keywordsDisplay.innerHTML = '';
+            
+            // Create keyword items
+            docData.keywords.forEach((keyword, index) => {
+                const keywordItem = document.createElement('div');
+                keywordItem.className = 'keyword-item';
+                keywordItem.innerHTML = `
+                    <div class="keyword-header">
+                        <div class="keyword-name">${keyword}</div>
+                        <div class="keyword-count">${Math.floor(Math.random() * 20) + 10} mentions</div>
+                    </div>
+                    <div class="keyword-sections">
+                        <i class="fas fa-file-alt"></i> Sections: ${getRandomSections()}
                     </div>
                 `;
+                keywordsDisplay.appendChild(keywordItem);
+            });
+        }
+        
+        function getRandomSections() {
+            const sections = [];
+            const count = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < count; i++) {
+                sections.push(`${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 5)}`);
             }
+            return sections.join(', ');
+        }
+        
+        function clearChatHistory() {
+            // Clear all messages except the initial bot message
+            const messages = chatMessages.querySelectorAll('.message');
+            messages.forEach((msg, index) => {
+                if (index > 0) msg.remove();
+            });
+            
+            // Show confirmation message
+            addMessage('bot', {
+                text: "Chat history has been cleared. How can I assist you with the current document?",
+                type: 'status'
+            });
         }
         
         // UI interaction functions
