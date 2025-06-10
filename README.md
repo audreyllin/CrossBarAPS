@@ -9,7 +9,7 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering
 
 Checklist after main development: 
-* https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf
+* https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
 * https://www.wpi.edu/sites/default/files/2024-10/Department-Page-Template-Guide_Binder.pdf (detailed guideline for individual pages)
 * https://www.wpi.edu/sites/default/files/2023-11/WPI_Institutional_Guidelines.pdf (relative positions)
 * https://www.wpi.edu/sites/default/files/2025-05/Drupal-Image-Sizes---All-Image-Sizes.pdf (image sizes) 
