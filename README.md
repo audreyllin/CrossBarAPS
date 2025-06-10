@@ -21,3 +21,9 @@ Tools:
 * https://www.adobe.com/express/feature/image/resize?sdid=98SH4JTH&mv=search&ef_id=EAIaIQobChMI9e68nuGHgQMVAwxlCh28RQigEAAYASAAEgKUkfD_BwE%3AG%3As&s_kwcid=AL%213085%213%21614689011343%21e%21%21g%21%21adobe%20express%20image%20resizer%2117953780040%21139204713585&gad=1
 * https://create.piktochart.com/teams/35333505/for-you
 * https://pixlr.com/image-generator/
+
+Our companys previous stylesheet:
+* https://www.crossbar-inc.com/assets/app.css
+
+Our companys picture assets:
+* https://www.crossbar-inc.com/assets/
