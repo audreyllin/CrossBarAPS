@@ -4,9 +4,30 @@ Tutorial: https://python.langchain.com/docs/tutorials/rag/
 
 Final goal: to align wit AWS and Ledger ai assistant web service
 * [https://aws.amazon.com/](https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q) (suitable for incorporation)
-* https://www.harman.com/
+* https://www.harman.com/ (more modern)
 * https://www.wpi.edu/topics/artificial-intelligence (suitable for sub pages)
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
+* https://www.solomake.com/no4/
+* https://marketplace.delorean.com/
+* https://www.experiencethebestyou.com/en/
+* https://www.awwwards.com/annual-awards-2024/
+* https://ultracombos.com/en-us
+* https://www.onramper.com/
+* https://www.hhhusher.com/
+* https://mont-fort.com/
+* https://beautytools.dolcegabbana.com/en-us/velvet
+* https://busy-studio-tarot.webflow.io/
+* https://robertassociety.com/
+* https://contra.com/project-rate-hiring-calculator/
+* https://freespeech.gubrica.com/
+* https://bennettandclive.com/
+* https://www.longines.com/en-us/spirit-flyback/
+* https://lusion.co/
+* https://oxiinstruments.com/oxi-one
+* https://www.igloo.inc/
+* https://eli8.tech/
+* https://www.coloradorafting.net/
+* https://endex.ai/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
@@ -27,3 +48,4 @@ Our companys previous stylesheet:
 
 Our companys picture assets:
 * https://www.crossbar-inc.com/assets/
+  
