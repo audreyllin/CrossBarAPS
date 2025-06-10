@@ -6,7 +6,7 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * [https://aws.amazon.com/](https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q)
 * https://www.harman.com/
 * https://www.wpi.edu/topics/artificial-intelligence
-* https://www.wpi.edu/academics/departments/electrical-computer-engineering
+* https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
