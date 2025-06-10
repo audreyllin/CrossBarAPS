@@ -3,9 +3,9 @@ RAG failed draft page: https://audreyllin.github.io/CrossBarAPS/rag-0605.html
 Tutorial: https://python.langchain.com/docs/tutorials/rag/
 
 Final goal: to align wit AWS and Ledger ai assistant web service
-* [https://aws.amazon.com/](https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q)
+* [https://aws.amazon.com/](https://aws.amazon.com/q/?nc2=h_ql_prod_fs_q) (suitable for incorporation)
 * https://www.harman.com/
-* https://www.wpi.edu/topics/artificial-intelligence
+* https://www.wpi.edu/topics/artificial-intelligence (suitable for sub pages)
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
 
 Checklist after main development: 
