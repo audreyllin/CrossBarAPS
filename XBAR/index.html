@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="no-js" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US" dir="ltr"
+    prefix="og: http://ogp.me/ns#">
+
+<head>
+    <meta charset="utf-8">
+    <title>Crossbar &amp; Crypto Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="Description" content="Experience the future of finance with Crossbar and Crypto Wallet integration.">
+
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <link rel="stylesheet" href="../css/index.css">
+</head>
+
+<body class="page-overview">
+    <!-- Global header/navigation -->
+    <div id="globalheader">
+        <nav class="globalnav">
+            <a href="#" class="globalnav-link">Home</a>
+            <a href="#" class="globalnav-link">Products</a>
+            <a href="#" class="globalnav-link">Technology</a>
+            <a href="#" class="globalnav-link">Security</a>
+            <a href="#" class="globalnav-link">Support</a>
+        </nav>
+    </div>
+
+    <!-- Chapter navigation -->
+    <nav class="chapternav">
+        <div class="chapternav-wrapper">
+            <ul class="chapternav-items">
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Crossbar PHSM</span>
+                    </a>
+                </li>
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Crypto Wallet</span>
+                    </a>
+                </li>
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Security</span>
+                    </a>
+                </li>
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Integration</span>
+                    </a>
+                </li>
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Technology</span>
+                    </a>
+                </li>
+                <li class="chapternav-item">
+                    <a class="chapternav-link" href="#">
+                        <span class="chapternav-label">Accessories</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main id="main" class="main" role="main">
+        <section class="section section-hero">
+            <div class="bitcoin-glow"></div>
+            <div class="bitcoin-fairy-container">
+                <div class="bitcoin-fairy">
+                    <lottie-player id="animation-fairy" src="https://bitcoin.org/en/json/fairy.json"
+                        background="transparent" speed="1" style="width: 100%; height: 100%"></lottie-player>
+                </div>
+            </div>
+
+            <div class="hardware-lockup">
+                <div class="hero-header">
+                    <h2 class="section-headline">The future of finance is here.</h2>
+                    <p class="intro-copy">Experience seamless integration of Crossbar technology with your crypto
+                        wallet. Secure, intuitive, and designed for the future of digital finance.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section section-features">
+            <div class="features-container">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">Bank-Grade Security</h3>
+                    <p class="feature-description">Military-grade encryption ensures your digital assets are protected
+                        with the highest security standards.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Lightning Fast</h3>
+                    <p class="feature-description">Instant transactions powered by Crossbar technology and optimized
+                        blockchain protocols.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Seamless Integration</h3>
+                    <p class="feature-description">Connect with all major exchanges and financial platforms for a
+                        unified experience.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy Policy</a>
+                <a href="#" class="footer-link">Terms of Use</a>
+                <a href="#" class="footer-link">Sales and Refunds</a>
+                <a href="#" class="footer-link">Legal</a>
+                <a href="#" class="footer-link">Site Map</a>
+            </div>
+            <div class="copyright">
+                Copyright © 2023 Crossbar Technologies. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize and control the Bitcoin fairy animation
+        document.addEventListener('DOMContentLoaded', function () {
+            const animFairy = document.querySelector('#animation-fairy');
+
+            // Play animation on click
+            animFairy.addEventListener('click', function () {
+                animFairy.play(animFairy.firstFrame);
+            });
+
+            // Stop animation when it completes
+            animFairy.addEventListener('complete', function () {
+                animFairy.stop();
+            });
+
+            // Play on page load with delay for dramatic effect
+            setTimeout(() => {
+                animFairy.play();
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>
