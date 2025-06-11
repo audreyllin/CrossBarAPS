@@ -112,12 +112,15 @@
         /* Header & Navigation */
         header {
             padding: 1rem 0;
-            background: rgba(10, 14, 23, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(184, 115, 51, 0.3);
+            /* background: rgba(10, 14, 23, 0.85); */
+            /* backdrop-filter: blur(10px); */
+            /* border-bottom: 1px solid rgba(184, 115, 51, 0.3); */
             position: sticky;
             top: 0;
             z-index: 1000;
+            max-height: 25vh;
+            border-bottom: dashed navajowhite;
+            backdrop-filter: brightness(0.3);
         }
 
         .navbar {
@@ -130,13 +133,14 @@
         }
 
         .navbar-brand {
-            display: flex;
+            display: grid;
             align-items: center;
+            margin-top: -2vh;
         }
 
         .logo {
-            height: 50px;
             width: auto;
+            margin-top: 2vh;
         }
 
         .logo-text {
@@ -148,6 +152,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-align: center;
         }
 
         .nav-menu {
@@ -221,6 +226,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            backdrop-filter: brightness(0.4);
         }
 
         .hero-subtitle {
@@ -228,6 +234,7 @@
             color: var(--text-muted);
             margin-bottom: 2rem;
             max-width: 600px;
+            backdrop-filter: brightness(0.1);
         }
 
         .btn {
@@ -249,7 +256,7 @@
         }
 
         .btn-outline {
-            background: transparent;
+            background: green;
             border: 2px solid var(--gold);
             color: var(--gold);
             margin-left: 1rem;
@@ -277,10 +284,10 @@
             width: 100%;
             height: 100%;
             background:
-                linear-gradient(135deg, rgba(25, 40, 65, 0.2) 0%, rgba(10, 14, 23, 0.8) 100%),
+                linear-gradient(135deg, rgba(25, 40, 65, 0.2) 0%, rgba(0, 30, 100, 1.0) 100%),
                 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" fill="none" stroke="%23B87333" stroke-width="1" stroke-dasharray="4 2"/></svg>');
             background-size: cover;
-            border: 1px solid rgba(184, 115, 51, 0.5);
+            border: 1px solid darkorange;
             border-radius: 8px;
             box-shadow:
                 0 0 20px rgba(184, 115, 51, 0.3),
@@ -296,10 +303,10 @@
             height: 20%;
             background: linear-gradient(90deg,
                     rgba(0, 255, 234, 0) 0%,
-                    rgba(0, 255, 234, 0.3) 20%,
-                    rgba(0, 234, 255, 0.5) 50%,
+                    rgba(180, 255, 250, 0.4) 20%,
+                    rgba(0, 220, 255, 0.9) 50%,
                     rgba(0, 255, 234, 0.3) 80%,
-                    rgba(0, 255, 234, 0) 100%);
+                    rgba(180, 255, 250, 0) 100%);
             animation: streamFlow 6s linear infinite;
             opacity: 0.6;
             filter: blur(8px);
@@ -311,6 +318,9 @@
             background-color: rgba(8, 11, 18, 0.7);
             position: relative;
             backdrop-filter: blur(5px);
+            margin-left: 4vw;
+            margin-right: 4vw;
+            margin-bottom: 13vh;
         }
 
         .section-title {
@@ -483,14 +493,12 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
-        }
-
-        .footer-logo .logo {
-            height: 40px;
+            margin-left: -8vw;
         }
 
         .footer-logo .logo-text {
-            font-size: 1.25rem;
+            font-size: 2rem;
+            margin-left: -5vw;
         }
 
         .footer-about {
@@ -575,7 +583,7 @@
             }
 
             50% {
-                transform: translate(-50%, -53%) rotate(2deg);
+                transform: translate(-50%, -56%) rotate(6deg);
             }
 
             100% {
@@ -585,13 +593,14 @@
 
         @keyframes streamFlow {
             0% {
-                background-position: -100% 0;
+                background-position: -150% 0;
             }
 
             100% {
-                background-position: 200% 0;
+                background-position: 250% 0;
             }
         }
+
 
         @keyframes stars {
             from {
@@ -661,8 +670,6 @@
             }
 
             .btn {
-                display: block;
-                margin: 1rem auto;
                 text-align: center;
             }
 
@@ -704,11 +711,6 @@
     <header>
         <nav class="navbar">
             <div class="navbar-brand">
-                <svg class="logo" viewBox="0 0 189.9 60.5" role="img" aria-label="CrossBar logo">
-                    <path
-                        d="m 105.9,75.7 c -0.4,-0.5 -1,-0.9 -1.6,-1.2 -0.6,-0.3 -1.4,-0.4 -2.2,-0.4 -0.8,0 -1.6,0.2 -2.3,0.5 -0.7,0.3 -1.3,0.8 -1.8,1.3 -0.5,0.6 -0.9,1.3 -1.2,2 -0.3,0.8 -0.4,1.6 -0.4,2.6 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.2,2 0.5,0.6 1.1,1 1.8,1.3 0.7,0.3 1.4,0.5 2.2,0.5 0.9,0 1.7,-0.2 2.4,-0.6 0.7,-0.4 1.3,-0.9 1.7,-1.6 l 3.7,2.7 c -0.8,1.2 -1.9,2.1 -3.2,2.6 -1.3,0.6 -2.6,0.8 -4,0.8 -1.6,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 0.6,0 1.2,0.1 1.8,0.2 0.6,0.1 1.2,0.3 1.8,0.5 0.6,0.2 1.2,0.5 1.7,0.9 0.5,0.4 1,0.8 1.5,1.4 l -3.5,2.7 z"
-                        fill="#FFD700" />
-                </svg>
                 <span class="logo-text">CROSSBAR</span>
             </div>
             <ul class="nav-menu">
@@ -842,19 +844,18 @@
             <div class="footer-col">
                 <div class="footer-logo">
                     <svg class="logo" viewBox="0 0 189.9 60.5" role="img" aria-label="CrossBar logo">
-                        <path
-                            d="m 105.9,75.7 c -0.4,-0.5 -1,-0.9 -1.6,-1.2 -0.6,-0.3 -1.4,-0.4 -2.2,-0.4 -0.8,0 -1.6,0.2 -2.3,0.5 -0.7,0.3 -1.3,0.8 -1.8,1.3 -0.5,0.6 -0.9,1.3 -1.2,2 -0.3,0.8 -0.4,1.6 -0.4,2.6 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.2,2 0.5,0.6 1.1,1 1.8,1.3 0.7,0.3 1.4,0.5 2.2,0.5 0.9,0 1.7,-0.2 2.4,-0.6 0.7,-0.4 1.3,-0.9 1.7,-1.6 l 3.7,2.7 c -0.8,1.2 -1.9,2.1 -3.2,2.6 -1.3,0.6 -2.6,0.8 -4,0.8 -1.6,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 0.6,0 1.2,0.1 1.8,0.2 0.6,0.1 1.2,0.3 1.8,0.5 0.6,0.2 1.2,0.5 1.7,0.9 0.5,0.4 1,0.8 1.5,1.4 l -3.5,2.7 z"
-                            fill="#FFD700" />
+                        <image href="https://www.crossbar-inc.com/assets/images/favicon/apple-touch-icon.png" x="0"
+                            y="0" width="189.9" height="60.5" />
                     </svg>
                     <span class="logo-text">CROSSBAR</span>
                 </div>
                 <p class="footer-about">CrossBar specializes in developing secure crypto wallet technology with advanced
                     ReRAM memory solutions for enterprise and individual users.</p>
                 <div class="social-links">
-                    <a href="#" class="social-link" aria-label="LinkedIn">
+                    <a href="https://www.linkedin.com/company/crossbar-inc/" class="social-link" aria-label="LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
-                    <a href="#" class="social-link" aria-label="Twitter">
+                    <a href="https://x.com/crossbarinc" class="social-link" aria-label="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
                     <a href="#" class="social-link" aria-label="GitHub">
