@@ -1,0 +1,377 @@
+/* Base Styles */
+html {
+    font-family: SF Pro Text, SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-size: 106.25%;
+    quotes: "“" "”";
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    --r-globalnav-height: 44px;
+    --r-globalmessage-segment-height: 0px;
+    --r-globalnav-segmentbar-height: 0px;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+body.page-overview {
+    background-color: whitesmoke;
+    color: #1d1d1f;
+    font-size: 17px;
+    line-height: 25px;
+    letter-spacing: -0.374px;
+}
+
+/* Global Header */
+#globalheader {
+    position: relative;
+    z-index: 9999;
+}
+
+.globalnav {
+    background: whitesmoke;
+    backdrop-filter: blur(20px);
+    height: var(--r-globalnav-height);
+    box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.globalnav-link {
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 12px;
+    letter-spacing: -0.01em;
+    padding: 0 15px;
+    text-decoration: none;
+}
+
+/* Hero Section */
+.section-hero {
+    padding: 80px 0 40px;
+    text-align: center;
+    background: linear-gradient(135deg, #f7931a 0%, #8a2be2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hardware-lockup {
+    margin: 0 auto 50px;
+    max-width: 1600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    position: relative;
+}
+
+.hero-header {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+.section-headline {
+    font-size: 80px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-bottom: 18px;
+    line-height: 1.05;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.intro-copy {
+    font-size: 28px;
+    line-height: 1.14286;
+    font-weight: 400;
+    letter-spacing: .007em;
+    max-width: 640px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Bitcoin Fairy Animation Container */
+.bitcoin-fairy-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.bitcoin-fairy {
+    width: 70%;
+    max-width: 800px;
+    height: 70%;
+    animation: float 8s ease-in-out infinite;
+}
+
+/* Chapter Navigation */
+.chapternav {
+    position: relative;
+    z-index: 999;
+    height: 48px;
+    background: #f5f5f7;
+    border-bottom: 1px solid #d2d2d7;
+    overflow: hidden;
+}
+
+.chapternav-wrapper {
+    height: 100%;
+}
+
+.chapternav-items {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    height: 100%;
+    background: #f5f5f7;
+}
+
+.chapternav-item {
+    display: flex;
+    align-items: center;
+    animation: slideInFromRight 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* Individual delays for each nav item */
+.chapternav-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.chapternav-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chapternav-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.chapternav-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.chapternav-item:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.chapternav-item:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+.chapternav-link {
+    color: #1d1d1f;
+    font-size: 12px;
+    padding: 0 20px;
+    text-decoration: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.chapternav-link:hover {
+    color: #f7931a;
+}
+
+/* Features Section */
+.section-features {
+    padding: 100px 0;
+    background-color: white;
+}
+
+.features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #f7931a;
+}
+
+.feature-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #1d1d1f;
+}
+
+.feature-description {
+    color: #646464;
+    line-height: 1.6;
+}
+
+/* Animations */
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Adjustments */
+@media only screen and (max-width: 1068px) {
+    .section-headline {
+        font-size: 64px;
+    }
+
+    .intro-copy {
+        font-size: 24px;
+    }
+
+    .hardware-lockup {
+        height: 50vh;
+    }
+}
+
+@media only screen and (max-width: 833px) {
+    .section-headline {
+        font-size: 48px;
+    }
+
+    .intro-copy {
+        font-size: 21px;
+    }
+
+    .bitcoin-fairy {
+        width: 90%;
+        height: 50%;
+    }
+
+    .chapternav {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .chapternav-item {
+        animation: none !important;
+        opacity: 1;
+        transform: none !important;
+    }
+}
+
+/* Footer */
+footer {
+    background: #1d1d1f;
+    color: #a1a1a6;
+    padding: 60px 0 30px;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.footer-link {
+    color: #a1a1a6;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.footer-link:hover {
+    color: #f7931a;
+}
+
+.copyright {
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+/* Bitcoin Elements */
+.bitcoin-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle at center, rgba(247, 147, 26, 0.2) 0%, transparent 70%);
+    z-index: 0;
+    animation: pulse 6s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 0.3;
+    }
+}
