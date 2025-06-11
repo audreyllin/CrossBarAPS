@@ -36,6 +36,7 @@ Checklist after main development:
 * https://www.wpi.edu/sites/default/files/2023-11/WPI_Institutional_Guidelines.pdf (relative positions)
 * https://www.wpi.edu/sites/default/files/2025-05/Drupal-Image-Sizes---All-Image-Sizes.pdf (image sizes) 
 * https://wpi.canto.com/v/dam/allfiles?_gl=1*16bsmb9*_ga*MjAwODAyMDAzMC4xNzQ5NTc0NTk0*_ga_RE35PKQB7J*czE3NDk1NzQ1OTMkbzEkZzEkdDE3NDk1NzcwOTEkajMxJGwwJGgw*_gcl_au*MTgyNzI0NDI0MS4xNzQ5NTc0NTk0&viewIndex=2
+* https://bitcoin.org/en/bitcoin-paper
 
 Tools:
 * https://desygner.com/create/campaign/1092
