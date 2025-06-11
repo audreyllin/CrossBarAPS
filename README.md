@@ -9,29 +9,29 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
 
 Effective web design ref:
-* https://www.apple.com/airpods/
-* https://www.apple.com/apple-vision-pro/
-* https://www.apple.com/watch/
-* https://metamask.io/
-* https://metamask.io/download
 * https://aistudio.google.com/prompts/new_chat
 * https://ai.google.dev/
-* https://www.onramper.com/
 * https://coinmarketcap.com/crypto-heatmap/
 * https://www.coinglass.com/pro/i/RsiHeatMap
 * https://www.coingecko.com/en/cryptocurrency-heatmap
 * https://www.coinglass.com/pro/futures/LiquidationHeatMap
 * https://coinank.com/liqHeatMapChart
-* https://oxiinstruments.com/
 * https://www.kucoin.com/trade/BTC-USDT
 * https://lusion.co/
 * https://lusion.co/projects/spaace
 * https://www.slowmist.com/#solution-cryptocurrency-security
-* https://deloreanlabs.com/
-* https://coinbaseservice.com/
 * https://crypto.com/us
 * https://crypto.com/us
 * https://www.gemini.com/
+* [REALISTIC Design] https://oxiinstruments.com/
+* [] https://deloreanlabs.com/
+* [] https://www.apple.com/airpods/
+* [] https://www.apple.com/apple-vision-pro/
+* [] https://www.apple.com/watch/
+* [COMBINED] https://www.onramper.com/
+* <> https://metamask.io/
+* <> https://metamask.io/download
+* <> https://coinbaseservice.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
