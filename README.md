@@ -48,6 +48,7 @@ Checklist after main development:
 * https://bitcoin.org/en/vocabulary
 * https://bitcoin.org/en/faq
 * https://www.shutterstock.com/search/encryption
+* https://science.nasa.gov/?search=eye
 
 Tools:
 * https://desygner.com/create/campaign/1092
