@@ -8,11 +8,12 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * https://www.wpi.edu/topics/artificial-intelligence (suitable for sub pages)
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
 
-More effective web ref:
+Effective web design ref:
 * https://www.apple.com/airpods/
 * https://www.apple.com/apple-vision-pro/
 * https://www.apple.com/watch/
 * https://metamask.io/
+* https://metamask.io/download
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
