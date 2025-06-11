@@ -29,6 +29,11 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * https://www.coloradorafting.net/
 * https://endex.ai/
 
+More effective web ref:
+* https://www.apple.com/airpods/
+* https://www.apple.com/apple-vision-pro/
+* https://www.apple.com/watch/
+
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
 * https://www.wpi.edu/sites/default/files/2024-10/Department-Page-Template-Guide_Binder.pdf (detailed guideline for individual pages)
