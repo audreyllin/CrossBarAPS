@@ -30,6 +30,7 @@ Effective web design ref:
 * https://lusion.co/projects/spaace
 * https://www.slowmist.com/#solution-cryptocurrency-security
 * https://deloreanlabs.com/
+* https://coinbaseservice.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
