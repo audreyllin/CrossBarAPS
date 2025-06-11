@@ -24,6 +24,10 @@ Effective web design ref:
 * https://www.coingecko.com/en/cryptocurrency-heatmap
 * https://www.coinglass.com/pro/futures/LiquidationHeatMap
 * https://coinank.com/liqHeatMapChart
+* https://oxiinstruments.com/
+* https://www.kucoin.com/trade/BTC-USDT
+* https://lusion.co/
+* https://lusion.co/projects/spaace
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
