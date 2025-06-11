@@ -28,6 +28,8 @@ Effective web design ref:
 * https://www.kucoin.com/trade/BTC-USDT
 * https://lusion.co/
 * https://lusion.co/projects/spaace
+* https://www.slowmist.com/#solution-cryptocurrency-security
+* https://deloreanlabs.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
