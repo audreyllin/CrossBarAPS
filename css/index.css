@@ -240,7 +240,7 @@ header {
 }
 
 .btn-outline {
-    background: transparent;
+    background: green;
     border: 2px solid var(--gold);
     color: var(--gold);
     margin-left: 1rem;
