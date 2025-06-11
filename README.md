@@ -16,6 +16,8 @@ Effective web design ref:
 * https://metamask.io/download
 * https://aistudio.google.com/prompts/new_chat
 * https://ai.google.dev/
+* https://www.alchemy.com/supernode?utm_source=google&utm_medium=cpc&utm_campaign=Google_Paid_Search_Node_Services&utm_term=web3%20node%20provider&utm_content=736943977344&device=c&matchtype=b&network=g&gad_source=1&gad_campaignid=22311981806&gbraid=0AAAAABWCDnVNTT0_qWEo56PczzzCuqjcI&gclid=CjwKCAjwr5_CBhBlEiwAzfwYuBUZa6OePzwyV4zgDs488dWYdpVdyRgzeuPcEgIoG45VcGPJvCe6KRoCjNIQAvD_BwE
+* https://www.onramper.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
