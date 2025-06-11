@@ -29,6 +29,9 @@ Effective web design ref:
 * https://www.slowmist.com/#solution-cryptocurrency-security
 * https://deloreanlabs.com/
 * https://coinbaseservice.com/
+* https://crypto.com/us
+* https://crypto.com/us
+* https://www.gemini.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
@@ -37,6 +40,12 @@ Checklist after main development:
 * https://www.wpi.edu/sites/default/files/2025-05/Drupal-Image-Sizes---All-Image-Sizes.pdf (image sizes) 
 * https://wpi.canto.com/v/dam/allfiles?_gl=1*16bsmb9*_ga*MjAwODAyMDAzMC4xNzQ5NTc0NTk0*_ga_RE35PKQB7J*czE3NDk1NzQ1OTMkbzEkZzEkdDE3NDk1NzcwOTEkajMxJGwwJGgw*_gcl_au*MTgyNzI0NDI0MS4xNzQ5NTc0NTk0&viewIndex=2
 * https://bitcoin.org/en/bitcoin-paper
+* https://bitcoin.org/en/faq#is-bitcoin-a-bubble
+* https://bitcoin.org/en/exchanges#africa
+* https://developer.bitcoin.org/devguide/block_chain.html
+* https://developer.bitcoin.org/reference/block_chain.html
+* https://developer.bitcoin.org/glossary.html
+* https://bitcoin.org/en/vocabulary
 
 Tools:
 * https://desygner.com/create/campaign/1092
