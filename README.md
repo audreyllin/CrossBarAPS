@@ -14,6 +14,8 @@ Effective web design ref:
 * https://www.apple.com/watch/
 * https://metamask.io/
 * https://metamask.io/download
+* https://aistudio.google.com/prompts/new_chat
+* https://ai.google.dev/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
