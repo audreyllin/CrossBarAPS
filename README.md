@@ -46,7 +46,7 @@ Checklist after main development:
 * https://developer.bitcoin.org/reference/block_chain.html
 * https://developer.bitcoin.org/glossary.html
 * https://bitcoin.org/en/vocabulary
-* https://bitcoin.org/en/vocabulary
+* https://www.shutterstock.com/search/encryption
 
 Tools:
 * https://desygner.com/create/campaign/1092
