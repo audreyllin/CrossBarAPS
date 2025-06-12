@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReRAM | Crossbar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== COMPLETE STYLESHEET ===== */
+        :root {
+            --dark-bg: #0a0e17;
+            --dark-card: #121826;
+            --darker-bg: #080b12;
+            --gold: #ffd700;
+            --copper: #b87333;
+            --accent-blue: #00eaff;
+            --accent-green: #00ffc8;
+            --text-light: #e0e0ff;
+            --text-muted: #a1a1c2;
+
+            /* New variables for accessibility */
+            --link-color: var(--accent-blue);
+            --link-hover: var(--gold);
+            --animation-speed: 1;
+        }
+
+        /* Light contrast mode */
+        :root.light-contrast {
+            --dark-bg: #020518;
+            --dark-card: #1a1f2e;
+            --darker-bg: #01030a;
+            --text-light: #ffffff;
+            --text-muted: #c0c0ff;
+        }
+
+        /* Dark contrast mode */
+        :root.dark-contrast {
+            --dark-bg: #000000;
+            --dark-card: #0a0a0a;
+            --darker-bg: #000000;
+            --text-light: #ffffff;
+            --text-muted: #cccccc;
+            --gold: #ffcc00;
+            --copper: #ffaa44;
+        }
+
+        /* Highlight links mode */
+        :root.highlight-links {
+            --link-color: #ff6b6b;
+            --link-hover: #ff3838;
+        }
+
+        /* Reduced motion mode */
+        :root.reduced-motion {
+            --animation-speed: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020518;
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Cosmic background */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                url('https://d2pn8kiwq2w21t.cloudfront.net/original_images/imagescassini20100812pia13332-full.jpg') center/cover no-repeat,
+                radial-gradient(ellipse at center, rgba(10, 14, 23, 0.8) 0%, rgba(2, 5, 24, 0.95) 100%);
+            z-index: -2;
+            opacity: 0.7;
+            transition: opacity 0.5s ease;
+        }
+
+        body.light-contrast::before {
+            opacity: 0.2;
+        }
+
+        body.dark-contrast::before {
+            opacity: 0.9;
+        }
+
+        ul {
+            margin-top: -2rem;
+        }
+
+        /* Starfield overlay */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at top, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%),
+                radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .starfield::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(#ffffcc, rgba(255, 255, 204, 0.6) 2px, transparent 3px),
+                radial-gradient(#ffd700, rgba(255, 215, 0, 0.5) 2px, transparent 3px),
+                radial-gradient(#fffacd, rgba(255, 250, 205, 0.4) 1px, transparent 2px),
+                radial-gradient(#b0e57c, rgba(176, 229, 124, 0.5) 2px, transparent 3px),
+                radial-gradient(#98fb98, rgba(152, 251, 152, 0.4) 1px, transparent 2px),
+                radial-gradient(#adff2f, rgba(173, 255, 47, 0.3) 2px, transparent 3px),
+                radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 3px);
+            background-size: 600px 600px, 480px 480px, 360px 360px, 320px 320px, 400px 400px, 350px 350px;
+            background-position: 0 0, 50px 100px, 150px 250px, 220px 350px, 300px 450px, 400px 600px;
+            animation: stars calc(60s * var(--animation-speed)) linear infinite;
+        }
+
+        /* Heading hierarchy */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 1.5rem 0;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 1.25rem 0;
+        }
+
+        h4 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 1rem 0;
+        }
+
+        /* Layout & Spacing */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 1.25rem;
+            margin: 0 auto;
+        }
+
+        section {
+            padding: 4rem 0;
+        }
+
+        /* Header & Navigation */
+        header {
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            max-height: 25vh;
+            border: 3px dashed navajowhite;
+            /* backdrop-filter: brightness(0.3); */
+            backdrop-filter: contrast(0.04);
+        }
+
+        .navbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 0 1rem;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            max-width: 100px;
+            height: auto;
+        }
+
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.25rem;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--copper) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: xx-large;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.4rem 0.75rem;
+            color: floralwhite;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--link-hover);
+            background: mediumblue;
+        }
+
+        .nav-link::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: auto;
+            padding: 2.5rem 0;
+            display: flex;
+            align-items: center;
+            margin-left: 4vw;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .hero-text {
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--copper) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            backdrop-filter: brightness(0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: brightness(0.3);
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+            color: var(--dark-bg);
+            padding: 0.75rem 1.75rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(184, 115, 51, 0.3);
+        }
+
+        .btn-outline {
+            background: darkslategray;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+        }
+
+        .hero-visual {
+            position: relative;
+            height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chip-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+        }
+
+        img.chip-image {
+            width: 25vw;
+            margin: 4vw;
+        }
+
+        .chip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(135deg, rgba(25, 40, 65, 0.2) 0%, rgba(0, 30, 100, 1.0) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" fill="none" stroke="%23B87333" stroke-width="1" stroke-dasharray="4 2"/></svg>');
+            background-size: cover;
+            border: 1px solid darkorange;
+            border-radius: 8px;
+            box-shadow:
+                0 0 20px rgba(184, 115, 51, 0.3),
+                0 0 40px rgba(25, 40, 65, 0.5);
+            animation: chipFloat calc(8s * var(--animation-speed)) ease-in-out infinite;
+        }
+
+        .neon-stream {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(90deg,
+                    rgba(0, 255, 234, 0) 0%,
+                    rgba(180, 255, 250, 0.4) 20%,
+                    rgba(0, 220, 255, 0.9) 50%,
+                    rgba(0, 255, 234, 0.3) 80%,
+                    rgba(180, 255, 250, 0) 100%);
+            animation: streamFlow calc(6s * var(--animation-speed)) linear infinite;
+            opacity: 0.6;
+            filter: blur(8px);
+        }
+
+        /* Quadrant Section */
+        #quadrant {
+            background: rgba(10, 14, 23, 0.8);
+            padding: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quadrant {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+        }
+
+        .desktop {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            height: 100%;
+            gap: 2px;
+        }
+
+        .quad-closed,
+        .quad-open {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        .quad-closed {
+            cursor: pointer;
+        }
+
+        .quad-open {
+            display: none;
+            z-index: 10;
+        }
+
+        .quad-title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            z-index: 2;
+        }
+
+        .quad-card {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(18, 24, 38, 0.9);
+            padding: 1.5rem;
+            color: var(--text-light);
+            transform: translateY(100%);
+            transition: transform 0.5s ease;
+        }
+
+        .quad-open .quad-card {
+            transform: translateY(0);
+        }
+
+        .quad-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .quad-buttons .btn {
+            background: rgba(184, 115, 51, 0.2);
+            border: 1px solid var(--copper);
+            color: var(--gold);
+            transition: all 0.3s ease;
+            min-width: auto;
+            padding: 0.5rem 1rem;
+        }
+
+        .quad-buttons .btn:hover {
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+            color: var(--dark-bg);
+            transform: none;
+        }
+
+        .quad-ne {
+            grid-area: 1 / 2 / 2 / 3;
+        }
+
+        .quad-nw {
+            grid-area: 1 / 1 / 2 / 2;
+        }
+
+        .quad-se {
+            grid-area: 2 / 2 / 3 / 3;
+        }
+
+        .quad-sw {
+            grid-area: 2 / 1 / 3 / 2;
+        }
+
+        .quad-closed:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(184, 115, 51, 0.2);
+            z-index: 1;
+        }
+
+        .quad-closed:hover .quad-title {
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+
+        /* Mobile quadrant */
+        .mobile {
+            display: none;
+        }
+
+        .quad-mobile {
+            position: relative;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Features Section */
+        .features {
+            background-color: rgba(8, 11, 18, 0.7);
+            padding: 4rem 1.25rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--copper) 100%);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: "";
+            position: absolute;
+            bottom: -0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.75rem;
+            margin-left: -5vw;
+        }
+
+        .feature-card {
+            background: rgba(18, 24, 38, 0.7);
+            border: 1px solid rgba(184, 115, 51, 0.3);
+            border-radius: 10px;
+            padding: 1.75rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(184, 115, 51, 0.2);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: var(--gold);
+            background: rgba(25, 30, 40, 0.5);
+            border-radius: 50%;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Video Section */
+        #video {
+            padding: 4rem 0;
+            background: rgba(8, 11, 18, 0.8);
+            position: relative;
+        }
+
+        .carousel-inner {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .carousel-item {
+            background: var(--dark-card);
+            padding: 2rem;
+        }
+
+        .video-embed {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-title {
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            color: var(--gold);
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .video-prev,
+        .video-next {
+            width: 40px;
+            height: 40px;
+            background: rgba(184, 115, 51, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 4vw;
+        }
+
+        .video-next {
+            margin-left: 80vw;
+            margin-top: -3vh;
+
+        }
+
+        .video-prev:hover,
+        .video-next:hover {
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+            transform: scale(1.1);
+        }
+
+        /* News Section */
+        #news {
+            padding: 4rem 0;
+            background: rgba(10, 14, 23, 0.8);
+            position: relative;
+        }
+
+        .news-title {
+            text-align: center;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .news-list {
+            list-style: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .news-item {
+            background: rgba(18, 24, 38, 0.7);
+            border-left: 3px solid var(--copper);
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .news-item:hover {
+            transform: translateX(5px);
+            border-left-color: var(--gold);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .news-item a {
+            display: block;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: var(--text-muted);
+        }
+
+        .news-item-title {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+            color: var(--text-light);
+        }
+
+        .news-item:hover .news-item-title {
+            color: var(--gold);
+        }
+
+        .news-item-date {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            font-style: italic;
+        }
+
+        /* Trust Section */
+        .trust {
+            padding: 4rem 1.25rem;
+            background-color: rgba(10, 14, 23, 0.6);
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .trust-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .badge {
+            background: rgba(18, 24, 38, 0.7);
+            border: 1px solid rgba(184, 115, 51, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(5px);
+            min-width: 250px;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .badge-icon {
+            font-size: 1.75rem;
+            color: var(--gold);
+        }
+
+        .badge-content h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+            background: rgba(18, 24, 38, 0.5);
+            border-radius: 8px;
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--copper) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 7, 11, 0.9);
+            padding: 3rem 1.25rem 2rem;
+            border-top: 1px solid rgba(184, 115, 51, 0.3);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-about {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            max-width: 400px;
+        }
+
+        .footer-links h4 {
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .footer-links h4::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--copper) 0%, var(--gold) 100%);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(18, 24, 38, 0.7);
+            border: 1px solid rgba(184, 115, 51, 0.3);
+            color: var(--gold);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--gold);
+            color: var(--dark-bg);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes chipFloat {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-50%, -56%) rotate(6deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+        }
+
+        @keyframes streamFlow {
+            0% {
+                background-position: -150% 0;
+            }
+
+            100% {
+                background-position: 250% 0;
+            }
+        }
+
+        @keyframes stars {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: -550px 550px;
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== ACCESSIBILITY CONTROLS ===== */
+        .accessibility-bar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            gap: 10px;
+            background: rgba(18, 24, 38, 0.9);
+            padding: 12px;
+            border-radius: 30px;
+            border: 1px solid var(--copper);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .accessibility-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(25, 30, 40, 0.7);
+            color: var(--text-light);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .accessibility-btn:hover {
+            background: var(--copper);
+            transform: translateY(-3px);
+        }
+
+        .accessibility-btn.active {
+            background: var(--gold);
+            color: var(--dark-bg);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ===== RESPONSIVE ADJUSTMENTS ===== */
+        @media (min-width: 210px) {
+            .badge-content p {
+                display: none;
+            }
+        }
+
+        @media (min-width: 320px) {
+            ul {
+                margin-top: auto;
+            }
+        }
+
+        @media (min-width: 480px) {
+            .container {
+                max-width: 90%;
+            }
+
+            .hero-title {
+                font-size: 2.75rem;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-menu {
+                gap: 0.75rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .logo-text {
+                margin-left: 36vw;
+            }
+
+            .navbar {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .nav-menu {
+                gap: 1.25rem;
+            }
+
+            .hero-content {
+                flex-direction: row;
+                align-items: center;
+                gap: 3rem;
+            }
+
+            .hero-text {
+                text-align: left;
+                flex: 1;
+            }
+
+            .hero-buttons {
+                justify-content: flex-start;
+            }
+
+            .hero-visual {
+                flex: 1;
+                height: 320px;
+            }
+
+            .chip-container {
+                width: 280px;
+                height: 280px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .desktop {
+                display: grid;
+            }
+
+            .mobile {
+                display: none;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1200px;
+            }
+
+            .hero-title {
+                font-size: 3.25rem;
+            }
+
+            .hero-visual {
+                height: 380px;
+            }
+
+            .chip-container {
+                width: 320px;
+                height: 320px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .logo-text {
+                margin-left: 1vw;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .hero-visual {
+                height: 400px;
+            }
+
+            .chip-container {
+                width: 340px;
+                height: 340px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Starfield Overlay -->
+    <div class="starfield"></div>
+
+    <!-- Accessibility Controls -->
+    <div class="accessibility-bar">
+        <button class="accessibility-btn tooltip" id="lightContrastBtn" data-tooltip="Light Contrast">
+            <i class="fas fa-adjust"></i>
+        </button>
+        <button class="accessibility-btn tooltip" id="darkContrastBtn" data-tooltip="Dark Contrast">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button class="accessibility-btn tooltip" id="highlightLinksBtn" data-tooltip="Highlight Links">
+            <i class="fas fa-link"></i>
+        </button>
+        <button class="accessibility-btn tooltip" id="pauseAnimationsBtn" data-tooltip="Pause Animations">
+            <i class="fas fa-pause"></i>
+        </button>
+        <button class="accessibility-btn tooltip" id="playAnimationsBtn" data-tooltip="Play Animations">
+            <i class="fas fa-play"></i>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <div class="logo-text">CROSSBAR</div>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#" class="nav-link">Home</a></li>
+                    <li><a href="#" class="nav-link">Products</a></li>
+                    <li><a href="#" class="nav-link">Solutions</a></li>
+                    <li><a href="#" class="nav-link">Pricing</a></li>
+                    <li><a href="#" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">Next-Gen Quantum Computing</h1>
+                    <p class="hero-subtitle">Revolutionize your data processing with our cutting-edge quantum computing
+                        solutions. Experience unprecedented computational power.</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn">Get Started</a>
+                        <a href="#" class="btn btn-outline">Learn More</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="chip-container">
+                        <div class="chip">
+                            <div class="neon-stream"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Core Features</h2>
+                <p>Discover what makes our quantum computing platform unique</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">Lightning Speed</h3>
+                    <p class="feature-description">Process complex algorithms in milliseconds with our quantum
+                        processing units.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="feature-title">Quantum Security</h3>
+                    <p class="feature-description">Unbreakable encryption powered by quantum entanglement technology.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-infinity"></i>
+                    </div>
+                    <h3 class="feature-title">Infinite Scalability</h3>
+                    <p class="feature-description">Easily scale your computational power as your needs grow.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">AI Integration</h3>
+                    <p class="feature-description">Seamlessly integrate with advanced artificial intelligence systems.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quadrant Section -->
+    <section id="quadrant">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Technology Quadrants</h2>
+            <div class="quadrant">
+                <div class="desktop">
+                    <div class="quad-closed quad-nw"
+                        style="background-image: url('https://images.unsplash.com/photo-1677442135133-33d364e7d1f6?q=80&w=1000');">
+                        <h3 class="quad-title">Quantum Processing</h3>
+                    </div>
+                    <div class="quad-closed quad-ne"
+                        style="background-image: url('https://images.unsplash.com/photo-1677442135722-5f1d5d5a0a1a?q=80&w=1000');">
+                        <h3 class="quad-title">AI Integration</h3>
+                    </div>
+                    <div class="quad-closed quad-sw"
+                        style="background-image: url('https://images.unsplash.com/photo-1677442135136-33d364e7d1f6?q=80&w=1000');">
+                        <h3 class="quad-title">Data Security</h3>
+                    </div>
+                    <div class="quad-closed quad-se"
+                        style="background-image: url('https://images.unsplash.com/photo-1677442135722-5f1d5d5a0a1a?q=80&w=1000');">
+                        <h3 class="quad-title">Cloud Solutions</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust">
+        <div class="container">
+            <div class="section-title">
+                <h2>Trusted By Industry Leaders</h2>
+                <p>Join thousands of satisfied customers worldwide</p>
+            </div>
+            <div class="trust-badges">
+                <div class="badge">
+                    <div class="badge-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="badge-content">
+                        <h4>Enterprise Security</h4>
+                        <p>Military-grade encryption for all data</p>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="badge-content">
+                        <h4>Global Infrastructure</h4>
+                        <p>Data centers across 12 countries</p>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="badge-content">
+                        <h4>Industry Certified</h4>
+                        <p>Compliant with all major regulations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stats-number">99.99%</div>
+                        <div class="stats-label">Uptime</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stats-number">10x</div>
+                        <div class="stats-label">Faster Processing</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stats-number">256-bit</div>
+                        <div class="stats-label">Encryption</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stats-number">24/7</div>
+                        <div class="stats-label">Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <div class="footer-logo">
+                        <div class="logo-text">CROSSBAR</div>
+                    </div>
+                    <p class="footer-about">Leading the quantum computing revolution with innovative solutions for
+                        enterprises and research institutions worldwide.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Products</h4>
+                    <ul>
+                        <li><a href="#">Quantum Processors</a></li>
+                        <li><a href="#">AI Integration</a></li>
+                        <li><a href="#">Security Solutions</a></li>
+                        <li><a href="#">Cloud Platform</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Tutorials</a></li>
+                        <li><a href="#">Research Papers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Partners</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 CROSSBAR Quantum Computing. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Accessibility Controls
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get buttons
+            const lightContrastBtn = document.getElementById('lightContrastBtn');
+            const darkContrastBtn = document.getElementById('darkContrastBtn');
+            const highlightLinksBtn = document.getElementById('highlightLinksBtn');
+            const pauseAnimationsBtn = document.getElementById('pauseAnimationsBtn');
+            const playAnimationsBtn = document.getElementById('playAnimationsBtn');
+
+            // Get root element
+            const root = document.documentElement;
+
+            // Initialize settings from localStorage
+            const savedSettings = JSON.parse(localStorage.getItem('accessibilitySettings')) || {};
+
+            // Apply saved settings
+            if (savedSettings.lightContrast) {
+                root.classList.add('light-contrast');
+                lightContrastBtn.classList.add('active');
+            }
+            if (savedSettings.darkContrast) {
+                root.classList.add('dark-contrast');
+                darkContrastBtn.classList.add('active');
+            }
+            if (savedSettings.highlightLinks) {
+                root.classList.add('highlight-links');
+                highlightLinksBtn.classList.add('active');
+            }
+            if (savedSettings.reducedMotion) {
+                root.classList.add('reduced-motion');
+                pauseAnimationsBtn.classList.add('active');
+            }
+
+            // Light Contrast Toggle
+            lightContrastBtn.addEventListener('click', function () {
+                root.classList.toggle('light-contrast');
+                this.classList.toggle('active');
+
+                // Remove dark contrast if both are selected
+                if (root.classList.contains('light-contrast') && root.classList.contains('dark-contrast')) {
+                    root.classList.remove('dark-contrast');
+                    darkContrastBtn.classList.remove('active');
+                }
+
+                saveSettings();
+            });
+
+            // Dark Contrast Toggle
+            darkContrastBtn.addEventListener('click', function () {
+                root.classList.toggle('dark-contrast');
+                this.classList.toggle('active');
+
+                // Remove light contrast if both are selected
+                if (root.classList.contains('light-contrast') && root.classList.contains('dark-contrast')) {
+                    root.classList.remove('light-contrast');
+                    lightContrastBtn.classList.remove('active');
+                }
+
+                saveSettings();
+            });
+
+            // Highlight Links Toggle
+            highlightLinksBtn.addEventListener('click', function () {
+                root.classList.toggle('highlight-links');
+                this.classList.toggle('active');
+                saveSettings();
+            });
+
+            // Pause Animations
+            pauseAnimationsBtn.addEventListener('click', function () {
+                root.classList.add('reduced-motion');
+                this.classList.add('active');
+                playAnimationsBtn.classList.remove('active');
+                saveSettings();
+            });
+
+            // Play Animations
+            playAnimationsBtn.addEventListener('click', function () {
+                root.classList.remove('reduced-motion');
+                this.classList.add('active');
+                pauseAnimationsBtn.classList.remove('active');
+                saveSettings();
+            });
+
+            // Save settings to localStorage
+            function saveSettings() {
+                const settings = {
+                    lightContrast: root.classList.contains('light-contrast'),
+                    darkContrast: root.classList.contains('dark-contrast'),
+                    highlightLinks: root.classList.contains('highlight-links'),
+                    reducedMotion: root.classList.contains('reduced-motion')
+                };
+
+                localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
+            }
+        });
+    </script>
+</body>
+
+</html>
