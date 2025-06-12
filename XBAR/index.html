@@ -16,14 +16,43 @@
 </head>
 
 <body>
+    <!-- Accessibility Control Panel -->
+    <div class="accessibility-panel">
+        <span class="panel-toggle" id="panelToggle">
+            <i class="fas fa-universal-access"></i>
+        </span>
+        <button class="access-btn" id="darkContrast">
+            <i class="fas fa-moon"></i>
+            <span>Dark Contrast</span>
+        </button>
+        <button class="access-btn" id="lightContrast">
+            <i class="fas fa-sun"></i>
+            <span>Light Contrast</span>
+        </button>
+        <button class="access-btn" id="highlightLinks">
+            <i class="fas fa-link"></i>
+            <span>Highlight Links</span>
+        </button>
+        <button class="access-btn" id="pauseAnimations">
+            <i class="fas fa-pause"></i>
+            <span>Pause Animations</span>
+        </button>
+        <button class="access-btn" id="playAnimations">
+            <i class="fas fa-play"></i>
+            <span>Play Animations</span>
+        </button>
+        <button class="access-btn" id="SearchKey">
+            <i class="fas fa-search"></i>
+            <span>Search Keywords</span>
+        </button>
+    </div>
+
     <!-- Starfield overlay -->
     <div class="starfield" aria-hidden="true"></div>
 
     <!-- Header -->
     <header>
         <nav class="navbar">
-            <!-- <div class="navbar-brand">
-            </div> -->
             <span class="logo-text">CROSSBAR</span>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="#technology" class="nav-link">Technology</a></li>
@@ -555,6 +584,74 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Accessibility panel functionality
+            const panelToggle = document.getElementById('panelToggle');
+            const accessibilityPanel = document.querySelector('.accessibility-panel');
+
+            // Toggle panel visibility
+            panelToggle.addEventListener('click', function () {
+                accessibilityPanel.classList.toggle('hidden');
+            });
+
+            // Get accessibility buttons
+            const darkContrastBtn = document.getElementById('darkContrast');
+            const lightContrastBtn = document.getElementById('lightContrast');
+            const highlightLinksBtn = document.getElementById('highlightLinks');
+            const pauseAnimationsBtn = document.getElementById('pauseAnimations');
+            const playAnimationsBtn = document.getElementById('playAnimations');
+
+            // Function to toggle button active state
+            function toggleActive(btn, className, addToBody = true) {
+                const isActive = btn.classList.contains('active');
+
+                // Remove active state from all buttons in group
+                const buttons = btn.parentElement.querySelectorAll('.access-btn');
+                buttons.forEach(b => b.classList.remove('active'));
+
+                // Toggle class on body if needed
+                if (addToBody) {
+                    document.body.classList.remove('dark-contrast', 'light-contrast', 'highlight-links', 'pause-animations');
+                    if (!isActive) {
+                        document.body.classList.add(className);
+                        btn.classList.add('active');
+                    }
+                } else {
+                    // For animations - remove all animation classes
+                    document.body.classList.remove('pause-animations');
+                    if (className === 'pause-animations') {
+                        document.body.classList.add(className);
+                        btn.classList.add('active');
+                    } else {
+                        playAnimationsBtn.classList.add('active');
+                    }
+                }
+            }
+
+            // Add event listeners
+            darkContrastBtn.addEventListener('click', function () {
+                toggleActive(this, 'dark-contrast');
+            });
+
+            lightContrastBtn.addEventListener('click', function () {
+                toggleActive(this, 'light-contrast');
+            });
+
+            highlightLinksBtn.addEventListener('click', function () {
+                toggleActive(this, 'highlight-links');
+            });
+
+            pauseAnimationsBtn.addEventListener('click', function () {
+                toggleActive(this, 'pause-animations');
+                playAnimationsBtn.classList.remove('active');
+            });
+
+            playAnimationsBtn.addEventListener('click', function () {
+                document.body.classList.remove('pause-animations');
+                pauseAnimationsBtn.classList.remove('active');
+                this.classList.add('active');
+            });
+
+            // Original functionality remains unchanged
             // Desktop quadrant functionality
             const quadClosedElements = document.querySelectorAll('.quad-closed');
             const quadOpenElements = document.querySelectorAll('.quad-open');
