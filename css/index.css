@@ -41,6 +41,10 @@ body::before {
     opacity: 0.7;
 }
 
+ul {
+    margin-top: -2rem;
+}
+
 /* Starfield overlay */
 .starfield {
     position: fixed;
@@ -229,7 +233,7 @@ header {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
-    backdrop-filter: birghtness(0.3);
+    backdrop-filter: brightness(0.3);
 }
 
 .hero-buttons {
@@ -493,6 +497,7 @@ img.chip-image {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.75rem;
+    margin-left: -5vw;
 }
 
 .feature-card {
@@ -902,6 +907,12 @@ footer {
     }
 }
 
+@media (min-width: 320px) {
+    ul {
+        margin-top: auto;
+    }
+}
+
 @media (min-width: 480px) {
     .container {
         max-width: 90%;
@@ -1028,4 +1039,6 @@ footer {
         width: 340px;
         height: 340px;
     }
+
+
 }
