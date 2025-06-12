@@ -151,6 +151,7 @@ header {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-size: xx-large;
 }
 
 .nav-menu {
@@ -173,7 +174,7 @@ header {
 
 .nav-link:hover {
     color: var(--gold);
-    background: rgba(184, 115, 51, 0.1);
+    background: mediumblue;
 }
 
 .nav-link::after {
@@ -901,6 +902,10 @@ footer {
 }
 
 @media (min-width: 768px) {
+    .logo-text {
+        margin-left: 36vw;
+    }
+
     .navbar {
         flex-direction: row;
         justify-content: space-between;
@@ -984,6 +989,10 @@ footer {
 }
 
 @media (min-width: 1200px) {
+    .logo-text {
+        margin-left: 1vw;
+    }
+
     .hero-title {
         font-size: 3.5rem;
     }
