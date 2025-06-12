@@ -42,6 +42,7 @@ body::before {
 }
 
 /* Starfield overlay */
+
 .starfield {
     position: fixed;
     top: 0;
@@ -66,13 +67,17 @@ body::before {
         radial-gradient(#ffffcc, rgba(255, 255, 204, 0.6) 2px, transparent 3px),
         radial-gradient(#ffd700, rgba(255, 215, 0, 0.5) 2px, transparent 3px),
         radial-gradient(#fffacd, rgba(255, 250, 205, 0.4) 1px, transparent 2px),
-        radial-gradient(#fff8dc, rgba(255, 248, 220, 0.3) 2px, transparent 3px),
+        radial-gradient(#b0e57c, rgba(176, 229, 124, 0.5) 2px, transparent 3px),
+        /* Soft green */
+        radial-gradient(#98fb98, rgba(152, 251, 152, 0.4) 1px, transparent 2px),
+        /* Pale green */
+        radial-gradient(#adff2f, rgba(173, 255, 47, 0.3) 2px, transparent 3px),
+        /* Neon green */
         radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 3px);
-    background-size: 600px 600px, 500px 500px, 400px 400px, 350px 350px, 300px 300px;
-    background-position: 0 0, 30px 50px, 100px 200px, 170px 300px, 250px 400px;
+    background-size: 600px 600px, 480px 480px, 360px 360px, 320px 320px, 400px 400px, 350px 350px;
+    background-position: 0 0, 50px 100px, 150px 250px, 220px 350px, 300px 450px, 400px 600px;
     animation: stars 60s linear infinite;
 }
-
 
 /* Heading hierarchy */
 h1 {
@@ -243,7 +248,7 @@ header {
 }
 
 .btn-outline {
-    background: green;
+    background: transparent;
     border: 2px solid var(--gold);
     color: var(--gold);
     margin-left: 1rem;
