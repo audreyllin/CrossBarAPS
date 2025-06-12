@@ -129,7 +129,13 @@ header {
 .logo {
     width: auto;
     margin-top: 2vh;
-    min-width: 16vw;
+    min-width: 13vw;
+}
+
+span.logo-text {
+    display: grid;
+    align-items: center;
+    margin-top: -1vh;
 }
 
 .logo-text {
