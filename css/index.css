@@ -278,6 +278,11 @@ header {
     height: 240px;
 }
 
+img.chip-image {
+    width: 16vw;
+    margin: 16vw;
+}
+
 .chip {
     position: absolute;
     top: 50%;
