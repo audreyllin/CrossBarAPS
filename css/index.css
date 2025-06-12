@@ -219,6 +219,7 @@ header {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    backdrop-filter: brightness(0.3);
 }
 
 .hero-subtitle {
@@ -228,6 +229,7 @@ header {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    backdrop-filter: birghtness(0.3);
 }
 
 .hero-buttons {
@@ -593,6 +595,13 @@ img.chip-image {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-left: 4vw;
+}
+
+.video-next {
+    margin-left: 80vw;
+    margin-top: -3vh;
+
 }
 
 .video-prev:hover,
@@ -887,14 +896,11 @@ footer {
 }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
-/* @media (min-width: 210px) {
-    .nav-menu {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        list-style: none;
+@media (min-width: 210px) {
+    .badge-content p {
+        display: none;
     }
-} */
+}
 
 @media (min-width: 480px) {
     .container {
