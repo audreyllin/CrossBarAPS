@@ -23,7 +23,8 @@ Effective web design ref:
 * <> https://metamask.io/download
 * <> https://coinbaseservice.com/
 * [COMPATIBLE] https://ai.google.dev/
-* ()
+* () https://www.slowmist.com/#solution-cryptocurrency-security
+* () https://crypto.com/us
 * https://aistudio.google.com/prompts/new_chat
 * https://coinmarketcap.com/crypto-heatmap/
 * https://www.coinglass.com/pro/i/RsiHeatMap
@@ -33,9 +34,6 @@ Effective web design ref:
 * https://www.kucoin.com/trade/BTC-USDT
 * https://lusion.co/
 * https://lusion.co/projects/spaace
-* https://www.slowmist.com/#solution-cryptocurrency-security
-* https://crypto.com/us
-* https://crypto.com/us
 * https://www.gemini.com/
 
 Checklist after main development: 
