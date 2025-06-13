@@ -13,6 +13,15 @@ Final goal: to align wit AWS and Ledger ai assistant web service
 * https://www.wpi.edu/academics/departments/electrical-computer-engineering (suitable for main page, index.html)
 
 Effective web design ref:
+* [REALISTIC Design] https://oxiinstruments.com/
+* [] https://deloreanlabs.com/
+* [] https://www.apple.com/airpods/
+* [] https://www.apple.com/apple-vision-pro/
+* [] https://www.apple.com/watch/
+* [COMBINED] https://www.onramper.com/
+* <> https://metamask.io/
+* <> https://metamask.io/download
+* <> https://coinbaseservice.com/
 * https://aistudio.google.com/prompts/new_chat
 * https://ai.google.dev/
 * https://coinmarketcap.com/crypto-heatmap/
@@ -27,15 +36,6 @@ Effective web design ref:
 * https://crypto.com/us
 * https://crypto.com/us
 * https://www.gemini.com/
-* [REALISTIC Design] https://oxiinstruments.com/
-* [] https://deloreanlabs.com/
-* [] https://www.apple.com/airpods/
-* [] https://www.apple.com/apple-vision-pro/
-* [] https://www.apple.com/watch/
-* [COMBINED] https://www.onramper.com/
-* <> https://metamask.io/
-* <> https://metamask.io/download
-* <> https://coinbaseservice.com/
 
 Checklist after main development: 
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
