@@ -25,6 +25,17 @@ Effective web design ref:
 * [COMPATIBLE] https://ai.google.dev/
 * () https://www.slowmist.com/#solution-cryptocurrency-security
 * () https://crypto.com/us
+* [In-The-Same-Industry] https://phantom.com/
+* [] https://tangem.com/en/
+* [] https://www.exodus.com/download
+* [] https://zengo.com/
+* [] https://trustwallet.com/?utm_source=cryptwerk
+* [] https://www.coinbase.com/wallet
+* [] https://www.coinbase.com/
+* [] https://metamask.io/
+* [] https://www.ledger.com/metamask
+* [] https://www.ledger.com/
+* [] https://bestwallet.com/en/
 * https://aistudio.google.com/prompts/new_chat
 * https://coinmarketcap.com/crypto-heatmap/
 * https://www.coinglass.com/pro/i/RsiHeatMap
