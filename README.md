@@ -22,8 +22,9 @@ Effective web design ref:
 * <> https://metamask.io/
 * <> https://metamask.io/download
 * <> https://coinbaseservice.com/
+* [COMPATIBLE] https://ai.google.dev/
+* ()
 * https://aistudio.google.com/prompts/new_chat
-* https://ai.google.dev/
 * https://coinmarketcap.com/crypto-heatmap/
 * https://www.coinglass.com/pro/i/RsiHeatMap
 * https://www.coingecko.com/en/cryptocurrency-heatmap
