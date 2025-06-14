@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <meta name="description"
+        content="ReRAM can scale to less than 10nm, stack in 3D, and be integrated with logic. With ReRAM you get 1/20th the energy; 1000x endurance; 100x read perf.; 1000x write perf. and TBs of storage on-chip.">
+    <meta name="keywords"
+        content="RRAM, ReRAM, RRAM technology, Resistive random-access memory, memory, storage solution, storage, 1T1R, 1TnR, CrossBar, NAND flash memory, Flash, NOR flash, 3D ReRAM, 3D RRAM, ReRAM IP, RRAM IP, ReRAM IP cores, artificial intelligence, data center, internet of things, storage">
+    <meta name="revision" content="8b89c2ef">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CrossBar Website">
+    <meta property="og:url" content="https://www.crossbar-inc.com/">
+    <meta property="og:title" content="ReRAM Memory | CrossBar">
+    <meta property="og:description"
+        content="ReRAM can scale to less than 10nm, stack in 3D, and be integrated with logic. With ReRAM you get 1/20th the energy; 1000x endurance; 100x read perf.; 1000x write perf. and TBs of storage on-chip.">
+    <meta property="og:image" content="https://www.crossbar-inc.com/assets/images/og/home.jpg">
+    <title>ReRAM Memory | CrossBar</title>
+    <meta name="google-site-verification" content="xUJoI6QxWAa3V1GaoVQEjZuv6qO0EJo0SuT7Zn1Rfsg">
+    <link rel="apple-touch-icon" sizes="180x180"
+        href="https://www.crossbar-inc.com/assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="https://www.crossbar-inc.com/assets/images/favicon/favicon-32x32.png"
+        sizes="32x32">
+    <link rel="icon" type="image/png" href="https://www.crossbar-inc.com/assets/images/favicon/favicon-16x16.png"
+        sizes="16x16">
+    <link rel="manifest" href="https://www.crossbar-inc.com/assets/images/favicon/manifest.json">
+    <link rel="mask-icon" href="https://www.crossbar-inc.com/assets/images/favicon/safari-pinned-tab.svg"
+        color="#5bbad5">
+    <link rel="shortcut icon" href="https://www.crossbar-inc.com/assets/images/favicon/favicon.ico">
+    <meta name="msapplication-config" content="https://www.crossbar-inc.com/assets/images/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        /* === GLOBAL STYLES & VARIABLES === */
+        :root {
+            /* Color Scheme */
+            --primary: #ff6a13;
+            --primary-dark: #e05d10;
+            --secondary: #54585a;
+            --secondary-light: #a9abac;
+            --light: #ffffff;
+            --dark: #1a1a1a;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --info: #2196f3;
+
+            /* Animation */
+            --transition-speed: 0.3s;
+            --transition-curve: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+
+            /* Typography */
+            --font-main: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-heading: 'Fira Sans Condensed', 'Segoe UI', sans-serif;
+            --font-size-base: 16px;
+            --line-height: 1.6;
+
+            /* Shadow */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+
+            /* Theme-specific */
+            --theme-toggle-size: 40px;
+            --progress-bar-width: 6px;
+        }
+
+        /* Dark theme variables */
+        [data-theme="dark"] {
+            --background: #1a1a1a;
+            --card-bg: #252525;
+            --text: #f0f0f0;
+            --text-light: #cccccc;
+            --border: #444444;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height);
+            color: var(--text);
+            background-color: var(--background);
+            transition: background-color var(--transition-speed) ease;
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            /* Space for FAB */
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color var(--transition-speed) ease;
+        }
+
+        a:hover,
+        a:focus {
+            color: var(--primary-dark);
+            text-decoration: underline;
+            outline: none;
+        }
+
+        button,
+        .btn {
+            background-color: var(--primary);
+            color: var(--light);
+            border: none;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-curve);
+            display: inline-block;
+            text-align: center;
+        }
+
+        button:hover,
+        .btn:hover,
+        button:focus,
+        .btn:focus {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* === HEADER & NAVIGATION === */
+        header {
+            padding: 3px 15px;
+            background: linear-gradient(to right, #ff9f68, var(--primary));
+            border: solid rgba(255, 106, 19, .3);
+            border-width: 1px 0;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .social {
+            float: right;
+        }
+
+        .social a {
+            color: var(--light);
+            margin-left: 10px;
+            font-size: 18px;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+
+        .social a:hover,
+        .social a:focus {
+            transform: translateY(-3px);
+            color: var(--light);
+            outline: 2px solid var(--light);
+        }
+
+        #nav {
+            height: 145px;
+            background: var(--card-bg);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .navbar-brand {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            z-index: 1;
+        }
+
+        .navbar-brand svg {
+            height: 60px;
+            width: 190px;
+        }
+
+        .navbar-collapse {
+            position: absolute;
+            bottom: 17px;
+            right: 0;
+            height: 35px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .navbar-nav {
+            display: flex;
+            gap: 15px;
+            height: 100%;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--secondary);
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .nav-link span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: var(--primary);
+            transition: width var(--transition-speed) ease;
+            z-index: 1;
+        }
+
+        .nav-link:hover,
+        .nav-link:focus,
+        .nav-link.active {
+            color: var(--primary);
+            outline: none;
+        }
+
+        .nav-link:hover::after,
+        .nav-link:focus::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            min-width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            border-radius: 4px;
+            padding: var(--spacing-sm) 0;
+            z-index: 1000;
+            animation: fadeIn var(--transition-speed) ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown:hover>.dropdown-menu,
+        .dropdown:focus-within>.dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-submenu>.dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -6px;
+        }
+
+        .dropdown-item {
+            padding: .6rem 1.5rem;
+            transition: all var(--transition-speed) ease;
+            display: block;
+            width: 100%;
+            color: var(--text);
+            position: relative;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            color: var(--primary);
+            background-color: rgba(var(--primary), 0.1);
+        }
+
+        .dropdown-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: var(--primary);
+            transform: scaleY(0);
+            transform-origin: center top;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .dropdown-item:hover::before,
+        .dropdown-item:focus::before {
+            transform: scaleY(1);
+        }
+
+        /* === VERTICAL PROGRESS BAR === */
+        .vertical-progress {
+            position: fixed;
+            top: 0;
+            right: 20px;
+            height: 100vh;
+            width: var(--progress-bar-width);
+            background-color: rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .progress-item {
+            width: var(--progress-bar-width);
+            height: 50px;
+            background-color: var(--secondary-light);
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+        }
+
+        .progress-item:hover {
+            background-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .progress-item.active {
+            background-color: var(--primary);
+            height: 80px;
+        }
+
+        .progress-item::after {
+            content: attr(data-title);
+            position: absolute;
+            right: calc(var(--progress-bar-width) + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--card-bg);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 4px;
+            box-shadow: var(--shadow-md);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .progress-item:hover::after {
+            opacity: 1;
+        }
+
+        /* === PREDICTIVE SEARCH & AI ASSISTANT === */
+        .search-container {
+            position: fixed;
+            top: 20px;
+            right: 60px;
+            z-index: 1001;
+            width: 300px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-right: 45px;
+            border: 2px solid var(--border);
+            border-radius: 30px;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all var(--transition-speed) ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 106, 19, 0.2);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .search-button:hover {
+            color: var(--primary);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-results.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .search-result-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        .search-result-item:hover {
+            background-color: rgba(var(--primary), 0.1);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .ai-assistant {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background-color: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .ai-assistant-icon {
+            font-size: 24px;
+        }
+
+        .ai-assistant:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 6px 15px rgba(255, 106, 19, 0.4);
+        }
+
+        .ai-chat {
+            position: fixed;
+            bottom: 170px;
+            right: 30px;
+            width: 350px;
+            height: 400px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .ai-chat.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .ai-chat-header {
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .ai-message.user {
+            background-color: rgba(var(--primary), 0.1);
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+
+        .ai-message.bot {
+            background-color: var(--border);
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+        }
+
+        .ai-chat-input {
+            padding: 15px;
+            display: flex;
+            border-top: 1px solid var(--border);
+        }
+
+        .ai-chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+
+        /* === FLOATING ACTION BUTTON === */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 6px 15px rgba(255, 106, 19, 0.4);
+        }
+
+        .fab-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .fab-menu.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .fab-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        .fab-item:hover {
+            background-color: rgba(var(--primary), 0.1);
+        }
+
+        .fab-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* === THEME TOGGLER === */
+        .theme-toggler {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            width: var(--theme-toggle-size);
+            height: var(--theme-toggle-size);
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .theme-toggler:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* === ANIMATION CONTROLS === */
+        .animation-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background-color: var(--card-bg);
+            padding: 10px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .animation-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .animation-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* === HERO SECTION === */
+        #hero {
+            position: relative;
+            height: 80vh;
+            overflow: hidden;
+        }
+
+        .carousel-inner {
+            height: 100%;
+        }
+
+        .carousel-item {
+            height: 100%;
+            position: relative;
+        }
+
+        .carousel-images {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-position: center;
+            background-size: cover;
+        }
+
+        .layer-image {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .carousel-caption {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .caption {
+            text-align: center;
+            max-width: 700px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .caption h3 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+
+        .caption .btn {
+            font-size: 1.2rem;
+            padding: 12px 30px;
+        }
+
+        /* === QUADRANT SECTION === */
+        #quadrant {
+            padding: 80px 0;
+        }
+
+        .quadrant.desktop {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: 80vh;
+        }
+
+        .quad-closed,
+        .quad-open {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-speed) var(--transition-curve);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .quad-closed {
+            transform: scale(0.95);
+        }
+
+        .quad-closed:hover {
+            transform: scale(0.98);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quad-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .quad-closed:hover .quad-title {
+            transform: scale(1.1);
+        }
+
+        .quad-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .quad-open .quad-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quad-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* === VIDEO SECTION === */
+        #video {
+            padding: 80px 0;
+            background-color: var(--background);
+        }
+
+        .video-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .video-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .video-embed {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* === NEWS SECTION === */
+        #news {
+            padding: 80px 0;
+            background-color: var(--card-bg);
+        }
+
+        .news-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+        }
+
+        .news-title i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .news-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .news-item {
+            background-color: var(--background);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .news-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .news-item a {
+            display: block;
+            color: var(--text);
+        }
+
+        .news-item-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .news-item:hover .news-item-title {
+            color: var(--primary);
+        }
+
+        .news-item-date {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* === FOOTER === */
+        footer {
+            background-color: var(--secondary);
+            color: white;
+            padding: 40px 0 20px;
+        }
+
+        .line1,
+        .line2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+        }
+
+        .social a {
+            color: white;
+        }
+
+        .pages a {
+            color: white;
+            margin-right: 15px;
+        }
+
+        .divider span {
+            color: rgba(255, 255, 255, 0.5);
+            margin: 0 10px;
+        }
+
+        .copyright {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* === RESPONSIVE ADJUSTMENTS === */
+        @media (max-width: 991px) {
+            .vertical-progress {
+                display: none;
+            }
+
+            .quadrant.desktop {
+                display: none;
+            }
+
+            .quadrant.mobile {
+                display: block;
+            }
+
+            .search-container {
+                top: 80px;
+                left: 20px;
+                right: 20px;
+                width: auto;
+            }
+
+            .ai-chat {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .quadrant.mobile {
+                display: none;
+            }
+        }
+
+        /* === ANIMATION CLASSES === */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .animate-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hover-grow {
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .hover-grow:hover {
+            transform: scale(1.05);
+        }
+
+        .hover-rotate {
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .hover-rotate:hover {
+            transform: rotate(5deg);
+        }
+
+        /* === ACCESSIBILITY === */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body class="home" id="home">
+    <!-- Theme Toggler -->
+    <div class="theme-toggler" id="theme-toggler" title="Toggle theme">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <!-- Animation Controls -->
+    <div class="animation-controls">
+        <div class="animation-btn" id="pause-animations" title="Pause animations">
+            <i class="fas fa-pause"></i>
+        </div>
+        <div class="animation-btn" id="play-animations" title="Play animations">
+            <i class="fas fa-play"></i>
+        </div>
+    </div>
+
+    <!-- Vertical Progress Bar -->
+    <div class="vertical-progress" id="vertical-progress">
+        <div class="progress-item active" data-section="home" data-title="Home"></div>
+        <div class="progress-item" data-section="quadrant" data-title="Technology"></div>
+        <div class="progress-item" data-section="video" data-title="Videos"></div>
+        <div class="progress-item" data-section="news" data-title="News"></div>
+    </div>
+
+    <!-- Search Container -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search or ask a question...">
+            <button class="search-button" id="search-button">
+                <i class="fas fa-search"></i>
+            </button>
+            <div class="search-results" id="search-results">
+                <div class="search-result-item">ReRAM Technology Overview</div>
+                <div class="search-result-item">ReRAM Advantages</div>
+                <div class="search-result-item">CrossBar Products</div>
+                <div class="search-result-item">Company Information</div>
+                <div class="search-result-item">Contact Sales</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant" id="ai-assistant">
+        <i class="fas fa-robot ai-assistant-icon"></i>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="ai-chat" id="ai-chat">
+        <div class="ai-chat-header">
+            <h3>CrossBar AI Assistant</h3>
+            <button id="close-chat"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ai-chat-body" id="chat-body">
+            <div class="ai-message bot">
+                Hello! I'm your CrossBar assistant. How can I help you today? You can ask about our ReRAM technology,
+                products, or company information.
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="chat-input" placeholder="Ask about ReRAM...">
+            <button id="send-message"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" id="fab">
+        <i class="fas fa-plus"></i>
+        <div class="fab-menu" id="fab-menu">
+            <div class="fab-item">
+                <i class="fas fa-download"></i>
+                <span>Download Resources</span>
+            </div>
+            <div class="fab-item">
+                <i class="fas fa-book"></i>
+                <span>Documentation</span>
+            </div>
+            <div class="fab-item">
+                <i class="fas fa-headset"></i>
+                <span>Contact Support</span>
+            </div>
+            <div class="fab-item">
+                <i class="fas fa-share-alt"></i>
+                <span>Share Page</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="clearfix">
+        <div class="social float-right">
+            <a target="_blank" title="CrossBar at Linkedin" href="https://www.linkedin.com/company/crossbar-inc">
+                <i class="fa-brands fa-linkedin"></i>
+            </a>
+            <a target="_blank" title="CrossBar at Twitter" href="https://twitter.com/crossbarinc">
+                <i class="fa-brands fa-twitter"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-light navbar-expand-md" id="nav">
+        <div class="container h-100">
+            <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse"
+                data-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="https://www.crossbar-inc.com/">
+                <svg xmlns="http://www.w3.org/2000/svg" height="60.5" width="189.89999" viewBox="0 0 189.9 60.5">
+                    <title>CrossBar Inc.</title>
+                    <g transform="translate(-46.7,-30.7)">
+                        <g>
+                            <path
+                                d="m 105.9,75.7 c -0.4,-0.5 -1,-0.9 -1.6,-1.2 -0.6,-0.3 -1.4,-0.4 -2.2,-0.4 -0.8,0 -1.6,0.2 -2.3,0.5 -0.7,0.3 -1.3,0.8 -1.8,1.3 -0.5,0.6 -0.9,1.3 -1.2,2 -0.3,0.8 -0.4,1.6 -0.4,2.6 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.2,2 0.5,0.6 1.1,1 1.8,1.3 0.7,0.3 1.4,0.5 2.2,0.5 0.9,0 1.7,-0.2 2.4,-0.6 0.7,-0.4 1.3,-0.9 1.7,-1.6 l 3.7,2.7 c -0.8,1.2 -1.9,2.1 -3.2,2.6 -1.3,0.6 -2.6,0.8 -4,0.8 -1.6,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 0.6,0 1.2,0.1 1.8,0.2 0.6,0.1 1.2,0.3 1.8,0.5 0.6,0.2 1.2,0.5 1.7,0.9 0.5,0.4 1,0.8 1.5,1.4 l -3.5,2.7 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 111.4,70.5 7.7,0 c 1,0 2,0.1 2.9,0.3 0.9,0.2 1.7,0.5 2.4,1 0.7,0.5 1.2,1.1 1.6,1.9 0.4,0.8 0.6,1.8 0.6,2.9 0,1.4 -0.4,2.6 -1.1,3.6 -0.7,1 -1.8,1.6 -3.2,1.9 l 5.1,8.4 -5.3,0 -4.2,-8 -2.2,0 0,8 -4.4,0 0,-20 z m 4.4,8.3 2.6,0 c 0.4,0 0.8,0 1.3,0 0.4,0 0.8,-0.1 1.2,-0.3 0.4,-0.1 0.7,-0.4 0.9,-0.7 0.2,-0.3 0.4,-0.7 0.4,-1.3 0,-0.5 -0.1,-0.9 -0.3,-1.2 -0.2,-0.3 -0.5,-0.5 -0.8,-0.7 -0.3,-0.2 -0.7,-0.3 -1.1,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -2.9,0 0,4.6 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 128,80.5 c 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 1.5,0 3,0.2 4.3,0.7 1.3,0.5 2.5,1.2 3.4,2.1 1,0.9 1.7,2 2.2,3.3 0.5,1.3 0.8,2.7 0.8,4.3 0,1.6 -0.3,3 -0.8,4.3 -0.5,1.3 -1.3,2.4 -2.2,3.3 -1,0.9 -2.1,1.6 -3.4,2.1 -1.3,0.5 -2.8,0.7 -4.3,0.7 -1.5,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 z m 4.5,0 c 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.3,2 0.5,0.6 1.2,1 2,1.3 0.8,0.3 1.6,0.5 2.6,0.5 0.9,0 1.8,-0.2 2.6,-0.5 0.8,-0.3 1.4,-0.8 2,-1.3 0.5,-0.6 1,-1.3 1.3,-2 0.3,-0.8 0.4,-1.6 0.4,-2.6 0,-0.9 -0.1,-1.8 -0.4,-2.6 -0.3,-0.8 -0.7,-1.5 -1.3,-2 -0.5,-0.6 -1.2,-1 -2,-1.3 -0.8,-0.3 -1.6,-0.5 -2.6,-0.5 -0.9,0 -1.8,0.2 -2.6,0.5 -0.8,0.3 -1.4,0.8 -2,1.3 -0.5,0.6 -1,1.3 -1.3,2 -0.2,0.8 -0.4,1.7 -0.4,2.6 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 161.6,75.4 c -0.4,-0.5 -0.8,-0.8 -1.5,-1 -0.6,-0.2 -1.2,-0.3 -1.7,-0.3 -0.3,0 -0.6,0 -1,0.1 -0.3,0.1 -0.7,0.2 -1,0.4 -0.3,0.2 -0.5,0.4 -0.7,0.6 -0.2,0.2 -0.3,0.6 -0.3,1 0,0.6 0.2,1.1 0.7,1.4 0.5,0.3 1,0.6 1.7,0.8 0.7,0.2 1.4,0.5 2.2,0.7 0.8,0.2 1.5,0.5 2.2,1 0.7,0.4 1.3,1 1.7,1.7 0.5,0.7 0.7,1.6 0.7,2.8 0,1.1 -0.2,2.1 -0.6,2.9 -0.4,0.8 -1,1.5 -1.7,2.1 -0.7,0.5 -1.5,1 -2.5,1.2 -1,0.2 -1.8,0.2 -2.8,0.2 -1.3,0 -2.5,-0.2 -3.6,-0.6 -1.1,-0.4 -2.1,-1 -3.1,-1.9 l 3.1,-3.4 c 0.5,0.6 1,1.1 1.7,1.4 0.7,0.3 1.4,0.5 2.1,0.5 0.4,0 0.7,0 1.1,-0.1 0.4,-0.1 0.7,-0.2 1,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.6 0.2,-0.3 0.3,-0.6 0.3,-0.9 0,-0.6 -0.2,-1.1 -0.7,-1.4 -0.5,-0.3 -1,-0.6 -1.7,-0.9 -0.7,-0.2 -1.4,-0.5 -2.3,-0.7 -0.8,-0.2 -1.6,-0.6 -2.3,-1 -0.7,-0.4 -1.3,-1 -1.7,-1.6 -0.5,-0.7 -0.7,-1.6 -0.7,-2.7 0,-1.1 0.2,-2 0.6,-2.8 0.4,-0.8 1,-1.5 1.7,-2 0.7,-0.5 1.5,-1 2.4,-1.2 0.9,-0.3 1.9,-0.4 2.9,-0.4 1.1,0 2.2,0.2 3.3,0.5 1.1,0.3 2,0.9 2.9,1.6 l -3.1,3 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 176.9,75.4 c -0.4,-0.5 -0.8,-0.8 -1.5,-1 -0.6,-0.2 -1.2,-0.3 -1.7,-0.3 -0.3,0 -0.6,0 -1,0.1 -0.3,0.1 -0.7,0.2 -1,0.4 -0.3,0.2 -0.5,0.4 -0.7,0.6 -0.2,0.2 -0.3,0.6 -0.3,1 0,0.6 0.2,1.1 0.7,1.4 0.5,0.3 1,0.6 1.7,0.8 0.7,0.2 1.4,0.5 2.2,0.7 0.8,0.2 1.5,0.5 2.2,1 0.7,0.4 1.3,1 1.7,1.7 0.5,0.7 0.7,1.6 0.7,2.8 0,1.1 -0.2,2.1 -0.6,2.9 -0.4,0.8 -1,1.5 -1.7,2.1 -0.7,0.5 -1.5,1 -2.5,1.2 -1,0.2 -1.9,0.4 -3,0.4 -1.3,0 -2.5,-0.2 -3.6,-0.6 -1.1,-0.4 -2.1,-1 -3.1,-1.9 l 3.1,-3.4 c 0.5,0.6 1,1.1 1.7,1.4 0.7,0.3 1.4,0.5 2.1,0.5 0.4,0 0.7,0 1.1,-0.1 0.4,-0.1 0.7,-0.2 1,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.6 0.2,-0.3 0.3,-0.6 0.3,-0.9 0,-0.6 -0.2,-1.1 -0.7,-1.4 -0.5,-0.3 -1,-0.6 -1.7,-0.9 -0.7,-0.2 -1.4,-0.5 -2.3,-0.7 -0.8,-0.2 -1.6,-0.6 -2.3,-1 -0.7,-0.4 -1.3,-1 -1.7,-1.6 -0.5,-0.7 -0.7,-1.6 -0.7,-2.7 0,-1.1 0.2,-2 0.6,-2.8 0.4,-0.8 1,-1.5 1.7,-2 0.7,-0.5 1.5,-1 2.4,-1.2 0.9,-0.2 1.9,-0.4 2.9,-0.4 1.1,0 2.2,0.2 3.3,0.5 1.1,0.3 2,0.9 2.9,1.6 l -2.9,2.8 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 182.6,70.5 7.5,0 c 0.9,0 1.7,0.1 2.6,0.2 0.9,0.1 1.7,0.4 2.4,0.7 0.7,0.4 1.3,0.9 1.7,1.5 0.4,0.7 0.6,1.5 0.6,2.6 0,1.1 -0.3,2.1 -0.9,2.8 -0.6,0.7 -1.5,1.3 -2.5,1.6 l 0,0.1 c 0.7,0.1 1.3,0.3 1.8,0.5 0.5,0.3 1,0.6 1.4,1 0.4,0.4 0.7,0.9 0.9,1.5 0.2,0.6 0.3,1.2 0.3,1.8 0,1.1 -0.2,1.9 -0.7,2.6 -0.5,0.7 -1,1.3 -1.8,1.7 -0.7,0.4 -1.5,0.7 -2.4,0.9 -0.9,0.2 -1.8,0.3 -2.7,0.3 l -8.2,0 0,-19.8 z m 4.4,8 3.2,0 c 0.3,0 0.7,0 1,-0.1 0.3,-0.1 0.6,-0.2 0.9,-0.4 0.3,-0.2 0.5,-0.4 0.6,-0.7 0.2,-0.3 0.2,-0.6 0.2,-1 0,-0.4 -0.1,-0.8 -0.3,-1 -0.2,-0.3 -0.4,-0.5 -0.7,-0.6 -0.3,-0.2 -0.6,-0.3 -1,-0.3 -0.4,-0.1 -0.7,-0.1 -1,-0.1 l -3,0 0,4.2 z m 0,8.3 4,0 c 0.3,0 0.7,0 1,-0.1 0.3,-0.1 0.7,-0.2 0.9,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.7 0.2,-0.3 0.3,-0.7 0.3,-1.1 0,-0.5 -0.1,-0.9 -0.4,-1.1 -0.2,-0.3 -0.5,-0.5 -0.9,-0.7 -0.4,-0.2 -0.7,-0.3 -1.2,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -3.2,0 0,4.5 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 206.8,70.5 3.6,0 8.7,20 -5,0 -1.7,-4.2 -7.8,0 -1.7,4.2 -4.9,0 8.8,-20 z m 1.7,5.8 -2.4,6.2 4.9,0 -2.5,-6.2 z"
+                                style="fill:#54585a" />
+                            <path
+                                d="m 220.6,70.5 7.7,0 c 1,0 2,0.1 2.9,0.3 0.9,0.2 1.7,0.5 2.4,1 0.7,0.5 1.2,1.1 1.6,1.9 0.4,0.8 0.6,1.8 0.6,2.9 0,1.4 -0.4,2.6 -1.1,3.6 -0.7,1 -1.8,1.6 -3.2,1.9 l 5.1,8.4 -5.3,0 -4.2,-8 -2.1,0 0,8 -4.4,0 0,-20 z m 4.4,8.3 2.6,0 c 0.4,0 0.8,0 1.3,0 0.4,0 0.8,-0.1 1.2,-0.3 0.4,-0.1 0.7,-0.4 0.9,-0.7 0.2,-0.3 0.4,-0.7 0.4,-1.3 0,-0.5 -0.1,-0.9 -0.3,-1.2 -0.2,-0.3 -0.5,-0.5 -0.8,-0.7 -0.3,-0.2 -0.7,-0.3 -1.1,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -3,0 0,4.6 z"
+                                style="fill:#54585a" />
+                        </g>
+                        <g>
+                            <polygon points="73.5,72.2 55.1,76 62.5,83.7 80.7,80.5 83.3,67 79.6,67.8 75.3,63.9 "
+                                style="fill:#54585a" />
+                            <polygon style="fill:#a9abac" points="57.8,67.6 75.3,63.9 73.5,72.2 55.1,76 " />
+                            <polyline style="fill:#54585a" points="80.9,39.1 82.7,30.7 82.7,30.7 88.5,37.1   " />
+                            <polygon style="fill:#ffb489" points="46.7,63.7 87.5,54.8 90.5,39.4 51.1,50.1 " />
+                            <polygon style="fill:#ff6a13"
+                                points="77.1,60.4 81.2,64.1 94.1,61.4 94.1,61.4 94.1,61.4 94.1,61.4 94.1,61.3 96.7,46.1 90.5,39.4 87.5,54.8 46.7,63.7 53,70.3 54.6,65.2 " />
+                            <polygon style="fill:#a9abac" points="82.7,30.7 67.9,35.2 65.2,43.4 80.9,39.1 " />
+                        </g>
+                    </g>
+                </svg>
+            </a>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown"><a class="nav-link" href="#"
+                            data-toggle="dropdown"><span>Technology</span></a>
+                        <div class="dropdown-menu"><a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/technology/reram-overview/">ReRAM
+                                Overview</a> <a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/technology/reram-advantages/">ReRAM
+                                Advantages</a>
+                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
+                                    data-toggle="dropdown">ReRAM Offerings</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/offerings/high-performance-memory/">High-Performance
+                                            Memory</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/offerings/high-density-memory/">High-Density
+                                            Memory</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/offerings/ftp-otp-memory/">ReRAM
+                                            as
+                                            FTP/OTP Memory</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/offerings/reram-secure-keys/">ReRAM
+                                            Secure Keys</a></li>
+                                </ul>
+                            </div>
+                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
+                                    data-toggle="dropdown">ReRAM Applications</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/artificial-intelligence/">Artificial
+                                            Intelligence</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/automotive-industrial-medical/">Automotive/Industrial/Medical</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/consumer-electronics/">Consumer
+                                            Electronics</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/data-center/">Data
+                                            Center</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/internet-of-things/">Internet
+                                            of Things</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/mobile-computing/">Mobile
+                                            Computing</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/applications/secure-computing/">Secure
+                                            Computing</a></li>
+                                </ul>
+                            </div>
+                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
+                                    data-toggle="dropdown">Develop</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/develop/design-resources/">Design
+                                            Resources</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/develop/design-start/">DesignStart</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/technology/develop/customer-support/">Customer
+                                            Support</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown"><a class="nav-link" href="#"
+                            data-toggle="dropdown"><span>Products</span></a>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
+                                    data-toggle="dropdown">Cramium Family of Secure Processing Units</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/products/secure-processing-units/overview/">Cramium
+                                            Mission</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/products/secure-processing-units/motivation/">Motivation</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/products/secure-processing-units/solution/">Solution</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/products/secure-processing-units/architecture/">Architecture</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="https://www.crossbar-inc.com/products/secure-processing-units/reram-memory/">ReRAM
+                                            Memory</a></li>
+                                </ul>
+                            </div><a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/products/cramium-family-reference-design/">Cramium
+                                Personal Hardware Security Module (PHSM)</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown"><a class="nav-link" href="#"
+                            data-toggle="dropdown"><span>News</span></a>
+                        <div class="dropdown-menu"><a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/news/press-releases/">Press
+                                Releases</a> <a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/news/in-the-news/">In The News</a></div>
+                    </li>
+                    <li class="nav-item dropdown"><a class="nav-link" href="#"
+                            data-toggle="dropdown"><span>Company</span></a>
+                        <div class="dropdown-menu"><a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/company/about-crossbar/">About
+                                CrossBar</a> <a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/company/media-resources/">Media
+                                Resources</a> <a class="dropdown-item"
+                                href="https://www.crossbar-inc.com/company/careers/">Careers</a> <a
+                                class="dropdown-item" href="https://www.crossbar-inc.com/company/contact/">Contact</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="carousel slide carousel-fade" data-ride="carousel">
+        <div class="carousel-inner" role="listbox">
+            <div class="carousel-item active">
+                <div class="carousel-images">
+                    <div class="layer" data-depth="0.0"></div>
+                    <img class="layer layer-image" data-depth="0.2"
+                        src="https://www.crossbar-inc.com/assets/images/home/hero-1.jpg">
+                    <img class="layer layer-lines" data-depth="0.3"
+                        src="https://www.crossbar-inc.com/assets/images/home/hero-1.png">
+                </div>
+                <div class="carousel-caption">
+                    <div class="container h-100">
+                        <div class="caption-flex d-flex align-items-center h-100">
+                            <div class="caption">
+                                <h3>ReThink Simplicity with ReRAM Technology</h3>
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/reram-overview/"
+                                    role="button">Discover</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-images">
+                    <div class="layer" data-depth="0.0"></div>
+                    <img class="layer layer-image" data-depth="0.2"
+                        src="https://www.crossbar-inc.com/assets/images/home/hero-2.jpg">
+                    <img class="layer layer-lines" data-depth="0.3"
+                        src="https://www.crossbar-inc.com/assets/images/home/hero-2.png">
+                </div>
+                <div class="carousel-caption">
+                    <div class="container h-100">
+                        <div class="caption-flex d-flex align-items-center h-100">
+                            <div class="caption">
+                                <h3>ReThink Secure Processors with ReRAM</h3>
+                                <h4>Cramium Line of Products</h4>
+                                <a class="btn"
+                                    href="https://www.crossbar-inc.com/products/secure-processing-units/overview/"
+                                    role="button">Discover</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#hero" role="button" data-slide="prev">
+            <span class="carousel-control-icon" aria-hidden="true">&lt;</span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#hero" role="button" data-slide="next">
+            <span class="carousel-control-icon" aria-hidden="true">&gt;</span>
+            <span class="sr-only">Next</span>
+        </a>
+    </section>
+
+    <!-- Quadrant Section -->
+    <section id="quadrant">
+        <div class="container">
+            <div class="quadrant desktop">
+                <div class="quad-closed quad-ne" data-open="#quad_desktop_ne"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/imagine-c.jpg');">
+                    <div class="quad-title">Imagine</div>
+                </div>
+                <div class="quad-open quad-ne" id="quad_desktop_ne"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/imagine-o.jpg');">
+                    <div class="quad-title">Imagine</div>
+                    <div class="quad-card">
+                        <h1 id="the-new-world-is-dawning">The new world is dawning.</h1>
+                        <p>Billions of sensors; the Internet of Things. Data Centers in remote regions to store, process
+                            and deliver data to the Cloud. But the new world needs new technology. With CrossBar ReRAM,
+                            customers can not only deliver the &ldquo;big&rdquo; data, but will also enjoy the energy
+                            efficiency, security, blazing performance and low latency to make this new world possible.
+                        </p>
+                        <div class="quad-buttons">
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/applications/data-center/"
+                                role="button">Data Center</a>
+                            <a class="btn"
+                                href="https://www.crossbar-inc.com/technology/applications/internet-of-things/"
+                                role="button">Internet of Things</a>
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/applications/mobile-computing/"
+                                role="button">Mobile Computing</a>
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/applications/secure-computing/"
+                                role="button">Security</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-closed quad-nw" data-open="#quad_desktop_nw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/explore-c.jpg');">
+                    <div class="quad-title">Explore</div>
+                </div>
+                <div class="quad-open quad-nw" id="quad_desktop_nw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/explore-o.jpg');">
+                    <div class="quad-title">Explore</div>
+                    <div class="quad-card">
+                        <h1 id="120th-100x-1000x">1/20th, 100X, 1000x</h1>
+                        <h2 id="a-radical-departure-from-traditional-memory">A radical departure from traditional
+                            memory.</h2>
+                        <p></p>
+                        <p>Because of its simple structure, ReRAM can scale to smaller than 10nm, stack in 3D, and be
+                            directly integrated with logic in the same foundry. With ReRAM you get 1/20th the energy;
+                            1000x endurance; 100x read performance; 1000x write performance and terabytes of storage
+                            on-chip.</p>
+                        <h3 id="the-possibilities-are-endless-for-a-new-way-of-thinking-about-storage-and-computing">The
+                            possibilities are endless for a new way of thinking about storage and computing.</h3>
+                        <p></p>
+                        <div class="quad-buttons">
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/reram-overview/"
+                                role="button">About
+                                ReRAM</a>
+                            <a class="btn" href="https://www.crossbar-inc.com/company/" role="button">About CrossBar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-closed quad-se" data-open="#quad_desktop_se"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/collaborate-c.jpg');">
+                    <div class="quad-title">Collaborate</div>
+                </div>
+                <div class="quad-open quad-se" id="quad_desktop_se"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/collaborate-o.jpg');">
+                    <div class="quad-title">Collaborate</div>
+                    <div class="quad-card">
+                        <h1 id="let-us-help-you-rethink-your-approach-to-system-design">Let us help you rethink your
+                            approach to system design.</h1>
+                        <p></p>
+                        <p>Collaborate with us to innovate leveraging CrossBar ReRAM. We are looking for innovative
+                            companies to work with us to invent the future of storage and computing.</p>
+                        <h3 id="weve-only-scratched-the-surface-of-what-will-be-possible">We&rsquo;ve only scratched the
+                            surface of what will be possible.</h3>
+                        <p></p>
+                        <div class="quad-buttons">
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                                role="button">You&#39;re a Chip Designer</a>
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                                role="button">You&#39;re a System Architect</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-closed quad-sw" data-open="#quad_desktop_sw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/integrate-c.jpg');">
+                    <div class="quad-title">Integrate</div>
+                </div>
+                <div class="quad-open quad-sw" id="quad_desktop_sw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/integrate-o.jpg');">
+                    <div class="quad-title">Integrate</div>
+                    <div class="quad-card">
+                        <h1 id="its-here-its-real">It&rsquo;s here, it&rsquo;s real.</h1>
+                        <h2 id="its-in-production-starting-at-40nm">It&rsquo;s in production starting at 40nm.</h2>
+                        <p></p>
+                        <p>License IP from us and integrate CrossBar ReRAM into your next IC design. Get the ideal
+                            combination of energy consumption, performance, capacity and feature set for your specific
+                            application.</p>
+                        <h3 id="reram-ip-cores-for-system-on-chip">ReRAM IP Cores for System-on-Chip</h3>
+                        <p></p>
+                        <div class="quad-buttons">
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/develop/design-resources/"
+                                role="button">Get Product Info</a>
+                            <a class="btn" href="https://www.crossbar-inc.com/technology/develop/design-start/"
+                                role="button">Start
+                                Your Design</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="quadrant mobile">
+                <div class="quad-mobile collapsed" data-toggle="collapse" data-target="#quad_mobile_ne"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/imagine-m.png');">
+                    <div class="quad-title">Imagine</div>
+                    <div class="quad-button"></div>
+                    <div class="quad-card">
+                        <div class="quad-headings">
+                            <h1 id="the-new-world-is-dawning">The new world is dawning.</h1>
+                        </div>
+                        <div class="quad-contents collapse" id="quad_mobile_ne">
+                            <p>Billions of sensors; the Internet of Things. Data Centers in remote regions to store,
+                                process and deliver data to the Cloud. But the new world needs new technology. With
+                                CrossBar ReRAM, customers can not only deliver the &ldquo;big&rdquo; data, but will also
+                                enjoy the energy efficiency, security, blazing performance and low latency to make this
+                                new world possible.</p>
+                            <div class="quad-buttons">
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/applications/data-center/"
+                                    role="button">Data Center</a>
+                                <a class="btn"
+                                    href="https://www.crossbar-inc.com/technology/applications/internet-of-things/"
+                                    role="button">Internet of Things</a>
+                                <a class="btn"
+                                    href="https://www.crossbar-inc.com/technology/applications/mobile-computing/"
+                                    role="button">Mobile Computing</a>
+                                <a class="btn"
+                                    href="https://www.crossbar-inc.com/technology/applications/secure-computing/"
+                                    role="button">Security</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-mobile collapsed" data-toggle="collapse" data-target="#quad_mobile_nw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/explore-m.png');">
+                    <div class="quad-title">Explore</div>
+                    <div class="quad-button"></div>
+                    <div class="quad-card">
+                        <div class="quad-headings">
+                            <h1 id="120th-100x-1000x">1/20th, 100X, 1000x</h1>
+                            <h2 id="a-radical-departure-from-traditional-memory">A radical departure from traditional
+                                memory.</h2>
+                        </div>
+                        <div class="quad-contents collapse" id="quad_mobile_nw">
+                            <p></p>
+                            <p>Because of its simple structure, ReRAM can scale to smaller than 10nm, stack in 3D, and
+                                be directly integrated with logic in the same foundry. With ReRAM you get 1/20th the
+                                energy; 1000x endurance; 100x read performance; 1000x write performance and terabytes of
+                                storage on-chip.</p>
+                            <h3
+                                id="the-possibilities-are-endless-for-a-new-way-of-thinking-about-storage-and-computing">
+                                The possibilities are endless for a new way of thinking about storage and computing.
+                            </h3>
+                            <p></p>
+                            <div class="quad-buttons">
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/reram-overview/"
+                                    role="button">About
+                                    ReRAM</a>
+                                <a class="btn" href="https://www.crossbar-inc.com/company/" role="button">About
+                                    CrossBar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-mobile collapsed" data-toggle="collapse" data-target="#quad_mobile_se"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/collaborate-m.png');">
+                    <div class="quad-title">Collaborate</div>
+                    <div class="quad-button"></div>
+                    <div class="quad-card">
+                        <div class="quad-headings">
+                            <h1 id="let-us-help-you-rethink-your-approach-to-system-design">Let us help you rethink your
+                                approach to system design.</h1>
+                        </div>
+                        <div class="quad-contents collapse" id="quad_mobile_se">
+                            <p></p>
+                            <p>Collaborate with us to innovate leveraging CrossBar ReRAM. We are looking for innovative
+                                companies to work with us to invent the future of storage and computing.</p>
+                            <h3 id="weve-only-scratched-the-surface-of-what-will-be-possible">We&rsquo;ve only scratched
+                                the surface of what will be possible.</h3>
+                            <p></p>
+                            <div class="quad-buttons">
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                                    role="button">You&#39;re a Chip Designer</a>
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                                    role="button">You&#39;re a System Architect</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="quad-mobile collapsed" data-toggle="collapse" data-target="#quad_mobile_sw"
+                    style="background-image: url('https://www.crossbar-inc.com/assets/images/home/integrate-m.png');">
+                    <div class="quad-title">Integrate</div>
+                    <div class="quad-button"></div>
+                    <div class="quad-card">
+                        <div class="quad-headings">
+                            <h1 id="its-here-its-real">It&rsquo;s here, it&rsquo;s real.</h1>
+                            <h2 id="its-in-production-starting-at-40nm">It&rsquo;s in production starting at 40nm.</h2>
+                        </div>
+                        <div class="quad-contents collapse" id="quad_mobile_sw">
+                            <p></p>
+                            <p>License IP from us and integrate CrossBar ReRAM into your next IC design. Get the ideal
+                                combination of energy consumption, performance, capacity and feature set for your
+                                specific application.</p>
+                            <h3 id="reram-ip-cores-for-system-on-chip">ReRAM IP Cores for System-on-Chip</h3>
+                            <p></p>
+                            <div class="quad-buttons">
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/develop/design-resources/"
+                                    role="button">Get Product Info</a>
+                                <a class="btn" href="https://www.crossbar-inc.com/technology/develop/design-start/"
+                                    role="button">Start Your Design</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section id="video" class="carousel slide">
+        <div class="video-container" role="listbox">
+            <div class="carousel-inner" role="listbox">
+                <div class="carousel-item active">
+                    <div class="container">
+                        <div class="carousel-card align-items-center">
+                            <div class="video-title w-100 text-center">A New Approach to Enterprise Storage</div>
+                            <div class="video-embed embed-responsive embed-responsive-16by9">
+                                <video class="embed-responsive-item" controls=""
+                                    poster="https://www.crossbar-inc.com/assets/resources/videos/270p/thumb/storage.jpg"
+                                    width="480" height="270">
+                                    <source src="https://www.crossbar-inc.com/assets/resources/videos/270p/storage.mp4"
+                                        type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="container">
+                        <div class="carousel-card align-items-center">
+                            <div class="video-title w-100 text-center">A New Wave of Wearable Device Innovation</div>
+                            <div class="video-embed embed-responsive embed-responsive-16by9">
+                                <video class="embed-responsive-item" controls=""
+                                    poster="https://www.crossbar-inc.com/assets/resources/videos/270p/thumb/wearables.jpg"
+                                    width="480" height="270">
+                                    <source
+                                        src="https://www.crossbar-inc.com/assets/resources/videos/270p/wearables.mp4"
+                                        type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="container">
+                        <div class="carousel-card align-items-center">
+                            <div class="video-title w-100 text-center">Storage Innovation for the IoT</div>
+                            <div class="video-embed embed-responsive embed-responsive-16by9">
+                                <video class="embed-responsive-item" controls=""
+                                    poster="https://www.crossbar-inc.com/assets/resources/videos/270p/thumb/iot.jpg"
+                                    width="480" height="270">
+                                    <source src="https://www.crossbar-inc.com/assets/resources/videos/270p/iot.mp4"
+                                        type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="container">
+                        <div class="carousel-card align-items-center">
+                            <div class="video-title w-100 text-center">Why is Flash Technology Running Out of Steam?
+                            </div>
+                            <div class="video-embed embed-responsive embed-responsive-16by9">
+                                <video class="embed-responsive-item" controls=""
+                                    poster="https://www.crossbar-inc.com/assets/resources/videos/270p/thumb/whiteboard.jpg"
+                                    width="480" height="270">
+                                    <source
+                                        src="https://www.crossbar-inc.com/assets/resources/videos/270p/whiteboard.mp4"
+                                        type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a class="video-prev" href="#video" role="button" data-slide="prev">
+                <span class="carousel-control-icon" aria-hidden="true">&lt;</span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="video-next" href="#video" role="button" data-slide="next">
+                <span class="carousel-control-icon" aria-hidden="true">&gt;</span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <section id="news">
+        <div class="container">
+            <div class="row">
+                <div class="news news-company col-md-12">
+                    <div class="news-title">
+                        <i class="fa-solid fa-rss"></i>CrossBar News Feed
+                    </div>
+                    <ul class="news-list">
+                        <li class="news-item">
+                            <a href="https://semiengineering.com/hiding-keys-using-reram-pufs/">
+                                <div class="news-item-title">Hiding Security Keys Using ReRAM PUF</div>
+                                <div class="news-item-date">04/21/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://blocksandfiles.com/2022/04/21/no-sniffing-crossbar-tries-to-secure-its-embedded-reram-iot-market-niche/">
+                                <div class="news-item-title">CrossBar tries to secure embedded ReRAM IoT market</div>
+                                <div class="news-item-date">04/21/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://www.eejournal.com/fish_fry/new-avenues-for-reram-when-every-bit-is-critical/">
+                                <div class="news-item-title">New Avenues for ReRAM: When Every Bit is Critical
+                                    (Audio-Amelias Weekly Fish Fry)</div>
+                                <div class="news-item-date">04/15/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://www.rram-info.com/crossbar-targets-new-application-its-rram-memory-where-resistance-physical-attacks-essential">
+                                <div class="news-item-title">Crossbar targets new application for its RRAM memory, where
+                                    resistance to physical attacks is essential</div>
+                                <div class="news-item-date">04/12/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://www.electronicdesign.com/technologies/embedded-revolution/video/21238190/electronic-design-securing-reram">
+                                <div class="news-item-title">ReRAM Secure Against Hacking Attacks</div>
+                                <div class="news-item-date">04/06/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://aithority.com/it-and-devops/storage-and-recovery/reram-proves-resistant-to-invasive-attacks/">
+                                <div class="news-item-title">ReRAM Proves Resistant to Invasive Attacks</div>
+                                <div class="news-item-date">04/06/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a
+                                href="https://www.crossbar-inc.com/news/press-releases/2022-04-05-reram-proves-resistant-to-invasive-attacks/">
+                                <div class="news-item-title">ReRAM Proves Resistant To Invasive Attacks</div>
+                                <div class="news-item-date">04/05/22</div>
+                            </a>
+                        </li>
+                        <li class="news-item">
+                            <a href="https://blocksandfiles.com/2022/04/05/storage-new-ticker-5-april/">
+                                <div class="news-item-title">Storage news ticker - April 5</div>
+                                <div class="news-item-date">04/05/22</div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="line1 clearfix">
+                <div class="social float-sm-right">
+                    <a target="_blank" title="CrossBar at Linkedin"
+                        href="https://www.linkedin.com/company/crossbar-inc">
+                        <i class="fa-brands fa-linkedin"></i>
+                    </a>
+                    <a target="_blank" title="CrossBar at Twitter" href="https://twitter.com/crossbarinc">
+                        <i class="fa-brands fa-twitter"></i>
+                    </a>
+                </div>
+                <div class="pages float-left">
+                    <a title="Company" href="https://www.crossbar-inc.com/company/">Company</a>
+                    <span class="divider"></span>
+                    <a title="Careers" href="https://www.crossbar-inc.com/company/careers/">Careers</a>
+                    <span class="divider"></span>
+                    <a title="Contact" href="https://www.crossbar-inc.com/company/contact/">Contact</a>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="line2">
+                <div class="copyright float-sm-right">Copyright &copy; CrossBar, Inc. All rights reserved.</div>
+                <div class="pages">
+                    <a title="Terms of Use" href="https://www.crossbar-inc.com/terms-of-use/">Terms of Use</a>
+                    <span class="divider"></span>
+                    <a title="Privacy Policy" href="https://www.crossbar-inc.com/privacy-policy/">Privacy Policy</a>
+                    <span class="divider"></span>
+                    <a title="Sitemap" href="https://www.crossbar-inc.com/sitemap/">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for all interactive features
+        document.addEventListener('DOMContentLoaded', function () {
+            // Theme Toggler
+            const themeToggler = document.getElementById('theme-toggler');
+            themeToggler.addEventListener('click', function () {
+                document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+                themeToggler.innerHTML = document.body.dataset.theme === 'dark' ?
+                    '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            });
+
+            // Animation Controls
+            const pauseBtn = document.getElementById('pause-animations');
+            const playBtn = document.getElementById('play-animations');
+
+            pauseBtn.addEventListener('click', function () {
+                document.body.classList.add('no-animations');
+            });
+
+            playBtn.addEventListener('click', function () {
+                document.body.classList.remove('no-animations');
+            });
+
+            // Scroll Progress Bar
+            const progressItems = document.querySelectorAll('.progress-item');
+            const sections = ['home', 'quadrant', 'video', 'news'];
+
+            progressItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const sectionId = this.dataset.section;
+                    document.getElementById(sectionId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Update active section in progress bar
+            function updateActiveSection() {
+                const scrollPosition = window.scrollY;
+
+                sections.forEach((section, index) => {
+                    const element = document.getElementById(section);
+                    if (!element) return;
+
+                    const position = element.getBoundingClientRect();
+                    if (position.top <= 100 && position.bottom >= 100) {
+                        progressItems.forEach(item => item.classList.remove('active'));
+                        progressItems[index].classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveSection);
+            updateActiveSection(); // Initialize
+
+            // Search Functionality
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+
+            searchInput.addEventListener('focus', function () {
+                searchResults.classList.add('active');
+            });
+
+            searchInput.addEventListener('blur', function () {
+                setTimeout(() => searchResults.classList.remove('active'), 200);
+            });
+
+            searchInput.addEventListener('input', function () {
+                // In a real implementation, this would call an API
+                // For demo, we'll just show the results container
+                searchResults.classList.add('active');
+            });
+
+            // AI Assistant Chat
+            const aiAssistant = document.getElementById('ai-assistant');
+            const aiChat = document.getElementById('ai-chat');
+            const closeChat = document.getElementById('close-chat');
+            const sendMessage = document.getElementById('send-message');
+            const chatInput = document.getElementById('chat-input');
+            const chatBody = document.getElementById('chat-body');
+
+            aiAssistant.addEventListener('click', function () {
+                aiChat.classList.toggle('active');
+            });
+
+            closeChat.addEventListener('click', function () {
+                aiChat.classList.remove('active');
+            });
+
+            function addMessage(text, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `ai-message ${isUser ? 'user' : 'bot'}`;
+                messageDiv.textContent = text;
+                chatBody.appendChild(messageDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            sendMessage.addEventListener('click', function () {
+                if (chatInput.value.trim() === '') return;
+
+                const question = chatInput.value;
+                addMessage(question, true);
+                chatInput.value = '';
+
+                // Simulate AI response
+                setTimeout(() => {
+                    addMessage("ReRAM (Resistive Random-Access Memory) is a non-volatile memory technology that offers significant advantages over traditional NAND flash memory. It provides faster read/write speeds, lower power consumption, and higher endurance. CrossBar's implementation allows for scaling below 10nm, 3D stacking, and integration with logic.");
+                }, 1000);
+            });
+
+            chatInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage.click();
+                }
+            });
+
+            // Floating Action Button
+            const fab = document.getElementById('fab');
+            const fabMenu = document.getElementById('fab-menu');
+
+            fab.addEventListener('click', function () {
+                fabMenu.classList.toggle('active');
+            });
+
+            // Quadrant interactivity
+            const quadItems = document.querySelectorAll('.quad-closed');
+            quadItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-open');
+                    const targetElement = document.querySelector(targetId);
+
+                    // Hide all open quadrants
+                    document.querySelectorAll('.quad-open').forEach(openQuad => {
+                        openQuad.style.display = 'none';
+                    });
+
+                    // Show the clicked quadrant
+                    targetElement.style.display = 'flex';
+                });
+            });
+
+            // Close open quadrants when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.quad-open') && !e.target.closest('.quad-closed')) {
+                    document.querySelectorAll('.quad-open').forEach(openQuad => {
+                        openQuad.style.display = 'none';
+                    });
+                }
+            });
+
+            // Animate on scroll
+            const animateElements = document.querySelectorAll('.animate-on-scroll');
+
+            function checkScroll() {
+                animateElements.forEach(element => {
+                    const position = element.getBoundingClientRect();
+                    if (position.top < window.innerHeight * 0.8) {
+                        element.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', checkScroll);
+            checkScroll(); // Initialize
+        });
+    </script>
+</body>
+
+</html>
