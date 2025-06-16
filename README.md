@@ -1,8 +1,12 @@
 RAG failed draft page: https://audreyllin.github.io/CrossBarAPS/rag-0605.html
 
-CrossBar new web design: https://audreyllin.github.io/CrossBarAPS/XBAR/index.html
+CrossBar new web design
 
-Waiting to be remodified: https://audreyllin.github.io/CrossBarAPS/XBAR/in2.html
+1: https://audreyllin.github.io/CrossBarAPS/XBAR/index.html
+
+2: https://audreyllin.github.io/CrossBarAPS/XBAR/in2.html
+
+3: https://audreyllin.github.io/CrossBarAPS/XBAR/minimal.html
 
 Tutorial: https://python.langchain.com/docs/tutorials/rag/
 
