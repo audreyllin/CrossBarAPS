@@ -6,7 +6,7 @@ CrossBar new web design
 
 2: https://audreyllin.github.io/CrossBarAPS/XBAR/in2.html
 
-3: https://audreyllin.github.io/CrossBarAPS/XBAR/minimal.html
+3: https://audreyllin.github.io/CrossBarAPS/XBAR/red.html
 
 Tutorial: https://python.langchain.com/docs/tutorials/rag/
 
