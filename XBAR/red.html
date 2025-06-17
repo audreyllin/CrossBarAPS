@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrossBar - Advanced Memory Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff6a13;
+            --primary-dark: #e05e10;
+            --dark: #0f172a;
+            --darker: #0a0f1f;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --section-spacing: 100px;
+            --transition: all 0.3s ease;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            --glass: rgba(15, 23, 42, 0.85);
+            --gradient: linear-gradient(135deg, #ff6a13 0%, #ff8c3a 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--darker);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .progress-bar {
+            width: 6px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--gradient);
+            transition: var(--transition);
+        }
+
+        .progress-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .progress-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--gray);
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .progress-dot:hover,
+        .progress-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .progress-dot:hover::after {
+            content: attr(data-title);
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: nowrap;
+            box-shadow: var(--box-shadow);
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: var(--transition);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-item {
+            position: relative;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-item:hover {
+            color: var(--primary);
+        }
+
+        .nav-item.has-dropdown::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 5px;
+            font-size: 10px;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 240px;
+            background: var(--dark);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 15px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .dropdown-item {
+            padding: 10px 25px;
+            transition: var(--transition);
+            font-size: 15px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 106, 19, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            font-size: 18px;
+        }
+
+        .social-icons a {
+            transition: var(--transition);
+        }
+
+        .social-icons a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .mobile-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            min-height: 700px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: 80px;
+            background: linear-gradient(135deg, var(--darker) 0%, #1e293b 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 106, 19, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+            color: var(--gray);
+            max-width: 600px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 106, 19, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 106, 19, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--light);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 106, 19, 0.1);
+        }
+
+        .chip-container {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 400px;
+            height: 400px;
+            perspective: 1000px;
+            z-index: 1;
+        }
+
+        .chip {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .chip-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1e293b, #334155);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: rotateX(15deg) rotateY(-15deg);
+            overflow: hidden;
+        }
+
+        .chip-inner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent,
+                    rgba(255, 106, 19, 0.4),
+                    transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+
+        .chip-lines {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border: 2px solid rgba(255, 106, 19, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 106, 19, 0.3);
+        }
+
+        .chip-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 106, 19, 0.6);
+            animation: pulse 3s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        .chip-core {
+            width: 60%;
+            height: 60%;
+            background: linear-gradient(135deg, #334155, #1e293b);
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 2px;
+            padding: 10px;
+            z-index: 2;
+        }
+
+        .chip-cell {
+            background: rgba(255, 106, 19, 0.1);
+            border-radius: 2px;
+            animation: blink 2s infinite alternate;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(2deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        @keyframes rotate {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes blink {
+            to {
+                opacity: 0.2;
+            }
+        }
+
+        /* Quadrant Section */
+        .quadrant-section {
+            padding: var(--section-spacing) 0;
+            background: var(--darker);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .quadrant-container {
+            display: flex;
+            gap: 40px;
+        }
+
+        .quadrant-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quadrant-item {
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+        .quadrant-item:hover {
+            background: rgba(255, 106, 19, 0.1);
+        }
+
+        .quadrant-item.active {
+            background: rgba(255, 106, 19, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .quadrant-item h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quadrant-item i {
+            color: var(--primary);
+        }
+
+        .quadrant-content {
+            flex: 1;
+            background: var(--dark);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .quadrant-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .quadrant-content p {
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .quadrant-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 15px;
+        }
+
+        .feature-item i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        /* Video Section */
+        .video-section {
+            padding: var(--section-spacing) 0;
+            background: linear-gradient(to bottom, var(--darker), #1e293b);
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .video-card {
+            background: var(--dark);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .video-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-thumb {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .video-card:hover .video-thumb img {
+            transform: scale(1.05);
+        }
+
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 106, 19, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .play-btn:hover {
+            background: var(--primary);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-info {
+            padding: 20px;
+        }
+
+        .video-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .video-info p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Predictive Search */
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .search-box:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--dark);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 200;
+        }
+
+        .search-box:focus+.search-results,
+        .search-results:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .search-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-item:hover {
+            background: rgba(255, 106, 19, 0.1);
+            color: var(--primary);
+        }
+
+        .search-item i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        /* AI Assistant */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .assistant-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 106, 19, 0.4);
+            transition: var(--transition);
+        }
+
+        .assistant-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 106, 19, 0.6);
+        }
+
+        .chat-container {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 450px;
+            background: var(--dark);
+            border-radius: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .ai-assistant.active .chat-container {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(255, 106, 19, 0.1);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-chat:hover {
+            color: var(--primary);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: rgba(255, 106, 19, 0.2);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.7);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 50px;
+            color: white;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            padding: 80px 0 30px;
+            position: relative;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .social-footer {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-footer a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .social-footer a:hover {
+            background: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .chip-container {
+                width: 350px;
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero {
+                text-align: center;
+            }
+
+            .hero-content {
+                margin: 0 auto;
+                padding: 0 20px;
+            }
+
+            .hero-btns {
+                justify-content: center;
+            }
+
+            .chip-container {
+                position: relative;
+                margin: 50px auto 0;
+                right: auto;
+                top: auto;
+                transform: none;
+            }
+
+            .quadrant-container {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .nav-links,
+            .search-container {
+                display: none;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .section-header h2 {
+                font-size: 2.3rem;
+            }
+
+            .progress-container {
+                display: none;
+            }
+
+            .quadrant-features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .chat-container {
+                width: 300px;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Vertical Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="progress-dots">
+            <div class="progress-dot active" data-title="Home" data-section="hero"></div>
+            <div class="progress-dot" data-title="Technology" data-section="quadrant"></div>
+            <div class="progress-dot" data-title="Products" data-section="video"></div>
+            <div class="progress-dot" data-title="Contact" data-section="footer"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="#" class="logo">
+                    <i class="fas fa-microchip"></i>
+                    Cross<span>Bar</span>
+                </a>
+
+                <nav class="nav-links">
+                    <div class="nav-item has-dropdown">TECHNOLOGY
+                        <div class="dropdown">
+                            <div class="dropdown-item">ReRAM Overview</div>
+                            <div class="dropdown-item">ReRAM Advantages</div>
+                            <div class="dropdown-item">ReRAM Offerings</div>
+                            <div class="dropdown-item">ReRAM Applications</div>
+                            <div class="dropdown-item">Develop</div>
+                        </div>
+                    </div>
+                    <div class="nav-item has-dropdown">PRODUCTS
+                        <div class="dropdown">
+                            <div class="dropdown-item">Cramium Family</div>
+                            <div class="dropdown-item">Cramium PHSM</div>
+                        </div>
+                    </div>
+                    <div class="nav-item">NEWS</div>
+                    <div class="nav-item has-dropdown">COMPANY
+                        <div class="dropdown">
+                            <div class="dropdown-item">About CrossBar</div>
+                            <div class="dropdown-item">Media Resources</div>
+                            <div class="dropdown-item">Careers</div>
+                            <div class="dropdown-item">Contact</div>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                    <div class="search-results">
+                        <div class="search-item">
+                            <i class="fas fa-microchip"></i>
+                            <span>ReRAM Technology</span>
+                        </div>
+                        <div class="search-item">
+                            <i class="fas fa-box-open"></i>
+                            <span>Cramium Products</span>
+                        </div>
+                        <div class="search-item">
+                            <i class="fas fa-book"></i>
+                            <span>Technical Documentation</span>
+                        </div>
+                        <div class="search-item">
+                            <i class="fas fa-newspaper"></i>
+                            <span>Latest News</span>
+                        </div>
+                        <div class="search-item">
+                            <i class="fas fa-headset"></i>
+                            <span>Support Center</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                </div>
+
+                <div class="mobile-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Next Generation Memory Solutions</h1>
+                <p>CrossBar's Resistive RAM (ReRAM) technology delivers unprecedented performance, density, and power
+                    efficiency for AI, IoT, and secure computing applications.</p>
+                <div class="hero-btns">
+                    <a href="#" class="btn btn-primary">Explore Technology</a>
+                    <a href="#" class="btn btn-secondary">View Products</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="chip-container">
+            <div class="chip">
+                <div class="chip-inner">
+                    <div class="chip-lines"></div>
+                    <div class="chip-glow"></div>
+                    <div class="chip-core">
+                        <!-- Generate chip cells -->
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                        <div class="chip-cell"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quadrant Section -->
+    <section class="quadrant-section" id="quadrant">
+        <div class="container">
+            <div class="section-header">
+                <h2>Revolutionary ReRAM Technology</h2>
+                <p>Our Resistive Random-Access Memory solutions provide significant advantages over traditional memory
+                    technologies</p>
+            </div>
+
+            <div class="quadrant-container">
+                <div class="quadrant-nav">
+                    <div class="quadrant-item active">
+                        <h3><i class="fas fa-bolt"></i> High Performance</h3>
+                        <p>Ultra-fast read/write operations with low latency</p>
+                    </div>
+                    <div class="quadrant-item">
+                        <h3><i class="fas fa-layer-group"></i> High Density</h3>
+                        <p>3D stacking capability for greater storage capacity</p>
+                    </div>
+                    <div class="quadrant-item">
+                        <h3><i class="fas fa-battery-half"></i> Low Power</h3>
+                        <p>Energy-efficient operation for battery-powered devices</p>
+                    </div>
+                    <div class="quadrant-item">
+                        <h3><i class="fas fa-shield-alt"></i> Enhanced Security</h3>
+                        <p>Built-in security features for tamper-resistant storage</p>
+                    </div>
+                </div>
+
+                <div class="quadrant-content">
+                    <h3>High-Performance Memory Solutions</h3>
+                    <p>CrossBar's ReRAM technology offers exceptional performance with read and write speeds
+                        significantly faster than traditional flash memory. With nanosecond-scale access times, our
+                        memory solutions enable real-time processing for AI, machine learning, and high-performance
+                        computing applications.</p>
+
+                    <div class="quadrant-features">
+                        <div class="feature-item">
+                            <i class="fas fa-rocket"></i>
+                            <div>
+                                <h4>Ultra-Fast Access</h4>
+                                <p>Read speeds under 100ns, write speeds under 50ns</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-infinity"></i>
+                            <div>
+                                <h4>High Endurance</h4>
+                                <p>Over 1 million write cycles for reliable operation</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-temperature-low"></i>
+                            <div>
+                                <h4>Wide Temperature Range</h4>
+                                <p>Operation from -40°C to 125°C for industrial use</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-plug"></i>
+                            <div>
+                                <h4>Low Power Operation</h4>
+                                <p>Less than 1μA standby current for IoT devices</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section class="video-section" id="video">
+        <div class="container">
+            <div class="section-header">
+                <h2>ReRAM In Action</h2>
+                <p>Discover how our technology is transforming industries and enabling next-generation applications</p>
+            </div>
+
+            <div class="video-container">
+                <div class="video-card">
+                    <div class="video-thumb">
+                        <img src="https://images.unsplash.com/photo-1677442135722-5f8ea49cec8a?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=400&w=600&ixlib=rb-4.0.3"
+                            alt="AI Applications">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3>AI & Machine Learning</h3>
+                        <p>How ReRAM enables real-time AI processing at the edge</p>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumb">
+                        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=400&w=600&ixlib=rb-4.0.3"
+                            alt="IoT Applications">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3>Internet of Things</h3>
+                        <p>Ultra-low power memory for battery-operated devices</p>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumb">
+                        <img src="https://images.unsplash.com/photo-1558494943-03f1a2370466?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=400&w=600&ixlib=rb-4.0.3"
+                            alt="Secure Computing">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3>Secure Computing</h3>
+                        <p>Tamper-resistant storage for cryptographic keys</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant">
+        <div class="assistant-btn">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3><i class="fas fa-robot"></i> CrossBar Assistant</h3>
+                <button class="close-chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages">
+                <div class="message ai">
+                    Hello! I'm your CrossBar assistant. How can I help you today?
+                </div>
+                <div class="message user">
+                    What is ReRAM technology?
+                </div>
+                <div class="message ai">
+                    ReRAM (Resistive Random-Access Memory) is a non-volatile memory technology that offers high density,
+                    low power consumption, and fast read/write speeds. It's ideal for AI, IoT, and secure computing
+                    applications.
+                </div>
+                <div class="message ai">
+                    Would you like to learn more about our products or technical specifications?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Ask me about CrossBar technology...">
+                <button class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Technology</h3>
+                    <div class="footer-links">
+                        <a href="#">ReRAM Overview</a>
+                        <a href="#">ReRAM Advantages</a>
+                        <a href="#">ReRAM Offerings</a>
+                        <a href="#">ReRAM Applications</a>
+                        <a href="#">Develop</a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Products</h3>
+                    <div class="footer-links">
+                        <a href="#">Cramium Family</a>
+                        <a href="#">Cramium PHSM</a>
+                        <a href="#">High-Performance Memory</a>
+                        <a href="#">High-Density Memory</a>
+                        <a href="#">Secure Key Storage</a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <div class="footer-links">
+                        <a href="#">About CrossBar</a>
+                        <a href="#">Media Resources</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Contact</a>
+                        <a href="#">Investor Relations</a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Connect</h3>
+                    <p>Stay updated with our latest developments and innovations.</p>
+                    <div class="social-footer">
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="copyright">
+                &copy; 2023 CrossBar Inc. All rights reserved. | Designed with innovation in mind.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Vertical Progress Bar
+        const progressFill = document.getElementById('progress');
+        const progressDots = document.querySelectorAll('.progress-dot');
+        const sections = document.querySelectorAll('section');
+
+        window.addEventListener('scroll', () => {
+            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (window.scrollY / totalHeight) * 100;
+            progressFill.style.height = `${progress}%`;
+
+            // Highlight active section in progress bar
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+                    progressDots.forEach(dot => dot.classList.remove('active'));
+                    progressDots[index].classList.add('active');
+                }
+            });
+        });
+
+        // Progress bar navigation
+        progressDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const sectionId = dot.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                window.scrollTo({
+                    top: section.offsetTop,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Quadrant Navigation
+        const quadrantItems = document.querySelectorAll('.quadrant-item');
+        quadrantItems.forEach(item => {
+            item.addEventListener('click', () => {
+                quadrantItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // AI Assistant
+        const assistantBtn = document.querySelector('.assistant-btn');
+        const chatContainer = document.querySelector('.chat-container');
+        const closeChat = document.querySelector('.close-chat');
+
+        assistantBtn.addEventListener('click', () => {
+            document.querySelector('.ai-assistant').classList.toggle('active');
+        });
+
+        closeChat.addEventListener('click', () => {
+            document.querySelector('.ai-assistant').classList.remove('active');
+        });
+
+        // Keyboard navigation for progress bar
+        document.addEventListener('keydown', (e) => {
+            const activeDot = document.querySelector('.progress-dot.active');
+            if (!activeDot) return;
+
+            let index = Array.from(progressDots).indexOf(activeDot);
+
+            if (e.key === 'ArrowUp' && index > 0) {
+                e.preventDefault();
+                progressDots[index - 1].click();
+            } else if (e.key === 'ArrowDown' && index < progressDots.length - 1) {
+                e.preventDefault();
+                progressDots[index + 1].click();
+            } else if (e.key === 'Enter') {
+                activeDot.click();
+            }
+        });
+
+        // Video play functionality
+        const playButtons = document.querySelectorAll('.play-btn');
+        playButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const videoCard = btn.closest('.video-card');
+                const videoTitle = videoCard.querySelector('h3').textContent;
+                alert(`Now playing: ${videoTitle}. In a real implementation, this would open a video player.`);
+            });
+        });
+
+        // Mobile menu toggle
+        const mobileToggle = document.querySelector('.mobile-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileToggle.addEventListener('click', () => {
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        });
+    </script>
+</body>
+
+</html>
