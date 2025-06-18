@@ -86,7 +86,7 @@
         }
 
         .progress-bar {
-            width: 1vh;
+            width: 1.6vh;
             height: 16vh;
             background: rgba(0, 255, 255, 0.3);
             border-radius: 1vh;
@@ -109,6 +109,8 @@
             display: flex;
             flex-direction: column;
             gap: 3vh;
+            backdrop-filter: brightness(0.1);
+            padding: 0.8vh;
         }
 
         .progress-dot {
@@ -157,6 +159,17 @@
             padding: 15px 0;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             transition: var(--transition);
+        }
+
+        .clearfix {
+            top: 0;
+            padding: 3px 15px;
+            width: 100%;
+            border-style: solid;
+            border-color: rgba(255, 106, 19, .3);
+            border-width: 1px 0 1px;
+            background: -webkit-gradient(linear, left top, right top, from(#ff9f68), to(#ff6a13));
+            background: linear-gradient(to right, #ff9f68, #ff6a13);
         }
 
         .header-inner {
@@ -293,6 +306,7 @@
             max-width: 700px;
             background-color: black;
             color: var(--lcyan);
+            padding: 1.5vw;
         }
 
         .hero h1 {
@@ -1049,6 +1063,11 @@
 
     <!-- Header -->
     <header>
+        <div class="clearfix">
+            <a target="_blank" title="CrossBar at Linkedin" href="//www.linkedin.com/company/crossbar-inc">
+            </a> <a target="_blank" title="CrossBar at Twitter" href="//twitter.com/crossbarinc">
+            </a>
+        </div>
         <div class="container">
             <div class="header-inner">
                 <a href="#" class="logo">
