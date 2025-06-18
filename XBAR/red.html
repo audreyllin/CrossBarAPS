@@ -21,6 +21,7 @@
             --lcyan: lightcyan;
             --dcyan: darkcyan;
             --awhite: antiquewhite;
+            --fwhite: floralwhite;
             --section-spacing: 100px;
             --transition: all 0.3s ease;
             --border-radius: 12px;
@@ -211,7 +212,7 @@
             top: 100%;
             left: 0;
             width: 240px;
-            background: var(--dark);
+            background: var(--fwhite);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             padding: 15px 0;
@@ -228,9 +229,12 @@
             font-size: 15px;
         }
 
-        .dropdown-item:hover {
-            background: rgba(255, 106, 19, 0.1);
+        .dropdown-item:hover,
+        .dropdown-item.progress-dot.active {
+            background: rgba(255, 106, 19, 0.2);
             color: var(--primary);
+            font-size: large;
+            font-weight: bolder;
         }
 
         .nav-item:hover .dropdown {
