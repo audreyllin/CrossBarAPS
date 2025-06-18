@@ -67,7 +67,7 @@
 
         .container {
             width: 90%;
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 1vh;
         }
@@ -280,14 +280,15 @@
         /* Hero Section */
         .hero {
             height: 100vh;
-            min-height: 700px;
+            max-height: 90vh;
+            min-height: 600px;
             display: flex;
             align-items: center;
             position: relative;
             overflow: hidden;
             padding-top: 80px;
-            /* background: linear-gradient(135deg, var(--darker) 0%, #1e293b 100%); */
-            background: url(https://d2pn8kiwq2w21t.cloudfront.net/original_images/imagescassini20100812pia13332-full.jpg);
+            background: url(https://thebossmagazine.com/wp-content/uploads/2024/10/GettyImages-1359029903-scaled.jpg);
+            background-position: right;
         }
 
         .hero::before {
@@ -960,6 +961,12 @@
         }
 
         /* Responsive */
+        @media (min-width: 1100px) {
+            .hero {
+                background-position: inherit;
+            }
+        }
+
         @media (max-width: 1100px) {
             .chip-container {
                 width: 350px;
