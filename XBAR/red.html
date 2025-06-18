@@ -22,6 +22,8 @@
             --dcyan: darkcyan;
             --awhite: antiquewhite;
             --fwhite: floralwhite;
+            --dsgray: darkslategray;
+            --dsblue: darkslateblue;
             --section-spacing: 100px;
             --transition: all 0.3s ease;
             --border-radius: 12px;
@@ -300,7 +302,6 @@
             background: url(https://thebossmagazine.com/wp-content/uploads/2024/10/GettyImages-1359029903-scaled.jpg);
             background-position: right;
             background-size: cover;
-            /* background: radial-gradient(circle at center, rgba(255, 106, 19, 0.1) 0%, transparent 70%); */
             z-index: -1;
             pointer-events: none;
         }
@@ -770,7 +771,7 @@
             right: 0;
             width: 350px;
             height: 450px;
-            background: var(--dark);
+            background: var(--dsgray);
             border-radius: 20px;
             box-shadow: var(--box-shadow);
             display: flex;
@@ -973,6 +974,14 @@
                 filter: blur(15px);
                 background: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
                 mix-blend-mode: plus-lighter;
+            }
+
+            .chip-container {
+                position: sticky;
+            }
+
+            .chat-container {
+                background: var(--dsblue);
             }
         }
 
