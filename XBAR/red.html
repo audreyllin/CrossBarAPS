@@ -72,6 +72,7 @@
             max-width: 900px;
             margin: 0 auto;
             padding: 1vh;
+            font-family: system-ui;
         }
 
         /* Progress Bar */
@@ -200,6 +201,8 @@
         .nav-links {
             display: flex;
             gap: 30px;
+            position: relative;
+            z-index: 100;
         }
 
         .nav-item {
@@ -211,16 +214,37 @@
             transition: var(--transition);
         }
 
-        .nav-item:hover {
-            color: var(--primary);
-        }
-
         .nav-item.has-dropdown::after {
             content: '\f078';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-left: 5px;
             font-size: 10px;
+        }
+
+        .nav-item.show-dropdown .dropdown {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+        }
+
+        .nav-item.has-dropdown.show-dropdown .dropdown {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+            pointer-events: auto;
+        }
+
+        body.dropdown-open::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 5;
+            pointer-events: none;
         }
 
         .dropdown {
@@ -251,12 +275,6 @@
             color: var(--primary);
             font-size: large;
             font-weight: bolder;
-        }
-
-        .nav-item:hover .dropdown {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
         }
 
         .social-icons {
@@ -1581,6 +1599,69 @@
 
         mobileToggle.addEventListener('click', () => {
             navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        // Dropdown selector to prevent closing
+        document.addEventListener('DOMContentLoaded', function () {
+            const navItems = document.querySelectorAll('.nav-item.has-dropdown');
+            let activeDropdown = null;
+
+            function closeDropdown(item) {
+                if (item) {
+                    item.classList.remove('show-dropdown');
+                    document.body.classList.remove('dropdown-open');
+                    activeDropdown = null;
+                }
+            }
+
+            function closeAllDropdowns() {
+                navItems.forEach(item => item.classList.remove('show-dropdown'));
+                document.body.classList.remove('dropdown-open');
+                activeDropdown = null;
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('dropdown-item')) return;
+
+                    const wasActive = this.classList.contains('show-dropdown');
+                    closeAllDropdowns();
+
+                    if (!wasActive) {
+                        this.classList.add('show-dropdown');
+                        document.body.classList.add('dropdown-open');
+                        activeDropdown = this;
+                    }
+                });
+
+                item.addEventListener('mouseenter', function () {
+                    if (activeDropdown && activeDropdown !== this) {
+                        closeDropdown(activeDropdown);
+                    }
+                    this.classList.add('show-dropdown');
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    if (activeDropdown !== this) {
+                        this.classList.remove('show-dropdown');
+                    }
+                });
+
+                const dropdown = item.querySelector('.dropdown');
+                dropdown.addEventListener('click', e => e.stopPropagation());
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.nav-links') && activeDropdown) {
+                    closeAllDropdowns();
+                }
+            });
+
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', closeAllDropdowns);
+            });
+
+            window.addEventListener('scroll', closeAllDropdowns);
         });
     </script>
 </body>
