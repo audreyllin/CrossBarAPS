@@ -57,6 +57,10 @@
             line-height: 1.2;
         }
 
+        h2 {
+            font-size: 2rem;
+        }
+
         a {
             text-decoration: none;
             color: inherit;
@@ -354,7 +358,7 @@
 
         .btn {
             display: inline-block;
-            padding: 14px 32px;
+            padding: 9px 16px;
             border-radius: 50px;
             font-weight: 500;
             font-family: 'Montserrat', sans-serif;
@@ -363,6 +367,12 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
+            background-color: darkcyan;
+            margin-top: 13px;
+        }
+
+        .btn-alt {
+            background-color: chocolate;
         }
 
         .btn-primary {
@@ -601,6 +611,10 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin-top: 30px;
+        }
+
+        .quadrant-title {
+            place-items: center;
         }
 
         .feature-item {
@@ -1238,13 +1252,14 @@
     <section class="hero" id="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Next Generation Memory Solutions</h1>
-                <p>CrossBar's Resistive RAM (ReRAM) technology delivers unprecedented performance, density, and power
-                    efficiency for AI, IoT, and secure computing applications.</p>
-                <div class="hero-btns">
-                    <a href="#" class="btn btn-primary">Explore Technology</a>
-                    <a href="#" class="btn btn-secondary">View Products</a>
-                </div>
+                <h1>CrossBar ReRAM: <h1></h1>
+                    <h2>Revolutionary Memory Solutions</h2>
+                    <p>CrossBar's Resistive Random-Access (ReRAM) technology delivers unprecedented scaling performance,
+                        density, and power efficiency for AI, IoT, and secure computing applications.</p>
+                    <div class="hero-btns">
+                        <a href="#" class="btn btn-primary">Explore Technology</a>
+                        <a href="#" class="btn btn-secondary">View Products</a>
+                    </div>
             </div>
         </div>
 
@@ -1297,65 +1312,86 @@
     <section class="quadrant-section" id="quadrant">
         <div class="container">
             <div class="section-header">
-                <h2>Revolutionary ReRAM Technology</h2>
-                <p>Our Resistive Random-Access Memory solutions provide significant advantages over traditional memory
-                    technologies</p>
+                <h2>Terabyte Storage On a Single Chip</h2>
+                <p>ReRAM’s compact architecture supports terabyte-scale on-chip storage with minimal layout overhead.
+                    Its patented selector enables ultra-dense, stackable 3D cross-point arrays for efficient
+                    integration.</p>
+                <a class="btn btn-alt" href="https://www.crossbar-inc.com/company/" role="button">About CrossBar</a>
+                <a class="btn btn-alt" href="https://www.crossbar-inc.com/technology/reram-overview/" role="button">
+                    About ReRAM</a>
             </div>
 
             <div class="quadrant-container">
                 <div class="quadrant-nav">
                     <div class="quadrant-item active">
-                        <h3><i class="fas fa-bolt"></i> High Performance</h3>
-                        <p>Ultra-fast read/write operations with low latency</p>
+                        <h3><i class="fas fa-memory"></i> Logic-Memory Integration</h3>
+                        <p>ReRAM’s CMOS-compatible, stackable architecture enables direct logic-memory integration,
+                            delivering 2× higher density while reducing interconnects, latency, and power.</p>
+                        <a class="btn" href="https://www.crossbar-inc.com/technology/applications/data-center/"
+                            role="button">Data Storage</a>
                     </div>
                     <div class="quadrant-item">
-                        <h3><i class="fas fa-layer-group"></i> High Density</h3>
-                        <p>3D stacking capability for greater storage capacity</p>
+                        <h3><i class="fas fa-network-wired"></i> Resilient CMOS Core</h3>
+                        <p>ReRAM offers 1,000× endurance, 100× faster reads, and 1,000× faster writes. Built for
+                            advanced computing, it scales below 10nm and integrates with CMOS foundry flows.</p>
+                        <a class="btn" href="https://www.crossbar-inc.com/technology/applications/mobile-computing/"
+                            role="button">Mobile Computing</a>
                     </div>
                     <div class="quadrant-item">
-                        <h3><i class="fas fa-battery-half"></i> Low Power</h3>
-                        <p>Energy-efficient operation for battery-powered devices</p>
+                        <h3><i class="fas fa-leaf"></i> Energy-Efficienct Metrics</h3>
+                        <p>ReRAM uses 5× less energy than eFlash, 20× less than NAND, 30× less than SPI Flash, and 40×
+                            less than BLE.</p>
+                        <a class="btn" href="https://www.crossbar-inc.com/technology/applications/internet-of-things/"
+                            role="button">Internet of Things</a>
                     </div>
                     <div class="quadrant-item">
-                        <h3><i class="fas fa-shield-alt"></i> Enhanced Security</h3>
-                        <p>Built-in security features for tamper-resistant storage</p>
+                        <h3><i class="fas fa-industry"></i> Industrial Reliability</h3>
+                        <p>ReRAM endures 1M+ write cycles, retains data for 10 years at 85°C, and operates from –40°C to
+                            125°C in harsh environments.</p>
+                        <a class="btn" href="https://www.crossbar-inc.com/technology/applications/secure-computing/"
+                            role="button">Security</a>
                     </div>
                 </div>
 
                 <div class="quadrant-content">
-                    <h3>High-Performance Memory Solutions</h3>
-                    <p>CrossBar's ReRAM technology offers exceptional performance with read and write speeds
-                        significantly faster than traditional flash memory. With nanosecond-scale access times, our
-                        memory solutions enable real-time processing for AI, machine learning, and high-performance
-                        computing applications.</p>
+                    <div class="quadrant-title">
+                        <h3>High-Performance Memory Solutions</h3>
+                        <p>Now in production at 40nm. License CrossBar ReRAM IP to build custom ICs with optimized
+                            power,
+                            density, security, and performance across diverse applications.</p>
+                        <a class="btn btn-alt" href="https://www.crossbar-inc.com/technology/develop/design-resources/"
+                            role="button">Design Kits</a>
+                        <a class="btn btn-alt" href="https://www.crossbar-inc.com/technology/develop/design-start/"
+                            role="button">ReRAM IP</a>
+                    </div>
 
                     <div class="quadrant-features">
                         <div class="feature-item">
-                            <i class="fas fa-rocket"></i>
+                            <i class="fas fa-cubes"></i>
                             <div>
-                                <h4>Ultra-Fast Access</h4>
-                                <p>Read speeds under 100ns, write speeds under 50ns</p>
+                                <h4>Stacked Scalability</h4>
+                                <p>3D memory arrays scale from GBs to TBs.</p>
                             </div>
                         </div>
                         <div class="feature-item">
-                            <i class="fas fa-infinity"></i>
+                            <i class="fas fa-gauge-simple-high"></i>
                             <div>
-                                <h4>High Endurance</h4>
-                                <p>Over 1 million write cycles for reliable operation</p>
+                                <h4>Accelerated Access</h4>
+                                <p>20ns read, 12μs write, no erase latency.</p>
                             </div>
                         </div>
                         <div class="feature-item">
-                            <i class="fas fa-temperature-low"></i>
+                            <i class="fas fa-bolt"></i>
                             <div>
-                                <h4>Wide Temperature Range</h4>
-                                <p>Operation from -40°C to 125°C for industrial use</p>
+                                <h4>Energy Reduction</h4>
+                                <p>Up to 50% lower energy with sub-mW active power.</p>
                             </div>
                         </div>
                         <div class="feature-item">
-                            <i class="fas fa-plug"></i>
+                            <i class="fas fa-shield-alt"></i>
                             <div>
-                                <h4>Low Power Operation</h4>
-                                <p>Less than 1μA standby current for IoT devices</p>
+                                <h4>Hardware Security</h4>
+                                <p>Prevents extraction and supports secure keys.</p>
                             </div>
                         </div>
                     </div>
@@ -1370,6 +1406,8 @@
             <div class="section-header">
                 <h2>ReRAM In Action</h2>
                 <p>Discover how our technology is transforming industries and enabling next-generation applications</p>
+                <a class="btn btn-alt" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                    role="button">Collaborate with CrossBar Engineers</a>
             </div>
 
             <div class="video-container">
