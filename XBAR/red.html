@@ -183,6 +183,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 77vw;
         }
 
         .logo {
@@ -203,35 +204,57 @@
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 5px;
             position: relative;
             z-index: 100;
-            margin: 0 4px;
-            padding: 4px;
-            margin-right: 9px;
-            height: 49px;
         }
 
         .nav-item {
             position: relative;
             font-weight: 500;
             font-size: 16px;
-            padding: 8px 0;
+            padding: 12px 20px;
             cursor: pointer;
             transition: var(--transition);
-            display: grid;
+            color: #333;
+            border-radius: 8px;
         }
 
         .nav-item:hover {
-            color: black;
+            background: #FBDAD2;
+            color: #000;
         }
 
         .nav-item.has-dropdown::after {
-            content: '\f078';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
+            content: "⌄";
+            margin-left: 8px;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .dropdown-item.has-dropdown::after {
+            content: "›";
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #888;
+        }
+
+        .nav-item.active.has-dropdown>.dropdown,
+        .dropdown-item.active.has-dropdown>.dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Nested dropdown positioning */
+        .dropdown .dropdown {
+            left: 100%;
+            top: -10px;
             margin-left: 5px;
-            font-size: 10px;
         }
 
         .nav-item.show-dropdown .dropdown {
@@ -259,53 +282,67 @@
             pointer-events: none;
         }
 
+        /* DROPDOWN STYLES */
         .dropdown {
             position: absolute;
-            top: 130%;
-            width: 250px;
-            background: var(--fwhite);
+            top: 100%;
+            left: 0;
+            width: 240px;
+            background: var(--dropdown-glass);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            z-index: 1000;
+            padding: 10px 0;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: white;
             opacity: 0;
             visibility: hidden;
             transform: translateY(10px);
-            transition: var(--transition);
-            z-index: 10;
-            padding: 0 9px;
         }
 
         .dd-right {
-            left: 64%;
+            left: 103%;
             top: -4%;
+            padding-right: 100px;
+        }
+
+        .rht-padding {
+            padding-right: 80px;
         }
 
         .dd-left {
-            right: 105%;
+            right: 103%;
             top: -4%;
+            padding-right: 64px;
         }
 
         .dd-bottom {
-            top: 160%;
+            top: 105%;
         }
 
+        /* DROPDOWN ITEMS */
         .dropdown-item {
-            padding: 10px 25px;
-            transition: var(--transition);
+            position: relative;
+            padding: 12px 25px;
+            color: #333;
             font-size: 15px;
+            font-weight: 400;
+            transition: var(--transition);
+            display: block;
+            cursor: pointer;
         }
 
-        .dropdown-item:hover,
-        .dropdown-item.progress-dot.active {
-            background: rgba(255, 106, 19, 0.2);
-            color: var(--primary);
-            font-size: large;
-            font-weight: bolder;
+        .dropdown-item:hover {
+            background: #FFECCE;
+            color: darkblue;
         }
 
         .social-icons {
             display: flex;
             gap: 12px;
             font-size: 18px;
+            margin-left: 50px;
         }
 
         .social-icons a {
@@ -321,7 +358,24 @@
             display: none;
             font-size: 24px;
             cursor: pointer;
-            margin-left: 9px;
+            color: #333;
+            z-index: 1100;
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 28px;
+            color: #fff;
+            cursor: pointer;
+            display: none;
+        }
+
+        .close-menu::after {
+            content: "✕";
+            font-size: 28px;
+            font-weight: bold;
         }
 
         /* Hero Section */
@@ -739,13 +793,14 @@
         }
 
         .search-box {
-            width: 100%;
+            width: 100px;
             padding: 12px 20px;
-            background: antiquewhite;
+            background: #FFF1DC;
             border: orange solid;
             border-radius: 50px;
             font-size: 16px;
             transition: var(--transition);
+            margin-left: 10px;
         }
 
         .search-box:focus {
@@ -1082,12 +1137,73 @@
 
         @media (max-width: 768px) {
 
-            .nav-links,
             .search-container {
                 display: none;
             }
 
             .mobile-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 85%;
+                height: 100vh;
+                flex-direction: column;
+                padding: 100px 30px 30px;
+                gap: 5px;
+                transition: transform 0.5s ease;
+                z-index: 1000;
+                box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+                background-color: rgb(59, 108, 120, 0.95);
+            }
+
+            .fas {
+                color: darkred;
+            }
+
+            .nav-links.active {
+                transform: translateX(-100%);
+            }
+
+            .nav-item {
+                padding: 15px 20px;
+                border-radius: 8px;
+                margin-bottom: 5px;
+                color: #fff;
+            }
+
+            .dropdown {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+                background: rgba(255, 255, 255, 0.1);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease;
+                padding: 0;
+                margin-top: 5px;
+                margin-left: 15px;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+            }
+
+            .dropdown.active {
+                max-height: 1000px;
+                padding: 5px 0;
+                background-color: floralwhite;
+            }
+
+            .dropdown .dropdown {
+                position: static;
+                margin-left: 15px;
+            }
+
+            .close-menu {
                 display: block;
             }
 
@@ -1128,6 +1244,10 @@
             .chat-container {
                 width: 300px;
                 height: 400px;
+            }
+
+            .social-icons {
+                margin-right: 50px;
             }
         }
     </style>
@@ -1207,24 +1327,26 @@
                             </g>
                         </g>
                     </svg>
-                    <!-- <span class="logo-span">CROSSBAR</span> -->
                 </a>
 
                 <nav class="nav-links">
+                    <div class="close-menu"></div>
                     <div class="nav-item has-dropdown">TECHNOLOGY
                         <div class="dropdown">
                             <div class="dropdown-item">ReRAM Overview</div>
                             <div class="dropdown-item">ReRAM Advantages</div>
-                            <div class="nav-item has-dropdown">ReRAM Offerings
-                                <div class="dropdown dd-right">
+                            <div class="dropdown-item has-dropdown">
+                                ReRAM Offerings
+                                <div class="dropdown">
                                     <div class="dropdown-item">High-Performance Memory</div>
                                     <div class="dropdown-item">High-Density Memory</div>
                                     <div class="dropdown-item">ReRAM as FTP/OTP Memory</div>
                                     <div class="dropdown-item">ReRAM Secure Keys</div>
                                 </div>
                             </div>
-                            <div class="nav-item has-dropdown">ReRAM Applications
-                                <div class="dropdown dd-left">
+                            <div class="dropdown-item has-dropdown">
+                                ReRAM Applications
+                                <div class="dropdown">
                                     <div class="dropdown-item">Artificial Intelligence</div>
                                     <div class="dropdown-item">Automotive/Industrial/Medical</div>
                                     <div class="dropdown-item">Consumer Electronics</div>
@@ -1234,8 +1356,9 @@
                                     <div class="dropdown-item">Secure Computing</div>
                                 </div>
                             </div>
-                            <div class="nav-item has-dropdown">Develop
-                                <div class="dropdown dd-bottom">
+                            <div class="dropdown-item has-dropdown">
+                                Develop
+                                <div class="dropdown">
                                     <div class="dropdown-item">Design Resources</div>
                                     <div class="dropdown-item">DesignStart</div>
                                     <div class="dropdown-item">Customer Support</div>
@@ -1246,8 +1369,9 @@
 
                     <div class="nav-item has-dropdown">PRODUCTS
                         <div class="dropdown">
-                            <div class="nav-item has-dropdown">Cramium Family
-                                <div class="dropdown dd-right">
+                            <div class="dropdown-item has-dropdown">
+                                Cramium Family
+                                <div class="dropdown">
                                     <div class="dropdown-item">Cramium Mission</div>
                                     <div class="dropdown-item">Motivation</div>
                                     <div class="dropdown-item">Solution</div>
@@ -1255,7 +1379,7 @@
                                     <div class="dropdown-item">ReRAM Memory</div>
                                 </div>
                             </div>
-                            <div class="dropdown-item">Cramium Personal Hardware Security Module (PHSM)</div>
+                            <div class="dropdown-item">Cramium PHSM</div>
                         </div>
                     </div>
 
@@ -1734,80 +1858,69 @@
         // });
 
         // Mobile menu toggle
-        const mobileToggle = document.querySelector('.mobile-toggle');
-        const navLinks = document.querySelector('.nav-links');
-
-        mobileToggle.addEventListener('click', () => {
-            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        document.querySelector('.mobile-toggle').addEventListener('click', function () {
+            document.querySelector('.nav-links').classList.add('active');
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const topLevelItems = document.querySelectorAll('.nav-item.has-dropdown');
-            const subLevelItems = document.querySelectorAll('.dropdown-item.has-sub-dropdown');
-            let activeDropdown = null;
+        document.querySelector('.close-menu').addEventListener('click', function () {
+            document.querySelector('.nav-links').classList.remove('active');
+        });
 
-            function closeDropdown(item) {
-                if (item) {
-                    item.classList.remove('show-dropdown');
-                    document.body.classList.remove('dropdown-open');
-                }
-            }
-
-            function closeAllDropdowns() {
-                document.querySelectorAll('.show-dropdown').forEach(item => {
-                    item.classList.remove('show-dropdown');
-                });
-                document.body.classList.remove('dropdown-open');
-                activeDropdown = null;
-            }
-
-            topLevelItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-                    if (e.target.closest('.dropdown-item') && !e.target.classList.contains('has-sub-dropdown')) return;
-
-                    const wasActive = item.classList.contains('show-dropdown');
-                    closeAllDropdowns();
-
-                    if (!wasActive) {
-                        item.classList.add('show-dropdown');
-                        document.body.classList.add('dropdown-open');
-                        activeDropdown = item;
-                    }
-                });
-
-                const dropdown = item.querySelector('.dropdown');
-                if (dropdown) dropdown.addEventListener('click', e => e.stopPropagation());
-            });
-
-            subLevelItems.forEach(subItem => {
-                subItem.addEventListener('click', function (e) {
+        // Mobile dropdown toggle
+        document.querySelectorAll('.nav-item.has-dropdown, .dropdown-item.has-dropdown').forEach(item => {
+            item.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    const wasOpen = subItem.classList.contains('show-dropdown');
 
-                    // Close all other submenus at this level
-                    subLevelItems.forEach(sibling => {
-                        if (sibling !== subItem) sibling.classList.remove('show-dropdown');
+                    // Close other dropdowns at the same level
+                    const parent = this.parentElement;
+                    const siblings = Array.from(parent.children);
+
+                    siblings.forEach(sibling => {
+                        if (sibling !== this && sibling.classList.contains('has-dropdown')) {
+                            const dropdown = sibling.querySelector('.dropdown');
+                            if (dropdown) dropdown.classList.remove('active');
+                        }
                     });
 
-                    if (!wasOpen) {
-                        subItem.classList.add('show-dropdown');
-                    } else {
-                        subItem.classList.remove('show-dropdown');
+                    // Toggle this dropdown
+                    const dropdown = this.querySelector('.dropdown');
+                    if (dropdown) {
+                        dropdown.classList.toggle('active');
                     }
-                });
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!e.target.closest('.nav-links')) {
-                    closeAllDropdowns();
                 }
             });
+        });
 
-            document.querySelectorAll('.dropdown-item:not(.has-sub-dropdown)').forEach(item => {
-                item.addEventListener('click', closeAllDropdowns);
+        // Desktop dropdown toggle
+        document.querySelectorAll('.nav-item.has-dropdown, .dropdown-item.has-dropdown').forEach(item => {
+            item.addEventListener('click', function (e) {
+                // Only handle on desktop
+                if (window.innerWidth > 768) {
+                    e.stopPropagation();
+
+                    // Close other dropdowns at the same level
+                    const siblings = Array.from(this.parentElement.children);
+                    siblings.forEach(sibling => {
+                        if (sibling !== this && sibling.classList.contains('active')) {
+                            sibling.classList.remove('active');
+                        }
+                    });
+
+                    // Toggle this dropdown
+                    this.classList.toggle('active');
+                }
             });
+        });
 
-            window.addEventListener('scroll', closeAllDropdowns);
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.nav-item') && !e.target.closest('.dropdown')) {
+                document.querySelectorAll('.nav-item.has-dropdown, .dropdown-item.has-dropdown').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
         });
 
         // Click to play video directly within the card thumbnails. 
