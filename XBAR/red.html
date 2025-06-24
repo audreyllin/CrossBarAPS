@@ -175,9 +175,8 @@
             width: 100%;
             border-style: solid;
             border-color: rgba(255, 106, 19, .3);
-            border-width: 1px 0 1px;
-            background: -webkit-gradient(linear, left top, right top, from(#ff9f68), to(#ff6a13));
             background: linear-gradient(to right, #ff9f68, #ff6a13);
+            height: 13px;
         }
 
         .header-inner {
@@ -207,6 +206,10 @@
             gap: 30px;
             position: relative;
             z-index: 100;
+            margin: 0 4px;
+            padding: 4px;
+            margin-right: 9px;
+            height: 49px;
         }
 
         .nav-item {
@@ -216,6 +219,11 @@
             padding: 8px 0;
             cursor: pointer;
             transition: var(--transition);
+            display: grid;
+        }
+
+        .nav-item:hover {
+            color: black;
         }
 
         .nav-item.has-dropdown::after {
@@ -253,18 +261,31 @@
 
         .dropdown {
             position: absolute;
-            top: 100%;
-            left: 0;
-            width: 240px;
+            top: 130%;
+            width: 250px;
             background: var(--fwhite);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 15px 0;
             opacity: 0;
             visibility: hidden;
             transform: translateY(10px);
             transition: var(--transition);
             z-index: 10;
+            padding: 0 9px;
+        }
+
+        .dd-right {
+            left: 64%;
+            top: -4%;
+        }
+
+        .dd-left {
+            right: 105%;
+            top: -4%;
+        }
+
+        .dd-bottom {
+            top: 160%;
         }
 
         .dropdown-item {
@@ -283,7 +304,7 @@
 
         .social-icons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             font-size: 18px;
         }
 
@@ -300,6 +321,7 @@
             display: none;
             font-size: 24px;
             cursor: pointer;
+            margin-left: 9px;
         }
 
         /* Hero Section */
@@ -1118,7 +1140,7 @@
             <div class="progress-fill" id="progress"></div>
         </div>
         <div class="progress-dots">
-            <div class="progress-dot active" data-title="Home" data-section="hero"></div>
+            <div class="progress-dot active" data-title="Introduction" data-section="hero"></div>
             <div class="progress-dot" data-title="Technology" data-section="quadrant"></div>
             <div class="progress-dot" data-title="Products" data-section="video"></div>
             <div class="progress-dot" data-title="Contact" data-section="footer"></div>
@@ -1193,18 +1215,57 @@
                         <div class="dropdown">
                             <div class="dropdown-item">ReRAM Overview</div>
                             <div class="dropdown-item">ReRAM Advantages</div>
-                            <div class="dropdown-item">ReRAM Offerings</div>
-                            <div class="dropdown-item">ReRAM Applications</div>
-                            <div class="dropdown-item">Develop</div>
+                            <div class="nav-item has-dropdown">ReRAM Offerings
+                                <div class="dropdown dd-right">
+                                    <div class="dropdown-item">High-Performance Memory</div>
+                                    <div class="dropdown-item">High-Density Memory</div>
+                                    <div class="dropdown-item">ReRAM as FTP/OTP Memory</div>
+                                    <div class="dropdown-item">ReRAM Secure Keys</div>
+                                </div>
+                            </div>
+                            <div class="nav-item has-dropdown">ReRAM Applications
+                                <div class="dropdown dd-left">
+                                    <div class="dropdown-item">Artificial Intelligence</div>
+                                    <div class="dropdown-item">Automotive/Industrial/Medical</div>
+                                    <div class="dropdown-item">Consumer Electronics</div>
+                                    <div class="dropdown-item">Data Center</div>
+                                    <div class="dropdown-item">Internet of Things</div>
+                                    <div class="dropdown-item">Mobile Computing</div>
+                                    <div class="dropdown-item">Secure Computing</div>
+                                </div>
+                            </div>
+                            <div class="nav-item has-dropdown">Develop
+                                <div class="dropdown dd-bottom">
+                                    <div class="dropdown-item">Design Resources</div>
+                                    <div class="dropdown-item">DesignStart</div>
+                                    <div class="dropdown-item">Customer Support</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="nav-item has-dropdown">PRODUCTS
                         <div class="dropdown">
-                            <div class="dropdown-item">Cramium Family</div>
-                            <div class="dropdown-item">Cramium PHSM</div>
+                            <div class="nav-item has-dropdown">Cramium Family
+                                <div class="dropdown dd-right">
+                                    <div class="dropdown-item">Cramium Mission</div>
+                                    <div class="dropdown-item">Motivation</div>
+                                    <div class="dropdown-item">Solution</div>
+                                    <div class="dropdown-item">Architecture</div>
+                                    <div class="dropdown-item">ReRAM Memory</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-item">Cramium Personal Hardware Security Module (PHSM)</div>
                         </div>
                     </div>
-                    <div class="nav-item">NEWS</div>
+
+                    <div class="nav-item has-dropdown">NEWS
+                        <div class="dropdown">
+                            <div class="dropdown-item">Press Releases</div>
+                            <div class="dropdown-item">In The News</div>
+                        </div>
+                    </div>
+
                     <div class="nav-item has-dropdown">COMPANY
                         <div class="dropdown">
                             <div class="dropdown-item">About CrossBar</div>
@@ -1407,7 +1468,8 @@
         <div class="container">
             <div class="section-header">
                 <h2>ReRAM In Action</h2>
-                <p>Designed to bridge embedded and storage-class memory needs, aligning with the most demanding future chip architectures.</p>
+                <p>Designed to bridge embedded and storage-class memory needs, aligning with the most demanding future
+                    chip architectures.</p>
                 <a class="btn btn-alt" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
                     role="button">Collaborate with CrossBar Engineers</a>
             </div>
@@ -1417,8 +1479,7 @@
                 <div class="video-card">
                     <div class="video-thumb"
                         data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/storage.mp4">
-                        <img src="img/EnterpriseStorage.png"
-                            alt="Enterprise Storage">
+                        <img src="img/EnterpriseStorage.png" alt="Enterprise Storage">
                         <div class="play-btn">
                             <i class="fas fa-play"></i>
                         </div>
@@ -1438,8 +1499,7 @@
                 <div class="video-card">
                     <div class="video-thumb"
                         data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/wearables.mp4">
-                        <img src="img/WearableDevice.jpg"
-                            alt="Wearable Device">
+                        <img src="img/WearableDevice.jpg" alt="Wearable Device">
                         <div class="play-btn">
                             <i class="fas fa-play"></i>
                         </div>
@@ -1459,8 +1519,7 @@
                 <div class="video-card">
                     <div class="video-thumb"
                         data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/iot.mp4">
-                        <img src="img/StorageInnovation.jpg"
-                            alt="Storage Innovation">
+                        <img src="img/StorageInnovation.jpg" alt="Storage Innovation">
                         <div class="play-btn">
                             <i class="fas fa-play"></i>
                         </div>
@@ -1480,8 +1539,7 @@
                 <div class="video-card">
                     <div class="video-thumb"
                         data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/whiteboard.mp4">
-                        <img src="img/OutdatedFlash.jpg"
-                            alt="Outdated flash technology">
+                        <img src="img/OutdatedFlash.jpg" alt="Outdated flash technology">
                         <div class="play-btn">
                             <i class="fas fa-play"></i>
                         </div>
@@ -1683,63 +1741,69 @@
             navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
         });
 
-        // Dropdown selector to prevent closing
         document.addEventListener('DOMContentLoaded', function () {
-            const navItems = document.querySelectorAll('.nav-item.has-dropdown');
+            const topLevelItems = document.querySelectorAll('.nav-item.has-dropdown');
+            const subLevelItems = document.querySelectorAll('.dropdown-item.has-sub-dropdown');
             let activeDropdown = null;
 
             function closeDropdown(item) {
                 if (item) {
                     item.classList.remove('show-dropdown');
                     document.body.classList.remove('dropdown-open');
-                    activeDropdown = null;
                 }
             }
 
             function closeAllDropdowns() {
-                navItems.forEach(item => item.classList.remove('show-dropdown'));
+                document.querySelectorAll('.show-dropdown').forEach(item => {
+                    item.classList.remove('show-dropdown');
+                });
                 document.body.classList.remove('dropdown-open');
                 activeDropdown = null;
             }
 
-            navItems.forEach(item => {
+            topLevelItems.forEach(item => {
                 item.addEventListener('click', function (e) {
-                    if (e.target.classList.contains('dropdown-item')) return;
+                    if (e.target.closest('.dropdown-item') && !e.target.classList.contains('has-sub-dropdown')) return;
 
-                    const wasActive = this.classList.contains('show-dropdown');
+                    const wasActive = item.classList.contains('show-dropdown');
                     closeAllDropdowns();
 
                     if (!wasActive) {
-                        this.classList.add('show-dropdown');
+                        item.classList.add('show-dropdown');
                         document.body.classList.add('dropdown-open');
-                        activeDropdown = this;
-                    }
-                });
-
-                item.addEventListener('mouseenter', function () {
-                    if (activeDropdown && activeDropdown !== this) {
-                        closeDropdown(activeDropdown);
-                    }
-                    this.classList.add('show-dropdown');
-                });
-
-                item.addEventListener('mouseleave', function () {
-                    if (activeDropdown !== this) {
-                        this.classList.remove('show-dropdown');
+                        activeDropdown = item;
                     }
                 });
 
                 const dropdown = item.querySelector('.dropdown');
-                dropdown.addEventListener('click', e => e.stopPropagation());
+                if (dropdown) dropdown.addEventListener('click', e => e.stopPropagation());
+            });
+
+            subLevelItems.forEach(subItem => {
+                subItem.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const wasOpen = subItem.classList.contains('show-dropdown');
+
+                    // Close all other submenus at this level
+                    subLevelItems.forEach(sibling => {
+                        if (sibling !== subItem) sibling.classList.remove('show-dropdown');
+                    });
+
+                    if (!wasOpen) {
+                        subItem.classList.add('show-dropdown');
+                    } else {
+                        subItem.classList.remove('show-dropdown');
+                    }
+                });
             });
 
             document.addEventListener('click', function (e) {
-                if (!e.target.closest('.nav-links') && activeDropdown) {
+                if (!e.target.closest('.nav-links')) {
                     closeAllDropdowns();
                 }
             });
 
-            document.querySelectorAll('.dropdown-item').forEach(item => {
+            document.querySelectorAll('.dropdown-item:not(.has-sub-dropdown)').forEach(item => {
                 item.addEventListener('click', closeAllDropdowns);
             });
 
