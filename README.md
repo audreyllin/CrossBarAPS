@@ -41,6 +41,8 @@ Effective web design ref:
 * https://www.gemini.com/
 
 Checklist after main development: 
+* https://stock.adobe.com/search?k=cpu+chip
+* https://www.esa.int/About_Us/Corporate_news/ESA_and_the_EU_update_their_Security_of_Information_Agreement
 * https://www.wpi.edu/sites/default/files/2023-03/WPI-Website-Editorial-Style-Guide-2023.pdf (comprehensive editorial guidelines) 
 * https://www.wpi.edu/sites/default/files/2024-10/Department-Page-Template-Guide_Binder.pdf (detailed guideline for individual pages)
 * https://www.wpi.edu/sites/default/files/2023-11/WPI_Institutional_Guidelines.pdf (relative positions)
