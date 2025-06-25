@@ -158,9 +158,21 @@
                     </div>
                 </nav>
 
-                <div class="search-container">
-                    <input type="text" class="search-box" placeholder="Search...">
-                    <div class="search-results">
+                <div class="search-container" id="search-container">
+                    <input type="text" class="search-box" id="search-input" placeholder="Search..." autocomplete="off">
+                    <div class="search-controls">
+                        <span class="search-count" id="match-count">0/0</span>
+                        <button class="search-nav" id="prev-match" title="Previous match (Shift+Enter)">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="search-nav" id="next-match" title="Next match (Enter)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <button class="search-close" id="close-search" title="Close search (Esc)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="search-results" id="search-results">
                         <div class="search-item">
                             <i class="fas fa-microchip"></i>
                             <span>ReRAM Technology</span>
@@ -1066,6 +1078,276 @@
                 navLinks.classList.remove('active');
                 body.classList.remove('menu-open');
             }
+        });
+
+        // Search System Implementation
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('search-input');
+            const matchCount = document.getElementById('match-count');
+            const prevMatchBtn = document.getElementById('prev-match');
+            const nextMatchBtn = document.getElementById('next-match');
+            const closeSearchBtn = document.getElementById('close-search');
+            const searchContainer = document.getElementById('search-container');
+            const searchResults = document.getElementById('search-results');
+
+            let currentMatchIndex = -1;
+            let matches = [];
+            let searchTerm = '';
+
+            // Initialize search functionality
+            function initSearch() {
+                // Event listeners
+                searchInput.addEventListener('input', handleSearchInput);
+                prevMatchBtn.addEventListener('click', navigateToPrevMatch);
+                nextMatchBtn.addEventListener('click', navigateToNextMatch);
+                closeSearchBtn.addEventListener('click', clearSearch);
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', handleKeyDown);
+
+                // Handle click on search results items
+                document.querySelectorAll('.search-item').forEach(item => {
+                    item.addEventListener('click', function () {
+                        searchInput.value = this.querySelector('span').textContent;
+                        searchInput.focus();
+                        handleSearchInput({ target: searchInput });
+                    });
+                });
+            }
+
+            // Handle search input
+            function handleSearchInput(e) {
+                const term = e.target.value.trim();
+
+                // Activate search controls UI
+                if (term.length > 0) {
+                    searchContainer.classList.add('active');
+                } else {
+                    searchContainer.classList.remove('active');
+                }
+
+                if (term.length < 2) {
+                    clearHighlights();
+                    updateMatchCount();
+                    return;
+                }
+
+                // Only search if term changed
+                if (term !== searchTerm) {
+                    searchTerm = term;
+                    searchPage(term);
+                }
+            }
+
+            // Search page for term
+            function searchPage(term) {
+                // Clear previous highlights
+                clearHighlights();
+
+                // Get all text nodes in the content area
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    {
+                        acceptNode: function (node) {
+                            // Skip script/style tags and empty nodes
+                            if (node.parentNode.tagName === 'SCRIPT' ||
+                                node.parentNode.tagName === 'STYLE' ||
+                                node.parentNode.classList.contains('search-controls') ||
+                                node.parentNode.id === 'search-input' ||
+                                node.nodeValue.trim() === '') {
+                                return NodeFilter.FILTER_SKIP;
+                            }
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                );
+
+                matches = [];
+                const regex = new RegExp(escapeRegExp(term), 'gi');
+
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    const text = node.nodeValue;
+                    let match;
+
+                    while ((match = regex.exec(text)) !== null) {
+                        matches.push({
+                            node: node,
+                            start: match.index,
+                            length: term.length,
+                            text: text
+                        });
+                    }
+                }
+
+                // Highlight matches
+                highlightMatches();
+
+                // Update match count
+                updateMatchCount();
+
+                // Navigate to first match if any
+                if (matches.length > 0) {
+                    currentMatchIndex = 0;
+                    navigateToMatch(currentMatchIndex);
+                }
+            }
+
+            // Highlight all matches
+            function highlightMatches() {
+                // We need to process matches in reverse order to avoid messing up indexes
+                const reverseMatches = [...matches].reverse();
+
+                reverseMatches.forEach(match => {
+                    const node = match.node;
+                    const parent = node.parentNode;
+                    const text = node.nodeValue;
+
+                    // Create a document fragment to hold the new content
+                    const fragment = document.createDocumentFragment();
+
+                    // Create text node for content before the match
+                    fragment.appendChild(document.createTextNode(text.substring(0, match.start)));
+
+                    // Create highlight span for the match
+                    const highlightSpan = document.createElement('span');
+                    highlightSpan.className = 'search-highlight';
+                    highlightSpan.textContent = text.substring(match.start, match.start + match.length);
+
+                    fragment.appendChild(highlightSpan);
+
+                    // Create text node for content after the match
+                    fragment.appendChild(document.createTextNode(text.substring(match.start + match.length)));
+
+                    // Replace the original text node with the fragment
+                    parent.replaceChild(fragment, node);
+                });
+            }
+
+            // Clear all highlights
+            function clearHighlights() {
+                const highlights = document.querySelectorAll('.search-highlight');
+
+                highlights.forEach(highlight => {
+                    const parent = highlight.parentNode;
+                    const text = document.createTextNode(highlight.textContent);
+                    parent.replaceChild(text, highlight);
+
+                    // Normalize adjacent text nodes
+                    parent.normalize();
+                });
+
+                matches = [];
+                currentMatchIndex = -1;
+            }
+
+            // Navigate to a specific match
+            function navigateToMatch(index) {
+                // Remove current-match class from all
+                const highlights = document.querySelectorAll('.search-highlight');
+                highlights.forEach(hl => hl.classList.remove('current-match'));
+
+                if (index >= 0 && index < matches.length) {
+                    currentMatchIndex = index;
+
+                    // Find the highlight element corresponding to this match
+                    const allHighlights = document.querySelectorAll('.search-highlight');
+                    if (allHighlights[index]) {
+                        const currentHighlight = allHighlights[index];
+
+                        // Add current-match class
+                        currentHighlight.classList.add('current-match');
+
+                        // Scroll to the match
+                        const scrollOptions = {
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'nearest'
+                        };
+
+                        // Handle different browsers
+                        if (currentHighlight.scrollIntoViewIfNeeded) {
+                            currentHighlight.scrollIntoViewIfNeeded(true);
+                        } else {
+                            currentHighlight.scrollIntoView(scrollOptions);
+                        }
+
+                        // Update match count
+                        updateMatchCount();
+                    }
+                }
+            }
+
+            // Navigate to next match
+            function navigateToNextMatch() {
+                if (matches.length === 0) return;
+
+                const nextIndex = (currentMatchIndex + 1) % matches.length;
+                navigateToMatch(nextIndex);
+            }
+
+            // Navigate to previous match
+            function navigateToPrevMatch() {
+                if (matches.length === 0) return;
+
+                const prevIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+                navigateToMatch(prevIndex);
+            }
+
+            // Update match count display
+            function updateMatchCount() {
+                if (matches.length > 0) {
+                    matchCount.textContent = `${currentMatchIndex + 1}/${matches.length}`;
+                    matchCount.style.color = '#0066cc';
+                    matchCount.style.fontWeight = 'bold';
+                } else if (searchTerm.length >= 2) {
+                    matchCount.textContent = '0 matches';
+                    matchCount.style.color = '#ff6a13';
+                } else {
+                    matchCount.textContent = '0/0';
+                    matchCount.style.color = '#666';
+                }
+            }
+
+            // Clear search
+            function clearSearch() {
+                searchInput.value = '';
+                clearHighlights();
+                updateMatchCount();
+                searchContainer.classList.remove('active');
+                searchInput.focus();
+            }
+
+            // Handle keyboard shortcuts
+            function handleKeyDown(e) {
+                // Only handle if search input is focused
+                if (document.activeElement !== searchInput) return;
+
+                switch (e.key) {
+                    case 'Enter':
+                        if (e.shiftKey) {
+                            navigateToPrevMatch();
+                        } else {
+                            navigateToNextMatch();
+                        }
+                        e.preventDefault();
+                        break;
+
+                    case 'Escape':
+                        clearSearch();
+                        e.preventDefault();
+                        break;
+                }
+            }
+
+            // Helper function to escape regex special characters
+            function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            // Initialize the search system
+            initSearch();
         });
     </script>
 </body>
