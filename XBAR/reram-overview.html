@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReRAM Memory Overview | CrossBar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lora:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --accent-color: #cc3333;
+            --light-gray: #f5f7fa;
+            --medium-gray: #e1e4e8;
+            --dark-gray: #333;
+            --text-color: #2d3748;
+            --line-color: #d1d5db;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            --border-radius: 4px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Lora', serif;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-top: 0;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        h1:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-top: 3rem;
+            border-bottom: 1px solid var(--line-color);
+            padding-bottom: 0.75rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        strong {
+            font-weight: 700;
+            color: var(--dark-gray);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            color: var(--accent-color);
+            margin-right: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 2rem;
+            position: relative;
+        }
+
+        .nav-menu li a {
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-menu li a:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: var(--transition);
+        }
+
+        .nav-menu li a:hover:after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+                    color: var(--white);
+                    padding: 100px 0;
+                    text-align: center;
+            }
+
+            .hero-content {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+                color: var(--white);
+                margin-bottom: 1.5rem;
+            }
+
+            .hero h1:after {
+                background: var(--white);
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .hero p {
+                font-size: 1.3rem;
+                margin-bottom: 2rem;
+                max-width: 700px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            /* Content Section */
+            .content-section {
+                padding: 5rem 0;
+                background-color: var(--white);
+            }
+
+            .content-container {
+                display: grid;
+                grid-template-columns: 1fr 300px;
+                gap: 40px;
+            }
+
+            .main-content {
+                max-width: 800px;
+            }
+
+            .figure {
+                margin: 2.5rem 0;
+                background: var(--light-gray);
+                border-radius: var(--border-radius);
+                overflow: hidden;
+                box-shadow: var(--shadow);
+            }
+
+            .figure img {
+                width: 100%;
+                display: block;
+                border-bottom: 1px solid var(--medium-gray);
+            }
+
+            .figure figcaption {
+                padding: 1rem;
+                font-style: italic;
+                font-size: 0.95rem;
+                color: var(--dark-gray);
+                background: var(--light-gray);
+            }
+
+            .figure .text {
+                padding: 1.5rem;
+                background: var(--white);
+                border-top: 1px solid var(--medium-gray);
+            }
+
+            .quote {
+                background: var(--light-gray);
+                border-left: 4px solid var(--accent-color);
+                padding: 1.5rem;
+                margin: 2.5rem 0;
+                font-style: italic;
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                display: inline-block;
+                background: var(--primary-color);
+                color: var(--white);
+                padding: 12px 28px;
+                border-radius: var(--border-radius);
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                transition: var(--transition);
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+
+            .btn:hover {
+                background: #0055aa;
+                text-decoration: none;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+            }
+
+            /* Sidebar */
+            .sidebar {
+                position: sticky;
+                top: 100px;
+                align-self: start;
+            }
+
+            .toc {
+                background: var(--light-gray);
+                border-radius: var(--border-radius);
+                padding: 1.5rem;
+                box-shadow: var(--shadow);
+            }
+
+            .toc h3 {
+                font-size: 1.3rem;
+                margin-top: 0;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--line-color);
+            }
+
+            .toc ul {
+                list-style: none;
+            }
+
+            .toc li {
+                margin-bottom: 0.8rem;
+            }
+
+            .toc a {
+                display: block;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--medium-gray);
+                color: var(--dark-gray);
+            }
+
+            .toc a:hover {
+                color: var(--accent-color);
+                border-color: var(--accent-color);
+            }
+
+            .feature-box {
+                background: var(--light-gray);
+                border-radius: var(--border-radius);
+                padding: 1.5rem;
+                margin-top: 2rem;
+                box-shadow: var(--shadow);
+            }
+
+            .feature-box h4 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+            }
+
+            .feature-box h4 i {
+                color: var(--accent-color);
+                margin-right: 10px;
+            }
+
+            /* Footer */
+            footer {
+                background: var(--dark-gray);
+                color: var(--white);
+                padding: 3rem 0;
+            }
+
+            .footer-content {
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .footer-section {
+                flex: 1;
+                min-width: 300px;
+                margin-bottom: 2rem;
+            }
+
+            .footer-section h3 {
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+                color: var(--white);
+            }
+
+            .footer-links {
+                list-style: none;
+            }
+
+            .footer-links li {
+                margin-bottom: 0.8rem;
+            }
+
+            .footer-links a {
+                color: #cbd5e0;
+                transition: var(--transition);
+            }
+
+            .footer-links a:hover {
+                color: var(--white);
+                text-decoration: underline;
+            }
+
+            .copyright {
+                text-align: center;
+                padding-top: 2rem;
+                margin-top: 2rem;
+                border-top: 1px solid #4a5568;
+                color: #cbd5e0;
+                font-size: 0.9rem;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 992px) {
+                .content-container {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar {
+                    position: static;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .hero {
+                    padding: 70px 0;
+                }
+
+                .hero h1 {
+                    font-size: 2.3rem;
+                }
+
+                .hero p {
+                    font-size: 1.1rem;
+                }
+
+                .nav-menu {
+                    display: none;
+                }
+
+                .mobile-menu-btn {
+                    display: block;
+                }
+
+                .footer-section {
+                    flex: 100%;
+                }
+            }
+
+            @media (max-width: 576px) {
+                h1 {
+                    font-size: 2rem;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                }
+
+                .hero h1 {
+                    font-size: 2rem;
+                }
+            }
+
+            /* Technical Enhancements */
+            .tech-highlight {
+                background: rgba(0, 102, 204, 0.05);
+                border-left: 3px solid var(--primary-color);
+                padding: 15px 20px;
+                margin: 1.5rem 0;
+                border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            }
+
+            .diagram-label {
+                font-weight: 500;
+                margin-top: 10px;
+                display: block;
+                color: var(--dark-gray);
+            }
+
+            .spec-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 2rem 0;
+                box-shadow: var(--shadow);
+                border-radius: var(--border-radius);
+                overflow: hidden;
+            }
+
+            .spec-table th, .spec-table td {
+                padding: 12px 15px;
+                text-align: left;
+                border-bottom: 1px solid var(--medium-gray);
+            }
+
+            .spec-table th {
+                background: var(--light-gray);
+                font-weight: 600;
+            }
+
+            .spec-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .spec-table tr:hover {
+                background: rgba(0, 102, 204, 0.03);
+            }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-microchip"></i>
+                    <span>CrossBar</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#"><i class="fas fa-flask"></i> Technology</a></li>
+                    <li><a href="#"><i class="fas fa-microchip"></i> Products</a></li>
+                    <li><a href="#"><i class="fas fa-newspaper"></i> News</a></li>
+                    <li><a href="#"><i class="fas fa-building"></i> Company</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>ReRAM Memory Overview</h1>
+                <p>Revolutionary Resistive Random-Access Memory Technology for Next-Generation Computing</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="content-section">
+        <div class="container">
+            <div class="content-container">
+                <div class="main-content">
+                    <h1>CrossBar ReRAM: Rethinking Simplicity</h1>
+
+                    <p>Resistive random-access memory (ReRAM) is based on a simple three-layer structure of a top
+                        electrode, switching medium and bottom electrode. The resistance switching mechanism is based on
+                        the formation of a filament in the switching material when a voltage is applied between the two
+                        electrodes.</p>
+
+                    <div class="tech-highlight">
+                        <p>ReRAM technology enables significant performance improvements depending on switching
+                            materials used. CrossBar offers ReRAM for multiple-time programmable (MTP), few-time
+                            programmable (FTP), and one-time programmable (OTP) non-volatile memory applications, as
+                            well as security applications using physical unclonable function (PUF) keys.</p>
+                    </div>
+
+                    <div class="figure">
+                        <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
+                            alt="ReRAM Structure">
+                        <figcaption><strong>FIGURE 1.</strong> The resistance switching mechanism of CrossBar's
+                            technology is based on the formation of a filament in the silicon-based switching material
+                            when a voltage is applied between the two electrodes.</figcaption>
+                        <div class="text">
+                            <p>CrossBar ReRAM technology uses a silicon-based switching material as the host for a
+                                metallic filament formation. When a voltage is applied between the two electrodes, a
+                                nanofilament is formed. Because the resistance switching mechanism is based on an
+                                electric field, the CrossBar ReRAM cell is very stable, capable of withstanding
+                                temperature swings from -40°C to 125°C, 1M+ write cycles and a retention of 10 years at
+                                85°C.</p>
+                        </div>
+                    </div>
+
+                    <div class="quote">
+                        <p>CrossBar ReRAM: Embedded – Scalable – Low Power – High Density</p>
+                    </div>
+
+                    <h2>Technical Specifications</h2>
+                    <table class="spec-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                                <th>Advantage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Operating Temperature</td>
+                                <td>-40°C to 125°C</td>
+                                <td>Robust performance in extreme conditions</td>
+                            </tr>
+                            <tr>
+                                <td>Write Cycles</td>
+                                <td>1M+</td>
+                                <td>Long-term reliability</td>
+                            </tr>
+                            <tr>
+                                <td>Retention</td>
+                                <td>10 years at 85°C</td>
+                                <td>Data integrity over extended periods</td>
+                            </tr>
+                            <tr>
+                                <td>Scalability</td>
+                                <td>&lt;10nm</td>
+                                <td>Future-proof technology</td>
+                            </tr>
+                            <tr>
+                                <td>Power Consumption</td>
+                                <td>Ultra-low</td>
+                                <td>Ideal for battery-powered devices</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h2>3D Stacking Architecture</h2>
+                    <div class="figure">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
+                            alt="3D ReRAM Architecture">
+                        <figcaption><strong>FIGURE 2.</strong> CrossBar's simple and scalable memory cell structure
+                            enables a new class of 3D ReRAM which can be incorporated into the back end of line of any
+                            standard CMOS manufacturing fab.</figcaption>
+                        <div class="text">
+                            <p>CrossBar High-Density ReRAM technology can be stacked in 3D, delivering multiple
+                                terabytes of storage on a single chip. Its simplicity, stackability and CMOS
+                                compatibility enable logic and memory to be integrated onto a single chip at the latest
+                                technology node.</p>
+                            <p>CrossBar's patented built-in selector allows various memory array configurations in which
+                                a single transistor can drive one or thousands of memory cells. This enables CrossBar
+                                cells to be organized in super dense 3D cross-point arrays, stackable with the
+                                capability to scale below 10nm, paving the way for terabytes on a single die.</p>
+                        </div>
+                    </div>
+
+                    <h2>CMOS Compatibility</h2>
+                    <p>The approach is also CMOS compatible. Designers can put logic, controllers and microprocessors
+                        next to memory in the same die, simplifying packaging and increasing performance. ReRAM's simple
+                        structure and CMOS compatibility enable any foundry - CMOS or logic - to enter the ReRAM
+                        business by licensing CrossBar ReRAM technology for Systems-on-Chip (SoC) or standalone memory
+                        devices or embedded cryptographic keys.</p>
+
+                    <div class="tech-highlight">
+                        <p><strong>Read the "CrossBar ReRAM Technology" white paper to learn more:</strong></p>
+                        <a href="#" class="btn"><i class="fas fa-download"></i> Download Technical White Paper</a>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="toc">
+                        <h3><i class="fas fa-list"></i> Table of Contents</h3>
+                        <ul>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Overview</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Technical Specifications</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> 3D Stacking Architecture</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> CMOS Compatibility</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Applications</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Performance Benchmarks</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Implementation Guide</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-box">
+                        <h4><i class="fas fa-lightbulb"></i> Key Advantages</h4>
+                        <ul class="footer-links">
+                            <li><i class="fas fa-check-circle"></i> Ultra-low power consumption</li>
+                            <li><i class="fas fa-check-circle"></i> High endurance and retention</li>
+                            <li><i class="fas fa-check-circle"></i> CMOS compatible manufacturing</li>
+                            <li><i class="fas fa-check-circle"></i> Scalable to sub-10nm nodes</li>
+                            <li><i class="fas fa-check-circle"></i> High temperature operation</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-box">
+                        <h4><i class="fas fa-microchip"></i> Technical Resources</h4>
+                        <ul class="footer-links">
+                            <li><a href="#"><i class="fas fa-file-pdf"></i> ReRAM Technology White Paper</a></li>
+                            <li><a href="#"><i class="fas fa-file-alt"></i> Implementation Guide</a></li>
+                            <li><a href="#"><i class="fas fa-chart-bar"></i> Performance Benchmarks</a></li>
+                            <li><a href="#"><i class="fas fa-video"></i> Technical Webinar</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Technology</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Overview</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Advantages</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> High-Performance Memory</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Secure Keys</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Applications</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Artificial Intelligence</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Automotive Systems</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Consumer Electronics</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Internet of Things</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> About CrossBar</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Careers</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>Copyright © CrossBar, Inc. All rights reserved. | Academic Research Use Only</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple JavaScript for smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
