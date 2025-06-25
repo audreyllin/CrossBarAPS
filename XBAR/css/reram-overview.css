@@ -160,6 +160,18 @@ strong {
 }
 
 /* Header */
+
+.clearfix {
+    top: 0;
+    padding: 15px 3px;
+    width: 100%;
+    border-style: solid;
+    border-color: rgba(255, 106, 19, .3);
+    background: linear-gradient(to right, #ff9f68, #ff6a13);
+    height: 13px;
+    margin-top: 16px;
+}
+
 header {
     position: sticky;
     top: 0;

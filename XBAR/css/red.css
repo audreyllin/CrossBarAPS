@@ -162,7 +162,7 @@ header {
 
 .clearfix {
     top: 0;
-    padding: 3px 15px;
+    padding: 15px 3px;
     width: 100%;
     border-style: solid;
     border-color: rgba(255, 106, 19, .3);
