@@ -9,7 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/red.css">
+    <link rel="stylesheet" href="css/draft.css">
 </head>
 
 <body>
@@ -877,23 +877,38 @@
             }
         });
 
-        // Video play functionality
-        // const playButtons = document.querySelectorAll('.play-btn');
-        // playButtons.forEach(btn => {
-        //     btn.addEventListener('click', () => {
-        //         const videoCard = btn.closest('.video-card');
-        //         const videoTitle = videoCard.querySelector('h3').textContent;
-        //         alert(`Now playing: ${videoTitle}.`);
-        //     });
-        // });
+        // Mobile menu functionality
+        const mobileToggle = document.querySelector('.mobile-toggle');
+        const closeMenuBtn = document.querySelector('.close-menu');
+        const navLinks = document.querySelector('.nav-links');
+        const body = document.body;
 
-        // Mobile menu toggle
-        document.querySelector('.mobile-toggle').addEventListener('click', function () {
-            document.querySelector('.nav-links').classList.add('active');
+        // Initialize menu as closed
+        navLinks.classList.remove('active');
+        body.classList.remove('menu-open');
+
+        // Toggle menu open
+        mobileToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navLinks.classList.add('active');
+            body.classList.add('menu-open');
         });
 
-        document.querySelector('.close-menu').addEventListener('click', function () {
-            document.querySelector('.nav-links').classList.remove('active');
+        // Close menu with close button
+        closeMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navLinks.classList.remove('active');
+            body.classList.remove('menu-open');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (navLinks.classList.contains('active') &&
+                !navLinks.contains(e.target) &&
+                !mobileToggle.contains(e.target)) {
+                navLinks.classList.remove('active');
+                body.classList.remove('menu-open');
+            }
         });
 
         // Mobile dropdown toggle
@@ -953,7 +968,7 @@
             }
         });
 
-        // Click to play video directly within the card thumbnails. 
+        // Video functionality
         document.addEventListener('DOMContentLoaded', function () {
             const videoThumbs = document.querySelectorAll('.video-thumb');
 
@@ -1014,7 +1029,7 @@
             });
         });
 
-        // Simple animation for cards when they come into view
+        // Card animations
         document.addEventListener('DOMContentLoaded', function () {
             const cards = document.querySelectorAll('.digest-card');
 
@@ -1033,6 +1048,24 @@
                 card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                 observer.observe(card);
             });
+        });
+
+        // Close menu when clicking on navigation links (non-dropdown items)
+        document.querySelectorAll('.nav-item:not(.has-dropdown)').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    navLinks.classList.remove('active');
+                    body.classList.remove('menu-open');
+                }
+            });
+        });
+
+        // Close menu when resizing to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+                body.classList.remove('menu-open');
+            }
         });
     </script>
 </body>
