@@ -1435,6 +1435,22 @@ h6 {
     }
 }
 
+@media (min-width: 2550px) {
+    .container {
+        width: 100%;
+        max-width: 1800px;
+    }
+
+    .container.header {
+        margin-left: -20vw;
+        max-width: 160px;
+    }
+
+    .header-inner {
+        margin-left: 30vw;
+    }
+}
+
 /* Medium screens (≤ 992px) */
 @media (max-width: 992px) {
     .hero {
