@@ -1618,3 +1618,173 @@ footer {
         margin-bottom: 20px;
     }
 }
+
+/* ===== SECTION DISTINCTION & FLOW ===== */
+/* Sticky header enhancement */
+header {
+    position: sticky;
+    top: 0;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.header-scrolled {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== SMOOTH ANIMATIONS ===== */
+/* Entrance animations */
+[data-animate] {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Micro-interactions */
+.card-hover {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        box-shadow 0.4s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.btn {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        box-shadow 0.3s ease;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+.nav-item {
+    transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-item:hover {
+    transform: translateY(-2px);
+}
+
+/* ===== 3D ELEMENTS & SCROLL EFFECTS ===== */
+/* Enhanced 3D chip */
+.chip-container {
+    perspective: 1200px;
+}
+
+.chip {
+    transform-style: preserve-3d;
+    animation: float 8s ease-in-out infinite;
+    transform: rotateX(15deg) rotateY(-15deg);
+}
+
+.chip-inner {
+    transform: translateZ(20px);
+    box-shadow: 0 30px 60px rgba(255, 106, 19, 0.3);
+}
+
+.chip-core {
+    transform: translateZ(30px);
+}
+
+.chip-cell {
+    animation: pulse 3s infinite alternate;
+}
+
+/* Scroll-based animations */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotateX(15deg) rotateY(-15deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotateX(20deg) rotateY(-10deg);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Parallax effect for hero */
+.hero::before {
+    background-attachment: fixed;
+    background-position: center;
+    transition: transform 0.1s linear;
+}
+
+/* ===== VISUAL ENHANCEMENTS ===== */
+/* Typography */
+body {
+    font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Poppins', 'Montserrat', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* Color enhancements */
+:root {
+    --accent-1: #ff6a13;
+    --accent-2: #00c6c3;
+    --accent-3: #ffd166;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-1) 0%, #ff8c3a 100%);
+}
+
+.feature-item i {
+    color: var(--accent-2);
+}
+
+.date-header {
+    color: var(--accent-3);
+}
+
+/* Grid improvements */
+.quadrant-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.digest-group {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .digest-group {
+        grid-template-columns: 1fr;
+    }
+
+    [data-animate] {
+        transition: none;
+        opacity: 1;
+        transform: none;
+    }
+}
