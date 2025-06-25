@@ -1109,6 +1109,10 @@ footer {
         background: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
         mix-blend-mode: plus-lighter;
     }
+
+    .header-inner {
+        margin-left: -9vw;
+    }
 }
 
 /* Medium screens (≤ 992px) */
@@ -1168,6 +1172,16 @@ footer {
     .fas {
         color: indianred;
         margin-bottom: 20px;
+    }
+
+    .fa-play {
+        color: white;
+        margin-top: 2.5vh;
+    }
+
+    .fa-robot {
+        color: papayawhip;
+        margin-top: 2vh;
     }
 
     .nav-links.active {
