@@ -1166,7 +1166,7 @@ footer {
     }
 
     .fas {
-        color: darkred;
+        color: indianred;
         margin-bottom: 20px;
     }
 
@@ -1387,9 +1387,11 @@ footer {
 
 .news-image img {
     width: 100%;
-    height: 100%;
     object-fit: cover;
     transition: var(--transition);
+    mix-blend-mode: screen;
+    height: auto;
+    margin-top: 1vh;
 }
 
 .digest-card:hover .news-image img {
