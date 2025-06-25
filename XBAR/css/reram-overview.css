@@ -312,6 +312,16 @@ header {
     transform: scale(1.02);
 }
 
+.image-withBG {
+    background-color: antiquewhite;
+    mix-blend-mode: hard-light;
+}
+
+.image-withBG-alt {
+    background-color: antiquewhite;
+    backdrop-filter: invert(1);
+}
+
 .figure figcaption {
     padding: var(--spacing-md);
     font-size: 0.95rem;
