@@ -1084,6 +1084,8 @@
         }
 
         /* Responsive */
+
+        /* Medium-to-large screens (≥ 905px) */
         @media (min-width: 905px) {
             .hero {
                 background-position: inherit;
@@ -1104,6 +1106,7 @@
             }
         }
 
+        /* Large screens (≥ 1100px) */
         @media (max-width: 1100px) {
             .chip-container {
                 width: 350px;
@@ -1111,6 +1114,16 @@
             }
         }
 
+        /* Extra large screens (≥ 1440px) */
+        @media (min-width: 1440px) {
+            .hero::before {
+                filter: blur(45px);
+                background: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
+                mix-blend-mode: plus-lighter;
+            }
+        }
+
+        /* Medium screens (≤ 992px) */
         @media (max-width: 992px) {
             .hero {
                 text-align: center;
@@ -1118,7 +1131,7 @@
 
             .hero-content {
                 margin: 0 auto;
-                padding: 20px 20px;
+                padding: 20px;
             }
 
             .hero-btns {
@@ -1138,8 +1151,8 @@
             }
         }
 
+        /* Tablet and small desktops (≤ 768px) */
         @media (max-width: 768px) {
-
             .search-container {
                 display: none;
             }
@@ -1156,18 +1169,17 @@
                 height: 100vh;
                 flex-direction: column;
                 padding: 100px 20px 30px;
-                /* Adjusted padding */
                 gap: 5px;
                 transition: transform 0.5s ease;
                 z-index: 1000;
                 box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
-                background-color: rgb(59, 108, 120, 0.95);
+                background-color: rgba(59, 108, 120, 0.95);
                 overflow-y: auto;
-                /* Added scrolling */
             }
 
             .fas {
                 color: darkred;
+                margin-bottom: 20px;
             }
 
             .nav-links.active {
@@ -1215,14 +1227,14 @@
 
             .nav-links>.nav-item:nth-last-child(1)>.dropdown,
             .nav-links>.nav-item:nth-last-child(2)>.dropdown {
-                left: auto;
                 right: 0;
+                left: auto;
             }
 
             .nav-links>.nav-item:nth-last-child(1)>.dropdown .dropdown,
             .nav-links>.nav-item:nth-last-child(2)>.dropdown .dropdown {
-                left: auto;
                 right: 100%;
+                left: auto;
                 margin-left: 0;
                 margin-right: 5px;
             }
@@ -1248,6 +1260,7 @@
             }
         }
 
+        /* Mobile (≤ 576px) */
         @media (max-width: 576px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -1275,12 +1288,9 @@
                 margin-right: 30px;
                 margin-bottom: 20px;
             }
-
-            .fas {
-                margin-bottom: 20px;
-            }
         }
 
+        /* Extra small (≤ 320px) */
         @media (max-width: 320px) {
             .social-icons {
                 margin-left: -30px;
