@@ -23,6 +23,10 @@
     --spacing-md: 24px;
     --spacing-lg: 32px;
     --spacing-xl: 48px;
+    /* New header-specific variables */
+    --header-bg: #ffffff;
+    --header-border: #ff6a13;
+    --header-text: #0a0c15;
 }
 
 * {
@@ -160,11 +164,16 @@ header {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background-color: #0a0a0a;
-    /* dark background for contrast */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--header-bg);
+    /* White background */
+    border-top: 4px solid var(--header-border);
+    /* Orange top liner */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    /* Light bottom border */
     padding: 0.75rem 2rem;
     font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
 }
 
 .header-content {
@@ -178,7 +187,8 @@ header {
 .logo {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--header-text);
+    /* Dark text */
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
@@ -190,17 +200,39 @@ header {
 }
 
 .nav-menu li a {
-    color: #ff6a13;
-    font-weight: 500;
+    color: var(--header-text);
+    /* Dark text */
+    font-weight: 600;
+    /* Increased weight for better contrast */
     font-size: 0.95rem;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: var(--transition);
+    position: relative;
 }
 
 .nav-menu li a:hover {
-    color: #ffffff;
+    color: var(--accent-tertiary);
+    /* Orange on hover */
 }
 
+.nav-menu li a:after {
+    background: transparent !important;
+}
+
+.nav-menu li a::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-tertiary);
+    transition: var(--transition);
+}
+
+.nav-menu li a:hover::after {
+    width: 100%;
+}
 
 /* Hero Section */
 .hero {
