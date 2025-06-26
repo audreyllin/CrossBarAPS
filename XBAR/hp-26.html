@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CrossBar - Advanced Memory Solutions</title>
+    <title>CrossBar - Advanced ReRAM Memory Solutions</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
@@ -28,6 +28,8 @@
             --color-mid: #333333;
             --color-light: #f0f0f0;
             --color-white: #ffffff;
+            --color-text: #f0f0f0;
+            --color-bg: #121212;
 
             /* Glass Effect */
             --glass-bg: rgba(30, 30, 30, 0.7);
@@ -36,9 +38,6 @@
             /* Typography */
             --font-heading: 'Space Grotesk', sans-serif;
             --font-body: 'Inter', sans-serif;
-            --text-dark: var(--color-dark);
-            --text-mid: #a0a0a0;
-            --text-light: var(--color-light);
 
             /* Spacing */
             --space-xs: 0.5rem;
@@ -52,6 +51,18 @@
             --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
             --shadow-glow: 0 0 15px currentColor;
             --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Light mode variables */
+        [data-theme="light"] {
+            --color-dark: #f8f9fa;
+            --color-dark-alt: #e9ecef;
+            --color-mid: #dee2e6;
+            --color-light: #212529;
+            --color-text: #212529;
+            --color-bg: #f8f9fa;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
         }
 
         /* ===== BASE STYLES ===== */
@@ -68,9 +79,9 @@
 
         body {
             font-family: var(--font-body);
-            color: var(--text-mid);
+            color: var(--color-text);
             line-height: 1.7;
-            background: var(--color-dark);
+            background: var(--color-bg);
             background-image:
                 radial-gradient(circle at 10% 20%, rgba(157, 78, 221, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(0, 204, 255, 0.1) 0%, transparent 20%),
@@ -89,7 +100,7 @@
             font-family: var(--font-heading);
             font-weight: 700;
             line-height: 1.2;
-            color: var(--text-light);
+            color: var(--color-text);
         }
 
         a {
@@ -332,7 +343,7 @@
         }
 
         /* ===== HEADER & NAVIGATION ===== */
-        .header {
+        header.header {
             position: fixed;
             top: 0;
             left: 0;
@@ -371,7 +382,7 @@
             }
         }
 
-        .nav {
+        nav.nav {
             &__list {
                 display: flex;
                 gap: var(--space-md);
@@ -390,7 +401,7 @@
 
             &__link {
                 font-weight: 600;
-                color: var(--text-light);
+                color: var(--color-text);
                 transition: var(--transition);
                 padding: 0.5rem 1rem;
                 border-radius: 8px;
@@ -443,7 +454,7 @@
                     display: block;
                     padding: 0.75rem 1rem;
                     border-radius: 8px;
-                    color: var(--text-mid);
+                    color: var(--color-text);
                     transition: var(--transition);
 
                     &:hover {
@@ -467,12 +478,27 @@
 
             i {
                 font-size: 1.5rem;
-                color: var(--text-light);
+                color: var(--color-text);
                 transition: var(--transition);
             }
 
             &:hover i {
                 color: var(--color-secondary);
+            }
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: var(--space-sm);
+            transition: var(--transition);
+
+            &:hover {
+                color: var(--color-secondary);
+                transform: rotate(30deg);
             }
         }
 
@@ -911,6 +937,66 @@
             }
         }
 
+        /* ===== NEWS SECTION ===== */
+        .news {
+            position: relative;
+            z-index: 2;
+            background: var(--color-dark-alt);
+
+            &__grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: var(--space-md);
+            }
+
+            &__card {
+                padding: var(--space-md);
+                border-radius: 12px;
+                background: rgba(30, 30, 30, 0.7);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.4s ease;
+                transform: translateY(20px);
+                opacity: 0;
+
+                &:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                    border-color: rgba(0, 204, 255, 0.3);
+                }
+            }
+
+            &__date {
+                color: var(--color-accent-cyan);
+                font-size: 0.9rem;
+                margin-bottom: var(--space-xs);
+            }
+
+            &__title {
+                font-size: 1.2rem;
+                margin-bottom: var(--space-sm);
+                color: var(--color-text);
+            }
+
+            &__excerpt {
+                font-size: 0.95rem;
+                margin-bottom: var(--space-sm);
+                color: var(--color-text);
+            }
+
+            &__link {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-xs);
+                color: var(--color-secondary);
+                font-weight: 500;
+
+                &:hover {
+                    transform: translateX(5px);
+                }
+            }
+        }
+
         /* ===== AI ASSISTANT ===== */
         .ai-assistant {
             position: fixed;
@@ -1106,7 +1192,7 @@
         }
 
         /* ===== FOOTER ===== */
-        .footer {
+        footer.footer {
             position: relative;
             padding: var(--space-xl) 0;
             background: var(--color-dark-alt);
@@ -1152,7 +1238,7 @@
                     }
 
                     a {
-                        color: var(--text-mid);
+                        color: var(--color-text);
                         transition: var(--transition);
                         display: flex;
                         align-items: center;
@@ -1183,7 +1269,7 @@
                     align-items: center;
                     justify-content: center;
                     background: var(--color-dark);
-                    color: var(--text-light);
+                    color: var(--color-text);
                     transition: var(--transition);
 
                     &:hover {
@@ -1205,7 +1291,7 @@
                 padding-top: var(--space-md);
                 border-top: 1px solid var(--glass-border);
                 font-size: 0.9rem;
-                color: var(--text-mid);
+                color: var(--color-text);
             }
         }
 
@@ -1379,19 +1465,19 @@
                     </svg>
                 </a>
 
-                <nav class="nav">
+                <nav class="nav" role="navigation" aria-label="Main navigation">
                     <ul class="nav__list" id="navList">
                         <li class="nav__item">
-                            <a href="#" class="nav__link">TECHNOLOGY</a>
+                            <a href="#technology" class="nav__link">TECHNOLOGY</a>
                         </li>
                         <li class="nav__item">
-                            <a href="#" class="nav__link">PRODUCTS</a>
+                            <a href="#products" class="nav__link">PRODUCTS</a>
                         </li>
                         <li class="nav__item">
-                            <a href="#" class="nav__link">NEWS</a>
+                            <a href="#news" class="nav__link">NEWS</a>
                         </li>
                         <li class="nav__item">
-                            <a href="#" class="nav__link">COMPANY</a>
+                            <a href="#company" class="nav__link">COMPANY</a>
                         </li>
                     </ul>
                 </nav>
@@ -1399,305 +1485,263 @@
                 <div class="mobile-toggle" id="mobileToggle">
                     <i class="fas fa-bars"></i>
                 </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero section--pinned" id="hero">
-        <div class="container">
-            <div class="hero__content glass scroll-reveal">
-                <h1>CrossBar Memory Solutions:<br><span>Cramium + ReRAM</span></h1>
-                <p>CrossBar's memory products deliver unprecedented scaling performance, density, and power efficiency
-                    for AI, IoT, and secure computing applications.</p>
-                <div class="hero__cta">
-                    <a href="#" class="btn btn--primary">Explore Technology</a>
-                    <a href="#" class="btn btn--violet">Cramium Overview</a>
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero section--pinned" id="hero">
+            <div class="container">
+                <div class="hero__content glass scroll-reveal">
+                    <h1>CrossBar Memory Solutions:<br><span>Cramium + ReRAM</span></h1>
+                    <p>CrossBar's memory products deliver unprecedented scaling performance, density, and power
+                        efficiency for AI, IoT, and secure computing applications.</p>
+                    <div class="hero__cta">
+                        <a href="#technology" class="btn btn--primary">Explore Technology</a>
+                        <a href="#products" class="btn btn--violet">Cramium Overview</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="hero__visual">
-            <div class="chip" id="chip">
-                <div class="chip__core">
-                    <div class="layer layer--front">
-                        <!-- 6x6 grid of cells -->
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell cell-active"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell cell-active"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell cell-active"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                    </div>
-                    <div class="layer layer--middle">
-                        <!-- Middle layer cells -->
-                    </div>
-                    <div class="layer layer--back">
-                        <!-- Back layer cells -->
-                    </div>
-                </div>
-                <div class="chip__glow"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="section features section--pinned" id="features">
-        <div class="container">
-            <div class="section__header scroll-reveal">
-                <h2>Revolutionary Memory Technology</h2>
-                <p>CrossBar's ReRAM technology delivers unprecedented performance, density, and power efficiency for
-                    next-generation computing applications.</p>
-            </div>
-
-            <div class="features__grid">
-                <div class="features__card glass scroll-reveal">
-                    <div class="features__icon">
-                        <i class="fas fa-microchip"></i>
-                    </div>
-                    <h3 class="features__title">High Density</h3>
-                    <p class="features__desc">Terabyte-scale on-chip storage with minimal layout overhead. Ultra-dense,
-                        stackable 3D cross-point arrays.</p>
-                </div>
-
-                <div class="features__card glass scroll-reveal">
-                    <div class="features__icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3 class="features__title">Energy Efficient</h3>
-                    <p class="features__desc">5× less energy than eFlash, 20× less than NAND, 30× less than SPI Flash,
-                        and 40× less than BLE.</p>
-                </div>
-
-                <div class="features__card glass scroll-reveal">
-                    <div class="features__icon">
-                        <i class="fas fa-gauge-high"></i>
-                    </div>
-                    <h3 class="features__title">High Performance</h3>
-                    <p class="features__desc">20ns read, 12μs write, no erase latency. 100× faster reads, and 1,000×
-                        faster writes than traditional memory.</p>
-                </div>
-
-                <div class="features__card glass scroll-reveal">
-                    <div class="features__icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3 class="features__title">Enhanced Security</h3>
-                    <p class="features__desc">Tamper-resistant storage for cryptographic keys. Prevents extraction and
-                        supports secure keys.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section class="section benefits section--pinned" id="benefits">
-        <div class="container">
-            <div class="section__header scroll-reveal">
-                <h2>ReRAM Technology Advantages</h2>
-                <p>Designed to bridge embedded and storage-class memory needs for future chip architectures.</p>
-            </div>
-
-            <div class="benefits__container">
-                <div class="benefits__item scroll-reveal">
-                    <div class="benefits__content glass">
-                        <h3>Logic-Memory Integration</h3>
-                        <p>ReRAM's CMOS-compatible, stackable architecture enables direct logic-memory integration,
-                            delivering 2× higher density while reducing interconnects, latency, and power.</p>
-                        <ul>
-                            <li>2× higher density</li>
-                            <li>Reduced interconnects</li>
-                            <li>Lower latency and power</li>
-                        </ul>
-                        <a href="#" class="btn btn--primary" style="margin-top: var(--space-sm);">Learn More</a>
-                    </div>
-                    <div class="benefits__visual">
-                        <div class="chip-diagram">
-                            <svg viewBox="0 0 100 100">
-                                <rect x="10" y="10" width="80" height="80" rx="5" fill="#1e1e1e" stroke="#00ccff"
-                                    stroke-width="1" />
-                                <rect x="20" y="20" width="60" height="60" rx="3" fill="#121212" stroke="#ff6a13"
-                                    stroke-width="1" />
-                                <circle cx="50" cy="50" r="15" fill="none" stroke="#9d4edd" stroke-width="1"
-                                    stroke-dasharray="2 2" />
-                                <line x1="30" y1="30" x2="70" y2="70" stroke="#00ffff" stroke-width="1" />
-                                <line x1="70" y1="30" x2="30" y2="70" stroke="#00ffff" stroke-width="1" />
-                            </svg>
+            <div class="hero__visual">
+                <div class="chip" id="chip">
+                    <div class="chip__core">
+                        <div class="layer layer--front">
+                            <!-- 6x6 grid of cells -->
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell cell-active"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell cell-active"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell cell-active"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                            <div class="cell"></div>
+                        </div>
+                        <div class="layer layer--middle">
+                            <!-- Middle layer cells -->
+                        </div>
+                        <div class="layer layer--back">
+                            <!-- Back layer cells -->
                         </div>
                     </div>
+                    <div class="chip__glow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Section -->
+        <section class="section features section--pinned" id="technology" aria-labelledby="technology-heading">
+            <div class="container">
+                <div class="section__header scroll-reveal">
+                    <h2 id="technology-heading">Revolutionary Memory Technology</h2>
+                    <p>CrossBar's ReRAM technology delivers unprecedented performance, density, and power efficiency for
+                        next-generation computing applications.</p>
                 </div>
 
-                <div class="benefits__item scroll-reveal">
-                    <div class="benefits__content glass">
-                        <h3>Resilient CMOS Core</h3>
-                        <p>ReRAM offers 1,000× endurance, built for advanced computing, it scales below 10nm and
-                            integrates with CMOS foundry flows.</p>
-                        <ul>
-                            <li>1,000× endurance</li>
-                            <li>Scales below 10nm</li>
-                            <li>Industrial reliability</li>
-                        </ul>
-                        <a href="#" class="btn btn--primary" style="margin-top: var(--space-sm);">Learn More</a>
-                    </div>
-                    <div class="benefits__visual">
-                        <div class="chip-diagram">
-                            <svg viewBox="0 0 100 100">
-                                <rect x="15" y="15" width="70" height="70" rx="4" fill="#1e1e1e" stroke="#ff8c00"
-                                    stroke-width="1" />
-                                <circle cx="50" cy="50" r="25" fill="#121212" stroke="#00ccff" stroke-width="1" />
-                                <polygon points="50,20 65,40 80,40 80,60 65,60 50,80 35,60 20,60 20,40 35,40"
-                                    fill="none" stroke="#9d4edd" stroke-width="1" />
-                            </svg>
+                <div class="features__grid">
+                    <div class="features__card glass scroll-reveal">
+                        <div class="features__icon">
+                            <i class="fas fa-microchip"></i>
                         </div>
+                        <h3 class="features__title">High Density</h3>
+                        <p class="features__desc">Terabyte-scale on-chip storage with minimal layout overhead.
+                            Ultra-dense, stackable 3D cross-point arrays.</p>
                     </div>
-                </div>
 
-                <div class="benefits__item scroll-reveal">
-                    <div class="benefits__content glass">
-                        <h3>Industrial Reliability</h3>
-                        <p>ReRAM endures 1M+ write cycles, retains data for 10 years at 85°C, and operates from –40°C to
-                            125°C in harsh environments.</p>
-                        <ul>
-                            <li>1M+ write cycles</li>
-                            <li>10-year data retention</li>
-                            <li>Wide temperature range</li>
-                        </ul>
-                        <a href="#" class="btn btn--primary" style="margin-top: var(--space-sm);">Learn More</a>
-                    </div>
-                    <div class="benefits__visual">
-                        <div class="chip-diagram">
-                            <svg viewBox="0 0 100 100">
-                                <rect x="10" y="10" width="80" height="80" rx="5" fill="#1e1e1e" stroke="#00ffff"
-                                    stroke-width="1" />
-                                <rect x="25" y="25" width="50" height="50" rx="2" fill="#121212" stroke="#ff6a13"
-                                    stroke-width="1" />
-                                <line x1="10" y1="50" x2="90" y2="50" stroke="#9d4edd" stroke-width="1"
-                                    stroke-dasharray="3 3" />
-                                <line x1="50" y1="10" x2="50" y2="90" stroke="#9d4edd" stroke-width="1"
-                                    stroke-dasharray="3 3" />
-                            </svg>
+                    <div class="features__card glass scroll-reveal">
+                        <div class="features__icon">
+                            <i class="fas fa-bolt"></i>
                         </div>
+                        <h3 class="features__title">Energy Efficient</h3>
+                        <p class="features__desc">5× less energy than eFlash, 20× less than NAND, 30× less than SPI
+                            Flash, and 40× less than BLE.</p>
+                    </div>
+
+                    <div class="features__card glass scroll-reveal">
+                        <div class="features__icon">
+                            <i class="fas fa-gauge-high"></i>
+                        </div>
+                        <h3 class="features__title">High Performance</h3>
+                        <p class="features__desc">20ns read, 12μs write, no erase latency. 100× faster reads, and 1,000×
+                            faster writes than traditional memory.</p>
+                    </div>
+
+                    <div class="features__card glass scroll-reveal">
+                        <div class="features__icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="features__title">Enhanced Security</h3>
+                        <p class="features__desc">Tamper-resistant storage for cryptographic keys. Prevents extraction
+                            and supports secure keys.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Products Section -->
-    <section class="section products section--pinned" id="products">
-        <div class="container">
-            <div class="section__header scroll-reveal">
-                <h2>Cramium Product Family</h2>
-                <p>Our innovative ReRAM-based products designed for the most demanding applications.</p>
-            </div>
+        <!-- Products Section -->
+        <section class="section products section--pinned" id="products" aria-labelledby="products-heading">
+            <div class="container">
+                <div class="section__header scroll-reveal">
+                    <h2 id="products-heading">Cramium Product Family</h2>
+                    <p>Our innovative ReRAM-based products designed for the most demanding applications.</p>
+                </div>
 
-            <div class="products__grid">
-                <div class="products__card scroll-reveal">
-                    <div class="products__icon">
-                        <i class="fas fa-shield-alt"></i>
+                <div class="products__grid">
+                    <div class="products__card scroll-reveal">
+                        <div class="products__icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="products__title">Cramium PHSM</h3>
+                        <p>Physically secure hardware security module for cryptographic key storage and secure boot.</p>
+                        <details>
+                            <summary>View Specifications</summary>
+                            <ul class="products__specs">
+                                <li><span>Capacity:</span> <span>1-8Mb</span></li>
+                                <li><span>Read Speed:</span> <span>20ns</span></li>
+                                <li><span>Write Cycles:</span> <span>1M+</span></li>
+                                <li><span>Security:</span> <span>Tamper-resistant</span></li>
+                            </ul>
+                        </details>
                     </div>
-                    <h3 class="products__title">Cramium PHSM</h3>
-                    <p>Physically secure hardware security module for cryptographic key storage and secure boot.</p>
-                    <ul class="products__specs">
-                        <li><span>Capacity:</span> <span>1-8Mb</span></li>
-                        <li><span>Read Speed:</span> <span>20ns</span></li>
-                        <li><span>Write Cycles:</span> <span>1M+</span></li>
-                        <li><span>Security:</span> <span>Tamper-resistant</span></li>
-                    </ul>
-                </div>
 
-                <div class="products__card products__card--highlight scroll-reveal">
-                    <div class="products__icon">
-                        <i class="fas fa-microchip"></i>
+                    <div class="products__card products__card--highlight scroll-reveal">
+                        <div class="products__icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <h3 class="products__title">Cramium HPM</h3>
+                        <p>High-performance memory for AI accelerators and edge computing applications.</p>
+                        <details>
+                            <summary>View Specifications</summary>
+                            <ul class="products__specs">
+                                <li><span>Capacity:</span> <span>128Mb-1Gb</span></li>
+                                <li><span>Read Speed:</span> <span>15ns</span></li>
+                                <li><span>Power:</span> <span>0.5pJ/bit</span></li>
+                                <li><span>Interface:</span> <span>LPDDR5</span></li>
+                            </ul>
+                        </details>
                     </div>
-                    <h3 class="products__title">Cramium HPM</h3>
-                    <p>High-performance memory for AI accelerators and edge computing applications.</p>
-                    <ul class="products__specs">
-                        <li><span>Capacity:</span> <span>128Mb-1Gb</span></li>
-                        <li><span>Read Speed:</span> <span>15ns</span></li>
-                        <li><span>Power:</span> <span>0.5pJ/bit</span></li>
-                        <li><span>Interface:</span> <span>LPDDR5</span></li>
-                    </ul>
-                </div>
 
-                <div class="products__card scroll-reveal">
-                    <div class="products__icon">
-                        <i class="fas fa-layer-group"></i>
+                    <div class="products__card scroll-reveal">
+                        <div class="products__icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3 class="products__title">Cramium HDM</h3>
+                        <p>High-density memory for storage-class applications and large-scale data processing.</p>
+                        <details>
+                            <summary>View Specifications</summary>
+                            <ul class="products__specs">
+                                <li><span>Capacity:</span> <span>4-64Gb</span></li>
+                                <li><span>Density:</span> <span>1Tb/cm²</span></li>
+                                <li><span>Endurance:</span> <span>100K cycles</span></li>
+                                <li><span>Interface:</span> <span>PCIe 5.0</span></li>
+                            </ul>
+                        </details>
                     </div>
-                    <h3 class="products__title">Cramium HDM</h3>
-                    <p>High-density memory for storage-class applications and large-scale data processing.</p>
-                    <ul class="products__specs">
-                        <li><span>Capacity:</span> <span>4-64Gb</span></li>
-                        <li><span>Density:</span> <span>1Tb/cm²</span></li>
-                        <li><span>Endurance:</span> <span>100K cycles</span></li>
-                        <li><span>Interface:</span> <span>PCIe 5.0</span></li>
-                    </ul>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Stats Section -->
-    <section class="section stats" id="stats">
-        <div class="container">
-            <div class="section__header scroll-reveal">
-                <h2>By The Numbers</h2>
-                <p>Quantifying our technological advantages in key metrics.</p>
+        <!-- Stats Section -->
+        <section class="section stats" id="stats" aria-labelledby="stats-heading">
+            <div class="container">
+                <div class="section__header scroll-reveal">
+                    <h2 id="stats-heading">By The Numbers</h2>
+                    <p>Quantifying our technological advantages in key metrics.</p>
+                </div>
+
+                <div class="stats__grid">
+                    <div class="stats__card glass scroll-reveal">
+                        <div class="stat-value" id="stat1">20ns</div>
+                        <div class="stat-label">Read Latency</div>
+                    </div>
+
+                    <div class="stats__card glass scroll-reveal">
+                        <div class="stat-value" id="stat2">1M+</div>
+                        <div class="stat-label">Write Cycles</div>
+                    </div>
+
+                    <div class="stats__card glass scroll-reveal">
+                        <div class="stat-value" id="stat3">100×</div>
+                        <div class="stat-label">Faster Reads</div>
+                    </div>
+
+                    <div class="stats__card glass scroll-reveal">
+                        <div class="stat-value" id="stat4">5×</div>
+                        <div class="stat-label">Energy Savings</div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="stats__grid">
-                <div class="stats__card glass scroll-reveal">
-                    <div class="stat-value" id="stat1">20ns</div>
-                    <div class="stat-label">Read Latency</div>
+        <!-- News Section -->
+        <section class="section news" id="news" aria-labelledby="news-heading">
+            <div class="container">
+                <div class="section__header scroll-reveal">
+                    <h2 id="news-heading">Latest News</h2>
+                    <p>Stay updated with the latest developments in resistive random-access memory technology.</p>
                 </div>
 
-                <div class="stats__card glass scroll-reveal">
-                    <div class="stat-value" id="stat2">1M+</div>
-                    <div class="stat-label">Write Cycles</div>
-                </div>
+                <div class="news__grid">
+                    <article class="news__card scroll-reveal">
+                        <div class="news__date">April 21, 2022</div>
+                        <h3 class="news__title">Hiding Security Keys Using ReRAM PUF</h3>
+                        <p class="news__excerpt">CrossBar's innovative approach to secure key storage using physical
+                            unclonable functions.</p>
+                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
+                    </article>
 
-                <div class="stats__card glass scroll-reveal">
-                    <div class="stat-value" id="stat3">100×</div>
-                    <div class="stat-label">Faster Reads</div>
-                </div>
+                    <article class="news__card scroll-reveal">
+                        <div class="news__date">April 15, 2022</div>
+                        <h3 class="news__title">CrossBar Targets Embedded ReRAM IoT Market</h3>
+                        <p class="news__excerpt">New strategies for securing the growing IoT market with embedded ReRAM
+                            solutions.</p>
+                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
+                    </article>
 
-                <div class="stats__card glass scroll-reveal">
-                    <div class="stat-value" id="stat4">5×</div>
-                    <div class="stat-label">Energy Savings</div>
+                    <article class="news__card scroll-reveal">
+                        <div class="news__date">April 12, 2022</div>
+                        <h3 class="news__title">New Avenues for ReRAM: When Every Bit is Critical</h3>
+                        <p class="news__excerpt">Exploring applications where the reliability of ReRAM makes a critical
+                            difference.</p>
+                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
+                    </article>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- AI Assistant -->
     <div class="ai-assistant">
@@ -1777,10 +1821,11 @@
                     <h3>Connect</h3>
                     <p>Stay updated with the latest news and developments in memory technology.</p>
                     <div class="footer__social">
-                        <a href="https://www.linkedin.com/company/crossbar-inc/"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="https://x.com/crossbarinc"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/company/crossbar-inc/" aria-label="LinkedIn"><i
+                                class="fab fa-linkedin-in"></i></a>
+                        <a href="https://x.com/crossbarinc" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
                     </div>
                 </div>
             </div>
@@ -1997,6 +2042,37 @@
                 }
             });
         }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        // Check for saved theme preference
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        // Set initial icon based on theme
+        if (currentTheme === 'light') {
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Toggle icon
+            if (newTheme === 'light') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        });
 
         // Activate random cells every 2 seconds
         setInterval(activateRandomCells, 2000);
