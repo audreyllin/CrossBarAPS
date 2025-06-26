@@ -11,6 +11,7 @@
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
     <style>
         /* ===== CSS VARIABLES ===== */
         :root {
@@ -264,6 +265,18 @@
             &--4 {
                 grid-template-columns: repeat(4, 1fr);
             }
+        }
+
+        /* Scroll Animation Classes */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .is-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Edge Markers */
@@ -798,6 +811,106 @@
             }
         }
 
+        /* ===== PRODUCTS SECTION ===== */
+        .products {
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(45deg, var(--color-dark-alt), var(--color-dark));
+
+            &__grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: var(--space-md);
+            }
+
+            &__card {
+                padding: var(--space-lg);
+                border-radius: 16px;
+                background: rgba(30, 30, 30, 0.7);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.4s ease;
+                transform: translateY(20px);
+                opacity: 0;
+
+                &:hover {
+                    transform: translateY(-10px);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                    border-color: rgba(0, 204, 255, 0.3);
+                }
+
+                &--highlight {
+                    background: rgba(157, 78, 221, 0.1);
+                    border-color: rgba(157, 78, 221, 0.3);
+                }
+            }
+
+            &__icon {
+                font-size: 2.5rem;
+                margin-bottom: var(--space-sm);
+                color: var(--color-accent-cyan);
+            }
+
+            &__title {
+                font-size: 1.8rem;
+                margin-bottom: var(--space-sm);
+                background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            &__specs {
+                margin-top: var(--space-md);
+                padding-top: var(--space-sm);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+                li {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.95rem;
+
+                    span:first-child {
+                        color: var(--color-secondary);
+                    }
+                }
+            }
+        }
+
+        /* ===== STATS SECTION ===== */
+        .stats {
+            position: relative;
+            z-index: 2;
+
+            &__grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: var(--space-md);
+            }
+
+            &__card {
+                padding: var(--space-lg);
+                text-align: center;
+                transform: translateY(20px);
+                opacity: 0;
+
+                .stat-value {
+                    font-size: 3.5rem;
+                    font-weight: 700;
+                    font-family: var(--font-heading);
+                    background: linear-gradient(to right, var(--color-secondary), var(--color-accent-cyan));
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    margin-bottom: var(--space-sm);
+                }
+
+                .stat-label {
+                    font-size: 1.1rem;
+                    color: var(--color-accent-cyan);
+                }
+            }
+        }
+
         /* ===== AI ASSISTANT ===== */
         .ai-assistant {
             position: fixed;
@@ -1246,7 +1359,7 @@
         <div class="progress-dots">
             <div class="progress-dot active" data-title="Introduction" data-section="hero"></div>
             <div class="progress-dot" data-title="Technology" data-section="features"></div>
-            <div class="progress-dot" data-title="Products" data-section="benefits"></div>
+            <div class="progress-dot" data-title="Products" data-section="products"></div>
             <div class="progress-dot" data-title="Contact" data-section="footer"></div>
         </div>
     </div>
@@ -1361,7 +1474,7 @@
     <!-- Features Section -->
     <section class="section features section--pinned" id="features">
         <div class="container">
-            <div class="section__header">
+            <div class="section__header scroll-reveal">
                 <h2>Revolutionary Memory Technology</h2>
                 <p>CrossBar's ReRAM technology delivers unprecedented performance, density, and power efficiency for
                     next-generation computing applications.</p>
@@ -1410,7 +1523,7 @@
     <!-- Benefits Section -->
     <section class="section benefits section--pinned" id="benefits">
         <div class="container">
-            <div class="section__header">
+            <div class="section__header scroll-reveal">
                 <h2>ReRAM Technology Advantages</h2>
                 <p>Designed to bridge embedded and storage-class memory needs for future chip architectures.</p>
             </div>
@@ -1495,6 +1608,92 @@
                             </svg>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="section products section--pinned" id="products">
+        <div class="container">
+            <div class="section__header scroll-reveal">
+                <h2>Cramium Product Family</h2>
+                <p>Our innovative ReRAM-based products designed for the most demanding applications.</p>
+            </div>
+
+            <div class="products__grid">
+                <div class="products__card scroll-reveal">
+                    <div class="products__icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="products__title">Cramium PHSM</h3>
+                    <p>Physically secure hardware security module for cryptographic key storage and secure boot.</p>
+                    <ul class="products__specs">
+                        <li><span>Capacity:</span> <span>1-8Mb</span></li>
+                        <li><span>Read Speed:</span> <span>20ns</span></li>
+                        <li><span>Write Cycles:</span> <span>1M+</span></li>
+                        <li><span>Security:</span> <span>Tamper-resistant</span></li>
+                    </ul>
+                </div>
+
+                <div class="products__card products__card--highlight scroll-reveal">
+                    <div class="products__icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3 class="products__title">Cramium HPM</h3>
+                    <p>High-performance memory for AI accelerators and edge computing applications.</p>
+                    <ul class="products__specs">
+                        <li><span>Capacity:</span> <span>128Mb-1Gb</span></li>
+                        <li><span>Read Speed:</span> <span>15ns</span></li>
+                        <li><span>Power:</span> <span>0.5pJ/bit</span></li>
+                        <li><span>Interface:</span> <span>LPDDR5</span></li>
+                    </ul>
+                </div>
+
+                <div class="products__card scroll-reveal">
+                    <div class="products__icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="products__title">Cramium HDM</h3>
+                    <p>High-density memory for storage-class applications and large-scale data processing.</p>
+                    <ul class="products__specs">
+                        <li><span>Capacity:</span> <span>4-64Gb</span></li>
+                        <li><span>Density:</span> <span>1Tb/cm²</span></li>
+                        <li><span>Endurance:</span> <span>100K cycles</span></li>
+                        <li><span>Interface:</span> <span>PCIe 5.0</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section stats" id="stats">
+        <div class="container">
+            <div class="section__header scroll-reveal">
+                <h2>By The Numbers</h2>
+                <p>Quantifying our technological advantages in key metrics.</p>
+            </div>
+
+            <div class="stats__grid">
+                <div class="stats__card glass scroll-reveal">
+                    <div class="stat-value" id="stat1">20ns</div>
+                    <div class="stat-label">Read Latency</div>
+                </div>
+
+                <div class="stats__card glass scroll-reveal">
+                    <div class="stat-value" id="stat2">1M+</div>
+                    <div class="stat-label">Write Cycles</div>
+                </div>
+
+                <div class="stats__card glass scroll-reveal">
+                    <div class="stat-value" id="stat3">100×</div>
+                    <div class="stat-label">Faster Reads</div>
+                </div>
+
+                <div class="stats__card glass scroll-reveal">
+                    <div class="stat-value" id="stat4">5×</div>
+                    <div class="stat-label">Energy Savings</div>
                 </div>
             </div>
         </div>
@@ -1603,7 +1802,8 @@
                     trigger: el,
                     start: 'top 90%',
                     end: 'bottom 60%',
-                    toggleActions: 'play none none reset'
+                    toggleActions: 'play none none reset',
+                    markers: false
                 },
                 opacity: 0,
                 y: 50,
@@ -1720,9 +1920,10 @@
             dot.addEventListener('click', () => {
                 const sectionId = dot.getAttribute('data-section');
                 const section = document.getElementById(sectionId);
-                window.scrollTo({
-                    top: section.offsetTop - 80,
-                    behavior: 'smooth'
+                gsap.to(window, {
+                    duration: 1.2,
+                    scrollTo: { y: section, offsetY: 80 },
+                    ease: "power2.inOut"
                 });
             });
         });
@@ -1741,11 +1942,86 @@
             }
         }
 
+        // Animate stats counters
+        function animateCounters() {
+            const stat1 = document.getElementById('stat1');
+            const stat2 = document.getElementById('stat2');
+            const stat3 = document.getElementById('stat3');
+            const stat4 = document.getElementById('stat4');
+
+            gsap.to(stat1, {
+                innerHTML: "20ns",
+                duration: 2,
+                snap: { innerHTML: 1 },
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: "#stats",
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                }
+            });
+
+            gsap.to(stat2, {
+                innerHTML: "1M+",
+                duration: 2,
+                snap: { innerHTML: 1 },
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: "#stats",
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                }
+            });
+
+            gsap.to(stat3, {
+                innerHTML: "100×",
+                duration: 2,
+                snap: { innerHTML: 1 },
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: "#stats",
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                }
+            });
+
+            gsap.to(stat4, {
+                innerHTML: "5×",
+                duration: 2,
+                snap: { innerHTML: 1 },
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: "#stats",
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                }
+            });
+        }
+
         // Activate random cells every 2 seconds
         setInterval(activateRandomCells, 2000);
 
         // Initial activation
         activateRandomCells();
+        animateCounters();
+
+        // Initialize scroll reveal
+        const scrollRevealElements = document.querySelectorAll('.scroll-reveal');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        scrollRevealElements.forEach(element => {
+            observer.observe(element);
+        });
     </script>
 </body>
 
