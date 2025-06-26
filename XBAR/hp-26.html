@@ -668,6 +668,86 @@
             font-weight: 600;
         }
 
+        /* Video Section */
+        .video-section {
+            padding: var(--space-xl) 0;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .video-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .video-thumb {
+            position: relative;
+            cursor: pointer;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .video-card:hover .video-thumb img {
+            transform: scale(1.05);
+        }
+
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-size: 1.5rem;
+            opacity: 0.9;
+            transition: var(--transition);
+        }
+
+        .video-card:hover .play-btn {
+            background: var(--color-primary);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-info {
+            padding: var(--space-md);
+        }
+
+        .video-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: var(--space-xs);
+        }
+
+        .video-info p {
+            font-size: 0.95rem;
+            color: var(--color-text);
+            opacity: 0.9;
+        }
+
         /* Stats Section */
         .stats__grid {
             display: grid;
@@ -697,7 +777,117 @@
             font-weight: 500;
         }
 
-        /* News Section - Enhanced */
+        /* News Section */
+        /* News Section */
+        .news-section {
+            padding: var(--space-xl) 0;
+        }
+
+        .date-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .date-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .date-header i {
+            color: var(--color-primary);
+        }
+
+        .date-header span {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .digest-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .digest-card {
+            display: flex;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .digest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .news-image {
+            flex: 0 0 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .news-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .news-source {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px var(--space-xs);
+            font-size: 0.7rem;
+            text-align: center;
+            color: var(--color-white);
+        }
+
+        .news-content {
+            flex: 1;
+            padding: var(--space-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .news-title {
+            font-size: 0.95rem;
+            margin-bottom: var(--space-xs);
+        }
+
+        .news-title a {
+            color: var(--color-text);
+            transition: color 0.3s ease;
+        }
+
+        .news-title a:hover {
+            color: var(--color-primary);
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--color-mid);
+        }
+
+        .news-share {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .news-share:hover {
+            color: var(--color-primary);
+        }
+
         .news__grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -942,7 +1132,7 @@
         }
 
         .progress-bar {
-            width: 4px;
+            width: 6px;
             height: 200px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
@@ -958,22 +1148,37 @@
             height: 0;
             background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-dark));
             transition: height 0.4s ease;
+            box-shadow: 0 0 10px rgba(255, 106, 19, 0.5);
+        }
+
+        .progress-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .progress-dot {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .progress-dot.active {
             background: var(--color-primary);
             transform: scale(1.4);
-            box-shadow: 0 0 10px rgba(255, 106, 19, 0.7);
+            box-shadow: 0 0 15px rgba(255, 106, 19, 0.7);
+        }
+
+        .progress-dot.active::after {
+            border-color: var(--color-primary);
+            animation: pulse 2s infinite;
         }
 
         .progress-dot:hover {
@@ -982,24 +1187,41 @@
         }
 
         .progress-dot::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .progress-dot:hover::after {
+            opacity: 1;
+        }
+
+        .progress-dot::before {
             content: attr(data-section);
             position: absolute;
-            left: 20px;
+            left: 25px;
             top: 50%;
             transform: translateY(-50%);
             white-space: nowrap;
             background: var(--glass-bg);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
             border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
         }
 
-        .progress-dot:hover::after {
+        .progress-dot:hover::before {
             opacity: 1;
         }
 
@@ -1139,15 +1361,18 @@
 
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(255, 106, 19, 0.7);
+                transform: scale(1);
+                opacity: 0.8;
             }
 
             70% {
-                box-shadow: 0 0 0 15px rgba(255, 106, 19, 0);
+                transform: scale(1.8);
+                opacity: 0;
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(255, 106, 19, 0);
+                transform: scale(1.8);
+                opacity: 0;
             }
         }
 
@@ -1400,6 +1625,7 @@
             <a href="#hero" class="progress-dot active" data-section="Home"></a>
             <a href="#technology" class="progress-dot" data-section="Technology"></a>
             <a href="#products" class="progress-dot" data-section="Products"></a>
+            <a href="#video" class="progress-dot" data-section="Videos"></a>
             <a href="#stats" class="progress-dot" data-section="Stats"></a>
             <a href="#news" class="progress-dot" data-section="News"></a>
             <a href="#footer" class="progress-dot" data-section="Contact"></a>
@@ -1641,6 +1867,86 @@
             </div>
         </section>
 
+        <!-- Video Section -->
+        <section class="video-section" id="video">
+            <div class="container">
+                <div class="section-header">
+                    <h2>ReRAM In Action</h2>
+                    <p>Designed to bridge embedded and storage-class memory needs, aligning with the most demanding
+                        future
+                        chip architectures.</p>
+                    <a class="btn btn--primary" href="https://www.crossbar-inc.com/technology/develop/customer-support/"
+                        role="button">Collaborate with CrossBar Engineers</a>
+                </div>
+
+                <div class="video-container">
+                    <!-- Video 1 -->
+                    <div class="video-card">
+                        <div class="video-thumb"
+                            data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/storage.mp4">
+                            <img src="https://images.unsplash.com/photo-1563014959-7aaa83350992?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                alt="Enterprise Storage">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>A New Approach to Enterprise Storage</h3>
+                            <p>How ReRAM enables real-time AI processing at the edge</p>
+                        </div>
+                    </div>
+
+                    <!-- Video 2 -->
+                    <div class="video-card">
+                        <div class="video-thumb"
+                            data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/wearables.mp4">
+                            <img src="https://images.unsplash.com/photo-1551645120-d70bfe84c826?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                alt="Wearable Device">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>A New Wave of Wearable Device Innovation</h3>
+                            <p>Ultra-low power memory for battery-operated devices</p>
+                        </div>
+                    </div>
+
+                    <!-- Video 3 -->
+                    <div class="video-card">
+                        <div class="video-thumb"
+                            data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/iot.mp4">
+                            <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                alt="Storage Innovation">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>Storage Innovation for the IoT</h3>
+                            <p>Tamper-resistant storage for cryptographic keys</p>
+                        </div>
+                    </div>
+
+                    <!-- Video 4 -->
+                    <div class="video-card">
+                        <div class="video-thumb"
+                            data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/whiteboard.mp4">
+                            <img src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1632&q=80"
+                                alt="Outdated flash technology">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>Why is Flash Technology Running Out of Steam?</h3>
+                            <p>Exploring the limitations of current memory solutions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Stats Section -->
         <section class="section stats" id="stats" aria-labelledby="stats-heading">
             <div class="container">
@@ -1674,37 +1980,235 @@
         </section>
 
         <!-- News Section -->
-        <section class="section news" id="news" aria-labelledby="news-heading">
+        <section class="news-section" id="news">
             <div class="container">
-                <div class="section__header">
-                    <h2 id="news-heading">Latest Innovations</h2>
-                    <p>Stay updated with the latest developments in resistive random-access memory technology.</p>
+                <div class="section-header">
+                    <h2>CrossBar News Digest</h2>
+                    <p>Latest developments in resistive random-access memory technology</p>
                 </div>
 
-                <div class="news__grid">
-                    <article class="news__card glass" style="--index: 0">
-                        <div class="news__date">April 21, 2023</div>
-                        <h3 class="news__title">Revolutionary 3D Stacking Technology</h3>
-                        <p class="news__excerpt">CrossBar unveils breakthrough in 3D memory stacking achieving 1Tb/cm²
-                            density with industry-leading power efficiency.</p>
-                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
-                    </article>
+                <div class="news-container">
+                    <!-- April 21, 2022 -->
+                    <div class="date-group">
+                        <div class="date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>April 21, 2022</span>
+                        </div>
 
-                    <article class="news__card glass" style="--index: 1">
-                        <div class="news__date">March 15, 2023</div>
-                        <h3 class="news__title">AI-Optimized Memory Architecture</h3>
-                        <p class="news__excerpt">New memory architecture specifically designed for neural network
-                            acceleration, reducing latency by 40%.</p>
-                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
-                    </article>
+                        <div class="digest-group">
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://i0.wp.com/semiengineering.com/wp-content/uploads/rerampufs.png?w=808&ssl=1"
+                                        alt="Security Keys">
+                                    <div class="news-source">Blocks & Files</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://semiengineering.com/hiding-keys-using-reram-pufs/">Hiding
+                                            Security
+                                            Keys Using ReRAM PUF</a></h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>Katherine Derbyshire</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <article class="news__card glass" style="--index: 2">
-                        <div class="news__date">February 12, 2023</div>
-                        <h3 class="news__title">Quantum-Resistant Security Module</h3>
-                        <p class="news__excerpt">Next-generation Cramium PHSM with quantum-resistant encryption for
-                            future-proof security solutions.</p>
-                        <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
-                    </article>
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://blocksandfiles.com/wp-content/uploads/2022/04/Crossbar-attacks.jpg"
+                                        alt="IoT Market">
+                                    <div class="news-source">Blocks & Files</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://blocksandfiles.com/2022/04/21/no-sniffing-crossbar-tries-to-secure-its-embedded-reram-iot-market-niche/">CrossBar
+                                            tries to secure embedded ReRAM IoT market</a>
+                                    </h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>Chris Mellor</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- April 15, 2022 -->
+                    <div class="date-group">
+                        <div class="date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>April 15, 2022</span>
+                        </div>
+
+                        <div class="digest-group">
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                        alt="ReRAM Applications">
+                                    <div class="news-source">EE Journal</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://www.eejournal.com/fish_fry/new-avenues-for-reram-when-every-bit-is-critical/">New
+                                            Avenues for ReRAM: When Every Bit is Critical</a>
+                                    </h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>Amelia Dalton</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- April 12, 2022 -->
+                    <div class="date-group">
+                        <div class="date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>April 12, 2022</span>
+                        </div>
+
+                        <div class="digest-group">
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                        alt="RRAM Memory">
+                                    <div class="news-source">RRAM-Info</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://www.rram-info.com/crossbar-targets-new-application-its-rram-memory-where-resistance-physical-attacks-essential">Crossbar
+                                            targets new application for its RRAM memory</a>
+                                    </h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>Ron Mertens</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- April 6, 2022 -->
+                    <div class="date-group">
+                        <div class="date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>April 6, 2022</span>
+                        </div>
+
+                        <div class="digest-group">
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://img.electronicdesign.com/files/base/ebm/electronicdesign/image/2022/04/slide1.624c91bee765a.png?auto=format,compress&fit=max&q=45&w=950&width=950"
+                                        alt="Security">
+                                    <div class="news-source">Electronic Design</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://www.electronicdesign.com/technologies/embedded/video/21238190/electronic-design-securing-reram">ReRAM
+                                            Secure Against Hacking Attacks</a></h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>William G. Wong</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80"
+                                        alt="Security Testing">
+                                    <div class="news-source">AiThorit</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://aithority.com/it-and-devops/storage-and-recovery/reram-proves-resistant-to-invasive-attacks/">ReRAM
+                                            Proves Resistant to Invasive Attacks</a></h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>AIT News Desk</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- April 5, 2022 -->
+                    <div class="date-group">
+                        <div class="date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>April 5, 2022</span>
+                        </div>
+
+                        <div class="digest-group">
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://images.unsplash.com/photo-1558494940-15f9bd9e6f2b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                        alt="Memory Tech">
+                                    <div class="news-source">CrossBar</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://www.crossbar-inc.com/news/press-releases/2022-04-05-reram-proves-resistant-to-invasive-attacks/">ReRAM
+                                            Proves Resistant To Invasive Attacks</a></h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>CrossBar Marketing</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="digest-card">
+                                <div class="news-image">
+                                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                                        alt="Storage News">
+                                    <div class="news-source">Storage Weekly</div>
+                                </div>
+                                <div class="news-content">
+                                    <h3 class="news-title"><a
+                                            href="https://blocksandfiles.com/2022/04/05/storage-new-ticker-5-april/">Storage
+                                            news ticker - April 5</a></h3>
+                                    <div class="news-meta">
+                                        <div class="news-date">
+                                            <span>Chris Mellor</span>
+                                        </div>
+                                        <div class="news-share">
+                                            <i class="fas fa-share-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
