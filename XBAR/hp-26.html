@@ -19,6 +19,9 @@
             --color-primary-dark: #d2691e;
             --color-secondary: #00ccff;
             --color-accent: #9d4edd;
+            --color-accent-violet: #8a2be2;
+            --color-accent-cyan: #00ffff;
+            --color-accent-orange: #ff8c00;
             --color-dark: #121212;
             --color-dark-alt: #1e1e1e;
             --color-mid: #333333;
@@ -46,6 +49,7 @@
             /* Effects */
             --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 15px currentColor;
             --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -69,7 +73,9 @@
             background-image:
                 radial-gradient(circle at 10% 20%, rgba(157, 78, 221, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(0, 204, 255, 0.1) 0%, transparent 20%),
-                linear-gradient(to bottom, var(--color-dark), var(--color-dark-alt));
+                linear-gradient(to bottom, var(--color-dark), var(--color-dark-alt)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/></svg>');
+            background-size: cover;
             overflow-x: hidden;
         }
 
@@ -106,10 +112,11 @@
 
         .glass {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px) saturate(180%);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             box-shadow: var(--shadow-sm);
+            transition: var(--transition);
         }
 
         .btn {
@@ -145,7 +152,7 @@
 
                 &:hover {
                     transform: translateY(-3px);
-                    box-shadow: var(--shadow-md);
+                    box-shadow: var(--shadow-md), 0 0 20px rgba(255, 106, 19, 0.5);
 
                     &::before {
                         transform: scale(1.05);
@@ -155,15 +162,29 @@
 
             &--secondary {
                 background: transparent;
-                border: 2px solid var(--color-primary);
-                color: var(--color-primary);
+                border: 2px solid var(--color-secondary);
+                color: var(--color-secondary);
 
                 &::before {
                     background: transparent;
                 }
 
                 &:hover {
-                    background: rgba(210, 105, 30, 0.1);
+                    background: rgba(0, 204, 255, 0.1);
+                    box-shadow: var(--shadow-glow);
+                    transform: translateY(-3px);
+                }
+            }
+
+            &--accent {
+                background: transparent;
+                border: 2px solid var(--color-accent);
+                color: var(--color-accent);
+
+                &:hover {
+                    background: rgba(157, 78, 221, 0.1);
+                    box-shadow: var(--shadow-glow);
+                    transform: translateY(-3px);
                 }
             }
         }
@@ -171,6 +192,13 @@
         .section {
             padding: var(--space-xl) 0;
             position: relative;
+            overflow: hidden;
+
+            &--pinned {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+            }
 
             &__header {
                 margin-bottom: var(--space-lg);
@@ -187,6 +215,7 @@
                     background: linear-gradient(to right, var(--color-secondary), var(--color-accent));
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
+                    text-shadow: 0 0 10px rgba(0, 204, 255, 0.2);
 
                     &::after {
                         content: '';
@@ -225,6 +254,39 @@
             }
         }
 
+        /* Edge Markers */
+        .edge-frame {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            z-index: 50;
+            pointer-events: none;
+
+            &--left {
+                left: 0;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+            }
+
+            &--right {
+                right: 0;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                background: linear-gradient(to left, rgba(0, 0, 0, 0.7), transparent);
+            }
+
+            &__dot {
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background: var(--color-secondary);
+                border-radius: 50%;
+                left: 50%;
+                transform: translateX(-50%);
+                box-shadow: 0 0 10px var(--color-secondary);
+            }
+        }
+
         /* ===== HEADER & NAVIGATION ===== */
         .header {
             position: fixed;
@@ -234,6 +296,9 @@
             z-index: 1000;
             padding: var(--space-sm) 0;
             transition: var(--transition);
+            background: rgba(18, 18, 18, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
 
             &__inner {
                 display: flex;
@@ -244,9 +309,19 @@
             &__logo {
                 width: 190px;
                 z-index: 101;
+                transition: var(--transition);
 
                 svg {
                     filter: drop-shadow(0 0 10px rgba(0, 204, 255, 0.5));
+                    transition: var(--transition);
+                }
+
+                &:hover {
+                    transform: scale(1.05);
+
+                    svg {
+                        filter: drop-shadow(0 0 15px rgba(0, 204, 255, 0.8));
+                    }
                 }
             }
         }
@@ -274,10 +349,32 @@
                 transition: var(--transition);
                 padding: 0.5rem 1rem;
                 border-radius: 8px;
+                position: relative;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 0;
+                    height: 2px;
+                    background: var(--color-secondary);
+                    transition: var(--transition);
+                }
 
                 &:hover {
                     color: var(--color-secondary);
                     background: rgba(255, 255, 255, 0.05);
+
+                    &::after {
+                        width: 70%;
+                    }
+                }
+
+                &:focus {
+                    outline: 2px solid var(--color-secondary);
+                    outline-offset: 2px;
                 }
             }
 
@@ -302,10 +399,16 @@
                     padding: 0.75rem 1rem;
                     border-radius: 8px;
                     color: var(--text-mid);
+                    transition: var(--transition);
 
                     &:hover {
                         color: var(--color-secondary);
                         background: rgba(255, 255, 255, 0.05);
+                    }
+
+                    &:focus {
+                        outline: 2px solid var(--color-secondary);
+                        outline-offset: -2px;
                     }
                 }
             }
@@ -315,10 +418,16 @@
             display: none;
             cursor: pointer;
             z-index: 101;
+            transition: var(--transition);
 
             i {
                 font-size: 1.5rem;
                 color: var(--text-light);
+                transition: var(--transition);
+            }
+
+            &:hover i {
+                color: var(--color-secondary);
             }
         }
 
@@ -380,6 +489,8 @@
             height: 0;
             padding-bottom: 100%;
             perspective: 1000px;
+            transform-style: preserve-3d;
+            transform: rotateY(0) rotateX(0);
 
             &__core {
                 position: absolute;
@@ -403,6 +514,7 @@
                     box-shadow:
                         0 0 20px rgba(0, 204, 255, 0.1),
                         inset 0 0 20px rgba(0, 204, 255, 0.05);
+                    transition: transform 0.5s ease, box-shadow 0.5s ease;
 
                     &--front {
                         transform: translateZ(30px);
@@ -505,6 +617,8 @@
                 position: relative;
                 overflow: hidden;
                 text-align: center;
+                transform: translateY(20px);
+                opacity: 0;
 
                 &::before {
                     content: '';
@@ -519,8 +633,8 @@
                 }
 
                 &:hover {
-                    transform: translateY(-10px);
-                    box-shadow: var(--shadow-md);
+                    transform: translateY(-10px) scale(1.02);
+                    box-shadow: var(--shadow-md), 0 0 30px rgba(0, 204, 255, 0.2);
 
                     &::before {
                         opacity: 1;
@@ -529,6 +643,7 @@
                     .features__icon {
                         transform: scale(1.1);
                         color: var(--color-secondary);
+                        filter: drop-shadow(0 0 10px var(--color-secondary));
                     }
                 }
             }
@@ -566,6 +681,8 @@
                 grid-template-columns: 1fr 1fr;
                 gap: var(--space-lg);
                 align-items: center;
+                opacity: 0;
+                transform: translateY(30px);
 
                 &:nth-child(even) .benefits__content {
                     order: -1;
@@ -581,6 +698,7 @@
                     background: linear-gradient(to right, var(--color-secondary), var(--color-white));
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
+                    text-shadow: 0 0 10px rgba(0, 204, 255, 0.2);
                 }
 
                 ul {
@@ -591,6 +709,7 @@
                         position: relative;
                         padding-left: var(--space-md);
                         margin-bottom: var(--space-sm);
+                        transition: var(--transition);
 
                         &::before {
                             content: '✓';
@@ -598,6 +717,11 @@
                             left: 0;
                             color: var(--color-primary);
                             font-weight: bold;
+                        }
+
+                        &:hover {
+                            color: var(--color-secondary);
+                            transform: translateX(5px);
                         }
                     }
                 }
@@ -609,6 +733,8 @@
                 border-radius: 16px;
                 overflow: hidden;
                 box-shadow: var(--shadow-md);
+                transform: perspective(1000px) rotateY(0);
+                transition: transform 0.5s ease;
 
                 &::before {
                     content: '';
@@ -618,6 +744,10 @@
                     width: 100%;
                     height: 100%;
                     background: linear-gradient(45deg, rgba(157, 78, 221, 0.2), rgba(0, 204, 255, 0.2));
+                }
+
+                &:hover {
+                    transform: perspective(1000px) rotateY(5deg);
                 }
             }
         }
@@ -642,9 +772,11 @@
                 cursor: pointer;
                 box-shadow: var(--shadow-md);
                 transition: var(--transition);
+                transform: scale(1);
 
                 &:hover {
                     transform: scale(1.1);
+                    box-shadow: 0 0 20px var(--color-accent);
                 }
             }
 
@@ -660,11 +792,13 @@
                 visibility: hidden;
                 transform: translateY(20px);
                 transition: var(--transition);
+                transform-origin: bottom right;
 
                 &--active {
                     opacity: 1;
                     visibility: visible;
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
+                    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 }
             }
 
@@ -674,12 +808,14 @@
                 justify-content: space-between;
                 align-items: center;
                 border-bottom: 1px solid var(--glass-border);
+                background: rgba(30, 30, 30, 0.8);
 
                 h3 {
                     font-size: 1.25rem;
                     display: flex;
                     align-items: center;
                     gap: var(--space-xs);
+                    color: var(--color-secondary);
                 }
             }
 
@@ -687,6 +823,9 @@
                 height: calc(100% - 120px);
                 padding: var(--space-md);
                 overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
             }
 
             &__message {
@@ -696,6 +835,11 @@
                 border-radius: 18px;
                 position: relative;
                 animation: fadeIn 0.3s ease;
+                transition: var(--transition);
+
+                &:hover {
+                    transform: translateY(-2px);
+                }
 
                 &--ai {
                     background: var(--color-dark-alt);
@@ -729,10 +873,12 @@
                     border: 1px solid var(--glass-border);
                     color: var(--text-light);
                     font-family: var(--font-body);
+                    transition: var(--transition);
 
                     &:focus {
                         outline: none;
                         border-color: var(--color-primary);
+                        box-shadow: 0 0 10px var(--color-primary);
                     }
                 }
 
@@ -751,6 +897,7 @@
 
                     &:hover {
                         transform: scale(1.05);
+                        box-shadow: 0 0 15px var(--color-primary);
                     }
                 }
             }
@@ -765,6 +912,37 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== MASCOT ===== */
+        .mascot {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 80px;
+            height: 80px;
+            z-index: 99;
+            transition: transform 0.5s ease;
+            transform-origin: bottom;
+            pointer-events: none;
+
+            svg {
+                width: 100%;
+                height: 100%;
+                filter: drop-shadow(0 0 10px rgba(0, 204, 255, 0.5));
             }
         }
 
@@ -788,6 +966,7 @@
                     padding-bottom: var(--space-sm);
                     margin-bottom: var(--space-md);
                     font-size: 1.25rem;
+                    color: var(--color-secondary);
 
                     &::after {
                         content: '';
@@ -807,6 +986,11 @@
 
                 li {
                     margin-bottom: var(--space-sm);
+                    transition: var(--transition);
+
+                    &:hover {
+                        transform: translateX(5px);
+                    }
 
                     a {
                         color: var(--text-mid);
@@ -817,6 +1001,11 @@
 
                         &:hover {
                             color: var(--color-secondary);
+                        }
+
+                        &:focus {
+                            outline: 2px solid var(--color-secondary);
+                            outline-offset: 2px;
                         }
                     }
                 }
@@ -841,6 +1030,12 @@
                     &:hover {
                         background: var(--color-primary);
                         transform: translateY(-3px);
+                        box-shadow: var(--shadow-glow);
+                    }
+
+                    &:focus {
+                        outline: 2px solid var(--color-secondary);
+                        outline-offset: 2px;
                     }
                 }
             }
@@ -873,6 +1068,10 @@
                 right: initial;
                 top: initial;
                 transform: none;
+            }
+
+            .mascot {
+                display: none;
             }
         }
 
@@ -957,6 +1156,34 @@
 </head>
 
 <body>
+    <!-- Edge Frame Markers -->
+    <div class="edge-frame edge-frame--left">
+        <div class="edge-frame__dot" style="top: 20%"></div>
+        <div class="edge-frame__dot" style="top: 40%"></div>
+        <div class="edge-frame__dot" style="top: 60%"></div>
+        <div class="edge-frame__dot" style="top: 80%"></div>
+    </div>
+    <div class="edge-frame edge-frame--right">
+        <div class="edge-frame__dot" style="top: 20%"></div>
+        <div class="edge-frame__dot" style="top: 40%"></div>
+        <div class="edge-frame__dot" style="top: 60%"></div>
+        <div class="edge-frame__dot" style="top: 80%"></div>
+    </div>
+
+    <!-- Mascot -->
+    <div class="mascot">
+        <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#1e1e1e" stroke="#00ccff" stroke-width="2" />
+            <rect x="30" y="30" width="40" height="40" rx="5" fill="#121212" stroke="#ff6a13" stroke-width="2" />
+            <circle cx="40" cy="40" r="5" fill="#00ccff" />
+            <circle cx="60" cy="40" r="5" fill="#00ccff" />
+            <path d="M35 65 Q50 75 65 65" stroke="#ff6a13" stroke-width="3" fill="none" />
+            <circle cx="50" cy="30" r="3" fill="#9d4edd" />
+            <circle cx="50" cy="50" r="3" fill="#9d4edd" />
+            <circle cx="50" cy="70" r="3" fill="#9d4edd" />
+        </svg>
+    </div>
+
     <!-- Vertical Progress Bar -->
     <div class="progress-container">
         <div class="progress-bar">
@@ -977,6 +1204,12 @@
                 <a href="#" class="header__logo">
                     <svg xmlns="http://www.w3.org/2000/svg" height="60.5" width="189.89999" viewBox="0 0 189.9 60.5">
                         <!-- CrossBar logo SVG code -->
+                        <text x="0" y="40" font-family="Space Grotesk" font-size="40"
+                            fill="url(#gradient)">CROSSBAR</text>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#00ccff" />
+                            <stop offset="100%" stop-color="#ff6a13" />
+                        </linearGradient>
                     </svg>
                 </a>
 
@@ -1005,21 +1238,21 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="hero" id="hero">
+    <section class="hero section--pinned" id="hero">
         <div class="container">
-            <div class="hero__content glass">
+            <div class="hero__content glass scroll-reveal">
                 <h1>CrossBar Memory Solutions:<br><span>Cramium + ReRAM</span></h1>
                 <p>CrossBar's memory products deliver unprecedented scaling performance, density, and power efficiency
                     for AI, IoT, and secure computing applications.</p>
                 <div class="hero__cta">
                     <a href="#" class="btn btn--primary">Explore Technology</a>
-                    <a href="#" class="btn btn--secondary">Cramium Overview</a>
+                    <a href="#" class="btn btn--accent">Cramium Overview</a>
                 </div>
             </div>
         </div>
 
         <div class="hero__visual">
-            <div class="chip">
+            <div class="chip" id="chip">
                 <div class="chip__core">
                     <div class="layer layer--front">
                         <!-- 6x6 grid of cells -->
@@ -1073,7 +1306,7 @@
     </section>
 
     <!-- Features Section -->
-    <section class="section features" id="features">
+    <section class="section features section--pinned" id="features">
         <div class="container">
             <div class="section__header">
                 <h2>Revolutionary Memory Technology</h2>
@@ -1082,7 +1315,7 @@
             </div>
 
             <div class="features__grid">
-                <div class="features__card glass">
+                <div class="features__card glass scroll-reveal">
                     <div class="features__icon">
                         <i class="fas fa-microchip"></i>
                     </div>
@@ -1091,7 +1324,7 @@
                         stackable 3D cross-point arrays.</p>
                 </div>
 
-                <div class="features__card glass">
+                <div class="features__card glass scroll-reveal">
                     <div class="features__icon">
                         <i class="fas fa-bolt"></i>
                     </div>
@@ -1100,7 +1333,7 @@
                         and 40× less than BLE.</p>
                 </div>
 
-                <div class="features__card glass">
+                <div class="features__card glass scroll-reveal">
                     <div class="features__icon">
                         <i class="fas fa-gauge-high"></i>
                     </div>
@@ -1109,7 +1342,7 @@
                         faster writes than traditional memory.</p>
                 </div>
 
-                <div class="features__card glass">
+                <div class="features__card glass scroll-reveal">
                     <div class="features__icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
@@ -1122,7 +1355,7 @@
     </section>
 
     <!-- Benefits Section -->
-    <section class="section benefits" id="benefits">
+    <section class="section benefits section--pinned" id="benefits">
         <div class="container">
             <div class="section__header">
                 <h2>ReRAM Technology Advantages</h2>
@@ -1130,7 +1363,7 @@
             </div>
 
             <div class="benefits__container">
-                <div class="benefits__item">
+                <div class="benefits__item scroll-reveal">
                     <div class="benefits__content glass">
                         <h3>Logic-Memory Integration</h3>
                         <p>ReRAM's CMOS-compatible, stackable architecture enables direct logic-memory integration,
@@ -1145,7 +1378,7 @@
                     <div class="benefits__visual"></div>
                 </div>
 
-                <div class="benefits__item">
+                <div class="benefits__item scroll-reveal">
                     <div class="benefits__content glass">
                         <h3>Resilient CMOS Core</h3>
                         <p>ReRAM offers 1,000× endurance, built for advanced computing, it scales below 10nm and
@@ -1160,7 +1393,7 @@
                     <div class="benefits__visual"></div>
                 </div>
 
-                <div class="benefits__item">
+                <div class="benefits__item scroll-reveal">
                     <div class="benefits__content glass">
                         <h3>Industrial Reliability</h3>
                         <p>ReRAM endures 1M+ write cycles, retains data for 10 years at 85°C, and operates from –40°C to
@@ -1219,7 +1452,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" id="footer">
         <div class="container">
             <div class="footer__grid">
                 <div class="footer__col">
@@ -1274,36 +1507,79 @@
         // Initialize GSAP and ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
 
-        // Animate elements on scroll
-        gsap.utils.toArray('.features__card, .benefits__item').forEach((el, i) => {
+        // Set up scroll-based animations
+        gsap.utils.toArray('.scroll-reveal').forEach(el => {
             gsap.from(el, {
                 scrollTrigger: {
                     trigger: el,
-                    start: 'top 80%',
-                    toggleActions: 'play none none none'
+                    start: 'top 90%',
+                    end: 'bottom 60%',
+                    toggleActions: 'play none none reset'
                 },
                 opacity: 0,
-                y: 50,
-                duration: 0.8,
-                delay: i * 0.1
+                y: 30,
+                duration: 1,
+                ease: "power2.out",
+                stagger: 0.2
             });
         });
 
-        // Animate hero content
-        gsap.from('.hero__content', {
-            duration: 1,
-            opacity: 0,
-            y: 30,
-            ease: "power3.out"
+        // Pin sections with ScrollTrigger
+        const sections = gsap.utils.toArray('.section--pinned');
+
+        sections.forEach(section => {
+            ScrollTrigger.create({
+                trigger: section,
+                start: "top top",
+                end: "bottom bottom",
+                pin: true,
+                pinSpacing: false,
+                markers: false
+            });
         });
 
-        // Animate chip
-        gsap.from('.chip', {
-            duration: 1.5,
-            opacity: 0,
-            scale: 0.8,
-            rotation: 15,
-            ease: "elastic.out(1, 0.5)"
+        // Chip animation on scroll
+        const chip = document.getElementById('chip');
+
+        gsap.to(chip, {
+            scrollTrigger: {
+                trigger: '#features',
+                start: 'top center',
+                end: 'bottom center',
+                scrub: true
+            },
+            rotationY: 180,
+            rotationX: 15,
+            ease: "none"
+        });
+
+        // Mascot animation on scroll
+        const mascot = document.querySelector('.mascot');
+
+        gsap.to(mascot, {
+            scrollTrigger: {
+                trigger: '#benefits',
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true
+            },
+            y: -100,
+            rotation: 10,
+            scale: 1.2,
+            ease: "power1.inOut"
+        });
+
+        gsap.to(mascot, {
+            scrollTrigger: {
+                trigger: '#footer',
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true
+            },
+            y: -200,
+            rotation: 20,
+            scale: 1.3,
+            ease: "power1.inOut"
         });
 
         // Mobile Navigation Toggle
@@ -1333,7 +1609,7 @@
         // Scroll Progress
         const progressFill = document.getElementById('progress');
         const progressDots = document.querySelectorAll('.progress-dot');
-        const sections = document.querySelectorAll('section');
+        const pageSections = document.querySelectorAll('section');
 
         window.addEventListener('scroll', () => {
             const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -1341,11 +1617,11 @@
             progressFill.style.height = `${progress}%`;
 
             // Highlight active section in progress bar
-            sections.forEach((section, index) => {
+            pageSections.forEach((section, index) => {
                 const rect = section.getBoundingClientRect();
                 if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
                     progressDots.forEach(dot => dot.classList.remove('active'));
-                    progressDots[index].classList.add('active');
+                    if (progressDots[index]) progressDots[index].classList.add('active');
                 }
             });
         });
@@ -1360,18 +1636,6 @@
                     behavior: 'smooth'
                 });
             });
-        });
-
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.header');
-            if (window.scrollY > 100) {
-                header.style.backdropFilter = 'blur(16px)';
-                header.style.backgroundColor = 'rgba(18, 18, 18, 0.9)';
-            } else {
-                header.style.backdropFilter = 'blur(16px)';
-                header.style.backgroundColor = 'rgba(18, 18, 18, 0.7)';
-            }
         });
 
         // Random cell activation in chip visualization
