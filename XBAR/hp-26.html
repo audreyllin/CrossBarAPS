@@ -927,6 +927,454 @@
                 flex-direction: column;
             }
         }
+
+        /* Vertical Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .progress-bar {
+            width: 4px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-dark));
+            transition: height 0.4s ease;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            background: var(--color-primary);
+            transform: scale(1.4);
+            box-shadow: 0 0 10px rgba(255, 106, 19, 0.7);
+        }
+
+        .progress-dot:hover {
+            transform: scale(1.6);
+            background: var(--color-primary);
+        }
+
+        .progress-dot::after {
+            content: attr(data-section);
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            background: var(--glass-bg);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* Search Functionality */
+        .search-container {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 0;
+            width: 50px;
+            height: 50px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-container.active {
+            width: 350px;
+            border-radius: 50px;
+        }
+
+        .search-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .search-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: calc(100% - 50px);
+            height: 100%;
+            padding: 0 20px;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.2s;
+        }
+
+        .search-container.active .search-input {
+            opacity: 1;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-container.active .search-results {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-result-item:hover {
+            background: rgba(255, 106, 19, 0.1);
+        }
+
+        .search-result-item h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--color-primary);
+        }
+
+        .search-result-item p {
+            font-size: 0.85rem;
+            color: var(--color-text);
+            opacity: 0.8;
+        }
+
+        /* AI Assistant */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .assistant-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .assistant-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 106, 19, 0.7);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 106, 19, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 106, 19, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 106, 19, 0);
+            }
+        }
+
+        .chat-container {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 450px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .ai-assistant.active .chat-container {
+            display: flex;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(123, 63, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-chat {
+            background: transparent;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-chat:hover {
+            background: rgba(255, 106, 19, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: rgba(255, 106, 19, 0.15);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: rgba(123, 63, 0, 0.15);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(35, 25, 15, 0.5);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 50px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--color-text);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Smoother transitions */
+        .section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .features__card,
+        .products__card,
+        .stats__card,
+        .news__card {
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+            transition-delay: calc(0.1s * var(--index));
+        }
+
+        .features__card.visible,
+        .products__card.visible,
+        .stats__card.visible,
+        .news__card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Enhanced animations */
+        .chip-container,
+        .wallet-container {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .chip-container:hover,
+        .wallet-container:hover {
+            transform: scale(1.05);
+        }
+
+        .chip {
+            transition: transform 0.5s ease;
+        }
+
+        .wallet {
+            transition: transform 0.5s ease;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .progress-container {
+                right: 15px;
+            }
+
+            .ai-assistant {
+                right: 15px;
+                bottom: 15px;
+            }
+
+            .chat-container {
+                width: 300px;
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .progress-container {
+                display: none;
+            }
+
+            .search-container.active {
+                width: calc(100% - 40px);
+                left: 20px;
+                right: auto;
+            }
+
+            .chat-container {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: auto;
+            }
+        }
     </style>
 </head>
 
@@ -941,6 +1389,30 @@
         <div></div>
         <div></div>
         <div></div>
+    </div>
+
+    <!-- Vertical Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-dots">
+            <a href="#hero" class="progress-dot active" data-section="Home"></a>
+            <a href="#technology" class="progress-dot" data-section="Technology"></a>
+            <a href="#products" class="progress-dot" data-section="Products"></a>
+            <a href="#stats" class="progress-dot" data-section="Stats"></a>
+            <a href="#news" class="progress-dot" data-section="News"></a>
+            <a href="#footer" class="progress-dot" data-section="Contact"></a>
+        </div>
+    </div>
+
+    <!-- Search Functionality -->
+    <div class="search-container" id="searchContainer">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search CrossBar...">
+        <button class="search-toggle" id="searchToggle">
+            <i class="fas fa-search"></i>
+        </button>
+        <div class="search-results" id="searchResults"></div>
     </div>
 
     <!-- Spotlight Effect - Enhanced -->
@@ -974,6 +1446,35 @@
             <div class="chip-face chip-bottom"></div>
             <div class="chip-face chip-left"></div>
             <div class="chip-face chip-right"></div>
+        </div>
+    </div>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant">
+        <div class="assistant-btn">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3><i class="fas fa-robot"></i> CrossBar Assistant</h3>
+                <button class="close-chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    Hello! I'm your CrossBar assistant. How can I help you today?
+                </div>
+                <div class="message ai">
+                    You can ask me about our ReRAM technology, Cramium products, or company information.
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Ask me about CrossBar technology...">
+                <button class="send-btn" id="sendMessage">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1022,7 +1523,7 @@
     <!-- Main Content -->
     <main>
         <!-- Hero Section -->
-        <section class="hero section--pinned" id="hero">
+        <section class="hero section--pinned visible" id="hero">
             <div class="container">
                 <div class="hero__content glass">
                     <h1>CrossBar Memory Solutions:<br><span>Cramium + ReRAM</span></h1>
@@ -1047,7 +1548,7 @@
                 </div>
 
                 <div class="features__grid">
-                    <div class="features__card glass">
+                    <div class="features__card glass" style="--index: 0">
                         <div class="features__icon">
                             <i class="fas fa-microchip"></i>
                         </div>
@@ -1056,7 +1557,7 @@
                             Ultra-dense, stackable 3D cross-point arrays.</p>
                     </div>
 
-                    <div class="features__card glass">
+                    <div class="features__card glass" style="--index: 1">
                         <div class="features__icon">
                             <i class="fas fa-bolt"></i>
                         </div>
@@ -1065,7 +1566,7 @@
                             Flash, and 40× less than BLE.</p>
                     </div>
 
-                    <div class="features__card glass">
+                    <div class="features__card glass" style="--index: 2">
                         <div class="features__icon">
                             <i class="fas fa-gauge-high"></i>
                         </div>
@@ -1074,7 +1575,7 @@
                             faster writes than traditional memory.</p>
                     </div>
 
-                    <div class="features__card glass">
+                    <div class="features__card glass" style="--index: 3">
                         <div class="features__icon">
                             <i class="fas fa-shield-alt"></i>
                         </div>
@@ -1095,7 +1596,7 @@
                 </div>
 
                 <div class="products__grid">
-                    <div class="products__card glass">
+                    <div class="products__card glass" style="--index: 0">
                         <div class="products__icon">
                             <i class="fas fa-shield-alt"></i>
                         </div>
@@ -1109,7 +1610,7 @@
                         </ul>
                     </div>
 
-                    <div class="products__card glass">
+                    <div class="products__card glass" style="--index: 1">
                         <div class="products__icon">
                             <i class="fas fa-microchip"></i>
                         </div>
@@ -1123,7 +1624,7 @@
                         </ul>
                     </div>
 
-                    <div class="products__card glass">
+                    <div class="products__card glass" style="--index: 2">
                         <div class="products__icon">
                             <i class="fas fa-layer-group"></i>
                         </div>
@@ -1149,22 +1650,22 @@
                 </div>
 
                 <div class="stats__grid">
-                    <div class="stats__card glass">
+                    <div class="stats__card glass" style="--index: 0">
                         <div class="stat-value">20ns</div>
                         <div class="stat-label">Read Latency</div>
                     </div>
 
-                    <div class="stats__card glass">
+                    <div class="stats__card glass" style="--index: 1">
                         <div class="stat-value">1M+</div>
                         <div class="stat-label">Write Cycles</div>
                     </div>
 
-                    <div class="stats__card glass">
+                    <div class="stats__card glass" style="--index: 2">
                         <div class="stat-value">100×</div>
                         <div class="stat-label">Faster Reads</div>
                     </div>
 
-                    <div class="stats__card glass">
+                    <div class="stats__card glass" style="--index: 3">
                         <div class="stat-value">5×</div>
                         <div class="stat-label">Energy Savings</div>
                     </div>
@@ -1181,7 +1682,7 @@
                 </div>
 
                 <div class="news__grid">
-                    <article class="news__card glass">
+                    <article class="news__card glass" style="--index: 0">
                         <div class="news__date">April 21, 2023</div>
                         <h3 class="news__title">Revolutionary 3D Stacking Technology</h3>
                         <p class="news__excerpt">CrossBar unveils breakthrough in 3D memory stacking achieving 1Tb/cm²
@@ -1189,7 +1690,7 @@
                         <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
                     </article>
 
-                    <article class="news__card glass">
+                    <article class="news__card glass" style="--index: 1">
                         <div class="news__date">March 15, 2023</div>
                         <h3 class="news__title">AI-Optimized Memory Architecture</h3>
                         <p class="news__excerpt">New memory architecture specifically designed for neural network
@@ -1197,7 +1698,7 @@
                         <a href="#" class="news__link">Read more <i class="fas fa-arrow-right"></i></a>
                     </article>
 
-                    <article class="news__card glass">
+                    <article class="news__card glass" style="--index: 2">
                         <div class="news__date">February 12, 2023</div>
                         <h3 class="news__title">Quantum-Resistant Security Module</h3>
                         <p class="news__excerpt">Next-generation Cramium PHSM with quantum-resistant encryption for
@@ -1399,6 +1900,247 @@
                 mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         });
+
+        // ========== NEW FEATURES ==========
+
+        // Vertical Progress Bar
+        const progressFill = document.getElementById('progressFill');
+        const progressDots = document.querySelectorAll('.progress-dot');
+        const sections = document.querySelectorAll('section');
+
+        function updateProgress() {
+            const scrollPosition = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = (scrollPosition / docHeight) * 100;
+
+            progressFill.style.height = `${scrolled}%`;
+
+            // Update active dot
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    progressDots.forEach(dot => dot.classList.remove('active'));
+                    progressDots[index].classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateProgress);
+        updateProgress();
+
+        // Click to scroll to section
+        progressDots.forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = dot.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+
+                if (targetSection) {
+                    window.scrollTo({
+                        top: targetSection.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Search Functionality
+        const searchContainer = document.getElementById('searchContainer');
+        const searchToggle = document.getElementById('searchToggle');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        searchToggle.addEventListener('click', () => {
+            searchContainer.classList.toggle('active');
+            if (searchContainer.classList.contains('active')) {
+                searchInput.focus();
+            }
+        });
+
+        // Sample search data
+        const searchData = [
+            { title: "ReRAM Technology", content: "CrossBar's revolutionary resistive RAM technology...", link: "#technology" },
+            { title: "Cramium PHSM", content: "Physically secure hardware security module for cryptographic key storage...", link: "#products" },
+            { title: "High Density Memory", content: "CrossBar's high-density memory solutions...", link: "#products" },
+            { title: "Latest Innovations", content: "Stay updated with the latest developments...", link: "#news" },
+            { title: "About CrossBar", content: "Learn about our company mission and history...", link: "#footer" },
+            { title: "Contact Us", content: "Get in touch with our team...", link: "#footer" }
+        ];
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            searchResults.innerHTML = '';
+
+            if (query.length < 2) return;
+
+            const results = searchData.filter(item =>
+                item.title.toLowerCase().includes(query) ||
+                item.content.toLowerCase().includes(query)
+            );
+
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="search-result-item"><p>No results found</p></div>';
+                return;
+            }
+
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                    <h4>${result.title}</h4>
+                    <p>${result.content}</p>
+                `;
+                item.addEventListener('click', () => {
+                    window.location.href = result.link;
+                    searchContainer.classList.remove('active');
+                });
+                searchResults.appendChild(item);
+            });
+        });
+
+        // Close search when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchContainer.contains(e.target) && !searchToggle.contains(e.target)) {
+                searchContainer.classList.remove('active');
+            }
+        });
+
+        // AI Assistant
+        const assistantBtn = document.querySelector('.assistant-btn');
+        const aiAssistant = document.querySelector('.ai-assistant');
+        const closeChat = document.querySelector('.close-chat');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendMessage');
+
+        assistantBtn.addEventListener('click', () => {
+            aiAssistant.classList.toggle('active');
+        });
+
+        closeChat.addEventListener('click', () => {
+            aiAssistant.classList.remove('active');
+        });
+
+        // Sample AI responses
+        const aiResponses = {
+            "hello": ["Hello! How can I help you with CrossBar technology today?", "Hi there! What would you like to know about our products?"],
+            "reram": ["ReRAM (Resistive Random-Access Memory) is our revolutionary non-volatile memory technology that offers high density, low power consumption, and fast read/write speeds.", "ReRAM technology enables terabyte-scale storage with minimal energy consumption, making it ideal for AI, IoT, and secure computing applications."],
+            "cramium": ["Cramium is our product family of ReRAM-based memory solutions. We offer three main products: Cramium PHSM for security, Cramium HPM for performance, and Cramium HDM for high-density storage.", "The Cramium product line includes physically secure modules, high-performance memory for AI, and high-density storage solutions."],
+            "performance": ["Our ReRAM technology delivers 20ns read latency, 12μs write times, and 1M+ write cycles. That's 100× faster reads and 1,000× faster writes than traditional memory.", "CrossBar memory provides 5× less energy than eFlash and 20× less than NAND flash memory."],
+            "applications": ["CrossBar memory is ideal for AI accelerators, IoT devices, secure computing, enterprise storage, and edge computing applications.", "Our technology is perfect for applications requiring high performance, low power consumption, and enhanced security."],
+            "contact": ["You can contact us through our website's contact form or email us at info@crossbar-inc.com", "For sales inquiries, please contact sales@crossbar-inc.com. For technical support, contact support@crossbar-inc.com"],
+            "default": ["I'm not sure I understand. Could you rephrase your question?", "I'm still learning about CrossBar technology. Could you ask something else?", "I'm an AI assistant specialized in CrossBar products. Try asking about ReRAM technology, Cramium products, or performance specifications."]
+        };
+
+        function addMessage(text, isUser = false) {
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user' : 'ai'}`;
+            message.textContent = text;
+            chatMessages.appendChild(message);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function getAIResponse(message) {
+            const lowerMsg = message.toLowerCase();
+
+            if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+                return aiResponses.hello[Math.floor(Math.random() * aiResponses.hello.length)];
+            }
+            if (lowerMsg.includes('reram')) {
+                return aiResponses.reram[Math.floor(Math.random() * aiResponses.reram.length)];
+            }
+            if (lowerMsg.includes('cramium')) {
+                return aiResponses.cramium[Math.floor(Math.random() * aiResponses.cramium.length)];
+            }
+            if (lowerMsg.includes('performance') || lowerMsg.includes('speed')) {
+                return aiResponses.performance[Math.floor(Math.random() * aiResponses.performance.length)];
+            }
+            if (lowerMsg.includes('application') || lowerMsg.includes('use case')) {
+                return aiResponses.applications[Math.floor(Math.random() * aiResponses.applications.length)];
+            }
+            if (lowerMsg.includes('contact') || lowerMsg.includes('email')) {
+                return aiResponses.contact[Math.floor(Math.random() * aiResponses.contact.length)];
+            }
+
+            return aiResponses.default[Math.floor(Math.random() * aiResponses.default.length)];
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            chatInput.value = '';
+
+            // Simulate AI thinking
+            setTimeout(() => {
+                const response = getAIResponse(message);
+                addMessage(response);
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Smoother transitions with Intersection Observer
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections and cards
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+
+        document.querySelectorAll('.features__card, .products__card, .stats__card, .news__card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Enhanced animations for wallet and chip
+        const walletContainer = document.querySelector('.wallet-container');
+        const chipContainer = document.querySelector('.chip-container');
+        const wallet = document.querySelector('.wallet');
+        const chip = document.querySelector('.chip');
+
+        walletContainer.addEventListener('click', () => {
+            gsap.to(wallet, {
+                duration: 0.8,
+                rotation: '+=10',
+                y: -30,
+                ease: 'elastic.out(1, 0.5)',
+                onComplete: () => {
+                    gsap.to(wallet, { duration: 0.5, rotation: 0, y: 0 });
+                }
+            });
+        });
+
+        chipContainer.addEventListener('click', () => {
+            gsap.to(chip, {
+                duration: 1,
+                rotationY: '+=360',
+                rotationX: '+=180',
+                scale: 1.2,
+                ease: 'elastic.out(1, 0.3)',
+                onComplete: () => {
+                    gsap.to(chip, { duration: 0.5, scale: 1 });
+                }
+            });
+        });
+
+        // Initialize with hero section visible
+        document.querySelector('#hero').classList.add('visible');
     </script>
 </body>
 
