@@ -2405,7 +2405,7 @@
 
     <script>
         // ======================
-        // REVISED ANIMATION CONTROL
+        // ANIMATION CONTROL
         // ======================
 
         // Animation toggle functionality
@@ -2424,6 +2424,7 @@
         };
 
         function setReducedMotion(reduced) {
+            // Corrected toggle logic
             animationsEnabled = !reduced;
             document.body.classList.toggle('reduced-motion', reduced);
             animationToggle.classList.toggle('active', animationsEnabled);
@@ -2444,17 +2445,27 @@
                 document.querySelectorAll('.section, .features__card, .products__card, .stats__card, .news__card')
                     .forEach(el => el.classList.add('visible'));
             } else {
-                // Restart coin animations
-                coinCreationScheduler();
+                // Restart coin animations only if animations are enabled
+                if (animationsEnabled) {
+                    coinCreationScheduler();
+                }
             }
         }
 
-        // Initialize from localStorage
-        const reducedMotion = localStorage.getItem('reducedMotion') === 'true';
+        // Initialize from localStorage with system preference fallback
+        let reducedMotion = false;
+        const storedPreference = localStorage.getItem('reducedMotion');
+        if (storedPreference !== null) {
+            reducedMotion = storedPreference === 'true';
+        } else {
+            reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
         setReducedMotion(reducedMotion);
 
+        // Fixed toggle event listener
         animationToggle.addEventListener('click', () => {
-            setReducedMotion(animationsEnabled);
+            const currentReduced = document.body.classList.contains('reduced-motion');
+            setReducedMotion(!currentReduced);
         });
 
         // Optimized crypto coins
@@ -2502,7 +2513,7 @@
 
         // Initialize
         window.addEventListener('load', () => {
-            // Start coin animations
+            // Start coin animations only if enabled
             if (animationsEnabled) {
                 coinCreationScheduler();
             }
