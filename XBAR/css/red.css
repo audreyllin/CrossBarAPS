@@ -1516,6 +1516,9 @@ h6 {
     .cramium-image {
         height: 20vh;
         display: -webkit-box;
+        margin-left: -15vw;
+        margin-top: -10vh;
+        mix-blend-mode: difference;
     }
 
     .chip-container {
