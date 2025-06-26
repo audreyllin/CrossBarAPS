@@ -381,7 +381,7 @@ body.dropdown-open::before {
     overflow: hidden;
     padding-top: 80px;
     background: none;
-    margin-top: -30vh;
+    margin-top: -20vh;
 }
 
 .hero::before {
@@ -1506,6 +1506,11 @@ h6 {
         filter: blur(15px);
         background: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
         mix-blend-mode: plus-lighter;
+    }
+
+    .cramium {
+        margin-top: 30vh;
+        margin-right: -10vw;
     }
 
     .cramium-image {
