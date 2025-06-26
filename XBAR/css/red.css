@@ -381,6 +381,7 @@ body.dropdown-open::before {
     overflow: hidden;
     padding-top: 80px;
     background: none;
+    margin-top: -30vh;
 }
 
 .hero::before {
@@ -1507,6 +1508,15 @@ h6 {
         mix-blend-mode: plus-lighter;
     }
 
+    .cramium {
+        background-image: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
+    }
+
+    .cramium-image {
+        height: 20vh;
+        display: -webkit-box;
+    }
+
     .chip-container {
         position: sticky;
     }
@@ -1534,6 +1544,10 @@ h6 {
         filter: blur(45px);
         background: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
         mix-blend-mode: plus-lighter;
+    }
+
+    .cramium {
+        background-image: url(https://media.gettyimages.com/id/88636152/photo/japans-computer-giant-fujitsu-runveils.jpg?s=2048x2048&w=gi&k=20&c=uniNtBgeHJRoTNWRrotiAeCbVYnkL-Ocw2ahbU9SlmY=);
     }
 
     .header-inner {
