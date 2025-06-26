@@ -11,7 +11,6 @@
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             /* Color System - Orange/Chocolate Theme */
@@ -37,16 +36,6 @@
             --glass-border: rgba(255, 106, 19, 0.25);
             /* Orange border */
 
-            /* High Contrast Colors */
-            --hc-primary: #FF6A13;
-            --hc-secondary: #7B3F00;
-            --hc-white: #FFFFFF;
-            --hc-black: #000000;
-            --hc-bg: #000000;
-            --hc-text: #FFFFFF;
-            --hc-glass-bg: rgba(0, 0, 0, 0.95);
-            --hc-glass-border: #FF6A13;
-
             /* Typography */
             --font-heading: 'Space Grotesk', sans-serif;
             --font-body: 'Inter', sans-serif;
@@ -63,26 +52,6 @@
             --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
             --shadow-glow: 0 0 15px currentColor;
             --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* High Contrast Mode */
-        [data-theme="high-contrast"] {
-            --color-primary: var(--hc-primary);
-            --color-primary-dark: var(--hc-secondary);
-            --color-secondary: var(--hc-primary);
-            --color-accent: var(--hc-primary);
-            --color-white: var(--hc-white);
-            --color-dark: var(--hc-black);
-            --color-dark-alt: var(--hc-black);
-            --color-mid: #222222;
-            --color-light: var(--hc-white);
-            --color-text: var(--hc-white);
-            --color-bg: var(--hc-bg);
-
-            --glass-bg: var(--hc-glass-bg);
-            --glass-border: var(--hc-glass-border);
-
-            background-image: none !important;
         }
 
         [data-theme="light"] {
@@ -361,7 +330,7 @@
             margin-top: var(--space-md);
         }
 
-        /* Spotlight Effect */
+        /* Spotlight Effect - Enhanced */
         .spotlight {
             position: absolute;
             top: 0;
@@ -369,29 +338,30 @@
             width: 100%;
             height: 100%;
             z-index: 5;
-            background: radial-gradient(circle at center, rgba(255, 106, 19, 0.1) 0%, transparent 70%);
-            animation: spotlight-move 15s infinite alternate;
+            background: radial-gradient(circle at center, rgba(255, 106, 19, 0.4) 0%, transparent 70%);
+            animation: spotlight-move 12s infinite alternate;
+            pointer-events: none;
         }
 
         @keyframes spotlight-move {
             0% {
-                transform: translate(-20%, -20%);
+                transform: translate(-30%, -30%);
             }
 
             25% {
-                transform: translate(20%, -10%);
+                transform: translate(30%, -20%);
             }
 
             50% {
-                transform: translate(10%, 20%);
+                transform: translate(20%, 30%);
             }
 
             75% {
-                transform: translate(-20%, 10%);
+                transform: translate(-30%, 20%);
             }
 
             100% {
-                transform: translate(-10%, -20%);
+                transform: translate(-20%, -30%);
             }
         }
 
@@ -474,7 +444,7 @@
         /* Crypto Wallet Animation */
         .wallet-container {
             position: absolute;
-            top: 30%;
+            top: 70%;
             right: 15%;
             z-index: 10;
             transform-style: preserve-3d;
@@ -554,99 +524,63 @@
             }
         }
 
-        /* Mascot - Tech Fairy */
-        .tech-fairy {
+        /* Floating Crypto Coins */
+        .crypto-coins {
             position: absolute;
-            top: 20%;
-            left: 70%;
-            z-index: 20;
-            width: 100px;
-            height: 100px;
-            animation: fairy-float 6s infinite ease-in-out;
-        }
-
-        .fairy-body {
-            width: 40px;
-            height: 60px;
-            background: var(--color-primary);
-            border-radius: 50% 50% 40% 40%;
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            box-shadow: 0 0 20px var(--color-primary);
-        }
-
-        .fairy-wings {
-            position: absolute;
-            top: 10px;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 80px;
-            display: flex;
-            justify-content: space-between;
-            animation: fairy-wings 2s infinite alternate;
+            height: 100%;
+            pointer-events: none;
+            z-index: 15;
         }
 
-        .wing {
-            width: 40px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%);
-        }
-
-        .wing-left {
-            transform: rotate(-30deg);
-        }
-
-        .wing-right {
-            transform: rotate(30deg);
-        }
-
-        .fairy-glow {
+        .coin {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(255, 106, 19, 0.3) 0%, transparent 70%);
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: fairy-pulse 3s infinite;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #D4AF37);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #000;
+            font-weight: bold;
+            animation: coin-float 15s infinite linear;
+            opacity: 0.9;
         }
 
-        @keyframes fairy-float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-30px);
-            }
+        .coin.bitcoin {
+            background: radial-gradient(circle at 30% 30%, #F7931A, #8B4513);
         }
 
-        @keyframes fairy-wings {
+        .coin.pax {
+            background: radial-gradient(circle at 30% 30%, #D4AF37, #8B7500);
+        }
+
+        .coin.tether {
+            background: radial-gradient(circle at 30% 30%, #26A17B, #006A4E);
+        }
+
+        @keyframes coin-float {
             0% {
-                transform: translateY(0);
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
             }
 
-            100% {
-                transform: translateY(10px);
-            }
-        }
-
-        @keyframes fairy-pulse {
-
-            0%,
-            100% {
-                opacity: 0.7;
-                transform: translate(-50%, -50%) scale(1);
-            }
-
-            50% {
+            10% {
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
             }
         }
 
@@ -953,12 +887,6 @@
             .wallet-container {
                 display: none;
             }
-
-            .tech-fairy {
-                left: 80%;
-                width: 80px;
-                height: 80px;
-            }
         }
 
         @media (max-width: 768px) {
@@ -992,10 +920,6 @@
             .hero__cta {
                 justify-content: center;
             }
-
-            .tech-fairy {
-                display: none;
-            }
         }
 
         @media (max-width: 480px) {
@@ -1019,8 +943,11 @@
         <div></div>
     </div>
 
-    <!-- Spotlight Effect -->
+    <!-- Spotlight Effect - Enhanced -->
     <div class="spotlight"></div>
+
+    <!-- Crypto Coins Animation -->
+    <div class="crypto-coins" id="cryptoCoins"></div>
 
     <!-- Crypto Wallet Animation -->
     <div class="wallet-container">
@@ -1048,16 +975,6 @@
             <div class="chip-face chip-left"></div>
             <div class="chip-face chip-right"></div>
         </div>
-    </div>
-
-    <!-- Tech Fairy Mascot -->
-    <div class="tech-fairy">
-        <div class="fairy-glow"></div>
-        <div class="fairy-wings">
-            <div class="wing wing-left"></div>
-            <div class="wing wing-right"></div>
-        </div>
-        <div class="fairy-body"></div>
     </div>
 
     <!-- Header -->
@@ -1094,15 +1011,9 @@
                     <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="theme-controls">
-                        <button class="theme-toggle" id="themeToggle" title="Dark/Light Mode" aria-label="Toggle theme">
-                            <i class="fas fa-moon"></i>
-                        </button>
-                        <button class="theme-toggle" id="hcToggle" title="High Contrast Mode"
-                            aria-label="Toggle high contrast">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
+                    <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1354,42 +1265,21 @@
     <script>
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
-        const hcToggle = document.getElementById('hcToggle');
         const themeIcon = themeToggle.querySelector('i');
-        const hcIcon = hcToggle.querySelector('i');
 
         // Check for saved theme preference
-        let currentTheme = localStorage.getItem('theme') || 'dark';
-        let hcMode = localStorage.getItem('hcMode') || 'off';
-
-        // Apply theme
+        const currentTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
-        if (hcMode === 'on') {
-            document.documentElement.setAttribute('data-theme', 'high-contrast');
-        }
 
-        // Set initial icons
+        // Set initial icon based on theme
         if (currentTheme === 'light') {
             themeIcon.classList.remove('fa-moon');
             themeIcon.classList.add('fa-sun');
         }
 
-        if (hcMode === 'on') {
-            hcIcon.style.color = '#FF6A13';
-        }
-
-        // Theme toggle
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
-            let newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            // If in high contrast, exit first
-            if (currentTheme === 'high-contrast') {
-                newTheme = 'dark';
-                hcMode = 'off';
-                localStorage.setItem('hcMode', 'off');
-                hcIcon.style.color = '';
-            }
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
@@ -1402,21 +1292,6 @@
                 themeIcon.classList.remove('fa-sun');
                 themeIcon.classList.add('fa-moon');
             }
-        });
-
-        // High contrast toggle
-        hcToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            if (currentTheme === 'high-contrast') {
-                document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
-                hcMode = 'off';
-                hcIcon.style.color = '';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'high-contrast');
-                hcMode = 'on';
-                hcIcon.style.color = '#FF6A13';
-            }
-            localStorage.setItem('hcMode', hcMode);
         });
 
         // Mobile Navigation Toggle
@@ -1462,6 +1337,34 @@
                 ease: 'power2.out'
             });
         });
+
+        // Create floating crypto coins
+        function createCoins() {
+            const coinsContainer = document.getElementById('cryptoCoins');
+            const coinTypes = ['bitcoin', 'pax', 'tether'];
+            const symbols = ['₿', '₽', '₮'];
+
+            for (let i = 0; i < 12; i++) {
+                const coin = document.createElement('div');
+                coin.className = `coin ${coinTypes[i % 3]}`;
+                coin.innerHTML = symbols[i % 3];
+
+                // Random position
+                const leftPos = Math.random() * 100;
+                coin.style.left = `${leftPos}%`;
+
+                // Random animation delay and duration
+                const delay = Math.random() * 15;
+                const duration = 15 + Math.random() * 10;
+                coin.style.animationDelay = `${delay}s`;
+                coin.style.animationDuration = `${duration}s`;
+
+                coinsContainer.appendChild(coin);
+            }
+        }
+
+        // Initialize coin animation
+        createCoins();
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
