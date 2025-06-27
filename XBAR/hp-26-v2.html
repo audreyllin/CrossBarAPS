@@ -2410,7 +2410,6 @@
 
         // Animation toggle functionality
         const animationToggle = document.getElementById('animationToggle');
-        let animationsEnabled = true;
         let coinSchedulerTimeout;
 
         // Track all animations for freezing
@@ -2424,15 +2423,13 @@
         };
 
         function setReducedMotion(reduced) {
-            // Corrected toggle logic
-            animationsEnabled = !reduced;
             document.body.classList.toggle('reduced-motion', reduced);
-            animationToggle.classList.toggle('active', animationsEnabled);
-            animationToggle.setAttribute('aria-checked', animationsEnabled);
+            animationToggle.classList.toggle('active', !reduced);
+            animationToggle.setAttribute('aria-checked', !reduced);
             localStorage.setItem('reducedMotion', reduced);
 
             // Control GSAP animations
-            gsap.globalTimeline.timeScale(animationsEnabled ? 1 : 0);
+            gsap.globalTimeline.timeScale(reduced ? 0 : 1);
 
             // Control decorative animations
             if (reduced) {
@@ -2440,32 +2437,34 @@
                 clearTimeout(coinSchedulerTimeout);
                 const coinsContainer = document.getElementById('cryptoCoins');
                 coinsContainer.innerHTML = '';
+                activeCoins = 0;
 
                 // Immediately show all content
                 document.querySelectorAll('.section, .features__card, .products__card, .stats__card, .news__card')
                     .forEach(el => el.classList.add('visible'));
             } else {
-                // Restart coin animations only if animations are enabled
-                if (animationsEnabled) {
-                    coinCreationScheduler();
-                }
+                // Restart coin animations only if not in reduced motion
+                coinCreationScheduler();
             }
         }
 
         // Initialize from localStorage with system preference fallback
-        let reducedMotion = false;
-        const storedPreference = localStorage.getItem('reducedMotion');
-        if (storedPreference !== null) {
-            reducedMotion = storedPreference === 'true';
-        } else {
-            reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function initializeMotionPreference() {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const storedPreference = localStorage.getItem('reducedMotion');
+
+            if (storedPreference !== null) {
+                setReducedMotion(storedPreference === 'true');
+            } else {
+                setReducedMotion(prefersReducedMotion);
+            }
         }
-        setReducedMotion(reducedMotion);
+        initializeMotionPreference();
 
         // Fixed toggle event listener
         animationToggle.addEventListener('click', () => {
-            const currentReduced = document.body.classList.contains('reduced-motion');
-            setReducedMotion(!currentReduced);
+            const isReduced = document.body.classList.contains('reduced-motion');
+            setReducedMotion(!isReduced);
         });
 
         // Optimized crypto coins
@@ -2473,7 +2472,8 @@
         const maxConcurrentCoins = 5;
 
         function createCoin() {
-            if (!animationsEnabled || activeCoins >= maxConcurrentCoins) return;
+            if (document.body.classList.contains('reduced-motion') ||
+                activeCoins >= maxConcurrentCoins) return;
 
             activeCoins++;
             const coinsContainer = document.getElementById('cryptoCoins');
@@ -2506,15 +2506,14 @@
 
         // Throttled coin creation
         function coinCreationScheduler() {
-            if (!animationsEnabled) return;
+            if (document.body.classList.contains('reduced-motion')) return;
             createCoin();
             coinSchedulerTimeout = setTimeout(coinCreationScheduler, 1000 + Math.random() * 2000);
         }
 
-        // Initialize
+        // Initialize coins based on current preference
         window.addEventListener('load', () => {
-            // Start coin animations only if enabled
-            if (animationsEnabled) {
+            if (!document.body.classList.contains('reduced-motion')) {
                 coinCreationScheduler();
             }
         });
@@ -2628,8 +2627,6 @@
             }
         });
 
-        // ========== NEW FEATURES ==========
-
         // Vertical Progress Bar
         const progressFill = document.getElementById('progressFill');
         const progressDots = document.querySelectorAll('.progress-dot');
@@ -2714,9 +2711,9 @@
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
                 item.innerHTML = `
-                    <h4>${result.title}</h4>
-                    <p>${result.content}</p>
-                `;
+                <h4>${result.title}</h4>
+                <p>${result.content}</p>
+            `;
                 item.addEventListener('click', () => {
                     window.location.href = result.link;
                     searchContainer.classList.remove('active');
