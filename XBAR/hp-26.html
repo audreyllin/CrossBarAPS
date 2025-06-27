@@ -116,13 +116,12 @@
     </div>
 
     <!-- Header -->
-    <header class="header glass">
+    <header class="header glass sticky">
         <div class="container">
-            <div class="nav">
-                <a href="#" class="header__logo">
+            <div class="header-inner">
+                <a href="#" class="logo">
                     <svg xmlns="http://www.w3.org/2000/svg" height="60.5" width="189.89999" viewBox="0 0 189.9 60.5">
-                        <text x="0" y="40" font-family="Space Grotesk" font-size="40"
-                            fill="url(#gradient)">CROSSBAR</text>
+                        <text x="0" y="40" font-size="40">CROSSBAR</text>
                         <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stop-color="#FF6A13" />
                             <stop offset="100%" stop-color="#7B3F00" />
@@ -130,27 +129,97 @@
                     </svg>
                 </a>
 
-                <ul class="nav__list" id="navList">
-                    <li class="nav__item">
-                        <a href="#technology" class="nav__link">TECHNOLOGY</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#products" class="nav__link">PRODUCTS</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#news" class="nav__link">NEWS</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#company" class="nav__link">COMPANY</a>
-                    </li>
-                </ul>
+                <nav class="nav-links" id="navList">
+                    <div class="close-menu"><i class="fas fa-times"></i></div>
+                    <div class="nav-item has-dropdown">
+                        <a href="#">TECHNOLOGY</a>
+                        <div class="dropdown">
+                            <div class="dropdown-item">ReRAM Overview</div>
+                            <div class="dropdown-item">ReRAM Advantages</div>
+                            <div class="dropdown-item has-dropdown">
+                                ReRAM Offerings
+                                <div class="dropdown">
+                                    <div class="dropdown-item">High-Performance Memory</div>
+                                    <div class="dropdown-item">High-Density Memory</div>
+                                    <div class="dropdown-item">ReRAM as FTP/OTP Memory</div>
+                                    <div class="dropdown-item">ReRAM Secure Keys</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-item has-dropdown">
+                                ReRAM Applications
+                                <div class="dropdown">
+                                    <div class="dropdown-item">Artificial Intelligence</div>
+                                    <div class="dropdown-item">Automotive/Industrial/Medical</div>
+                                    <div class="dropdown-item">Consumer Electronics</div>
+                                    <div class="dropdown-item">Data Center</div>
+                                    <div class="dropdown-item">Internet of Things</div>
+                                    <div class="dropdown-item">Mobile Computing</div>
+                                    <div class="dropdown-item">Secure Computing</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-item has-dropdown">
+                                Develop
+                                <div class="dropdown">
+                                    <div class="dropdown-item">Design Resources</div>
+                                    <div class="dropdown-item">DesignStart</div>
+                                    <div class="dropdown-item">Customer Support</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="header__actions">
-                    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+                    <div class="nav-item has-dropdown">
+                        <a href="#">PRODUCTS</a>
+                        <div class="dropdown">
+                            <div class="dropdown-item has-dropdown">
+                                Cramium Family
+                                <div class="dropdown">
+                                    <div class="dropdown-item">Cramium Mission</div>
+                                    <div class="dropdown-item">Motivation</div>
+                                    <div class="dropdown-item">Solution</div>
+                                    <div class="dropdown-item">Architecture</div>
+                                    <div class="dropdown-item">ReRAM Memory</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-item">Cramium PHSM</div>
+                        </div>
+                    </div>
+
+                    <div class="nav-item has-dropdown">
+                        <a href="#">NEWS</a>
+                        <div class="dropdown">
+                            <div class="dropdown-item">Press Releases</div>
+                            <div class="dropdown-item">In The News</div>
+                        </div>
+                    </div>
+
+                    <div class="nav-item has-dropdown">
+                        <a href="#">COMPANY</a>
+                        <div class="dropdown">
+                            <div class="dropdown-item">About CrossBar</div>
+                            <div class="dropdown-item">Media Resources</div>
+                            <div class="dropdown-item">Careers</div>
+                            <div class="dropdown-item">Contact</div>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="social-icons">
+                        <a href="https://www.linkedin.com/company/crossbar-inc/" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://x.com/crossbarinc" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+
+                    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
                         <i class="fas fa-moon"></i>
+                    </button>
+
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <i class="fas fa-bars"></i>
                     </button>
                 </div>
             </div>
@@ -626,436 +695,420 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer" id="footer">
+    <footer class="footer glass">
         <div class="container">
-            <div class="footer__grid">
-                <div class="footer__col">
+            <div class="footer-grid">
+                <div class="footer-col">
                     <h3>Technology</h3>
-                    <ul class="footer__links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Overview</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Advantages</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> ReRAM Applications</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Develop</a></li>
+                    <ul class="footer-links">
+                        <li><a href="reram-overview.html">ReRAM Overview</a></li>
+                        <li><a href="#">ReRAM Advantages</a></li>
+                        <li class="submenu-header">ReRAM Offerings</li>
+                        <li><a href="#">High-Performance Memory</a></li>
+                        <li><a href="#">High-Density Memory</a></li>
+                        <li><a href="#">ReRAM as FTP/OTP Memory</a></li>
+                        <li><a href="#">ReRAM Secure Keys</a></li>
+                        <li class="submenu-header">ReRAM Applications</li>
+                        <li><a href="#">Artificial Intelligence</a></li>
+                        <li><a href="#">Automotive/Industrial/Medical</a></li>
+                        <li><a href="#">Consumer Electronics</a></li>
+                        <li><a href="#">Data Center</a></li>
+                        <li><a href="#">Internet of Things</a></li>
+                        <li><a href="#">Mobile Computing</a></li>
+                        <li><a href="#">Secure Computing</a></li>
+                        <li class="submenu-header">Develop</li>
+                        <li><a href="#">Design Resources</a></li>
+                        <li><a href="#">DesignStart</a></li>
+                        <li><a href="#">Consumer Support</a></li>
                     </ul>
                 </div>
 
-                <div class="footer__col">
+                <div class="footer-col">
                     <h3>Products</h3>
-                    <ul class="footer__links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Cramium Family</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Cramium PHSM</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> High-Performance Memory</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> High-Density Memory</a></li>
+                    <ul class="footer-links">
+                        <li class="submenu-header">Cramium Family</li>
+                        <li><a href="#">Cramium Mission</a></li>
+                        <li><a href="#">Motivation</a></li>
+                        <li><a href="#">Solution</a></li>
+                        <li><a href="#">Architecture</a></li>
+                        <li><a href="#">ReRAM Memory</a></li>
+                        <li><a href="#">Cramium PHSM</a></li>
                     </ul>
                 </div>
 
-                <div class="footer__col">
+                <div class="footer-col">
+                    <h3>News</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Press Releases</a></li>
+                        <li><a href="#">In The News</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
                     <h3>Company</h3>
-                    <ul class="footer__links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> About CrossBar</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Media Resources</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Careers</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                    <ul class="footer-links">
+                        <li><a href="#">About CrossBar</a></li>
+                        <li><a href="#">Media Resources</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
                     </ul>
-                </div>
 
-                <div class="footer__col">
-                    <h3>Connect</h3>
-                    <p>Stay updated with the latest news and developments in memory technology.</p>
-                    <div class="footer__social">
-                        <a href="https://www.linkedin.com/company/crossbar-inc/" aria-label="LinkedIn"><i
-                                class="fab fa-linkedin-in"></i></a>
-                        <a href="https://x.com/crossbarinc" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <div class="footer-social">
+                        <a href="https://www.linkedin.com/company/crossbar-inc/" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://x.com/crossbarinc" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="footer__copyright">
+            <div class="copyright">
                 &copy; 2023 CrossBar Inc. All rights reserved. | Designed with innovation in mind.
             </div>
         </div>
     </footer>
 
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = themeToggle.querySelector('i');
+        document.addEventListener('DOMContentLoaded', function () {
+            // ================== THEME MANAGEMENT ==================
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            const currentTheme = localStorage.getItem('theme') || 'dark';
 
-        // Check for saved theme preference
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', currentTheme);
+            // Apply saved theme
+            document.documentElement.setAttribute('data-theme', currentTheme);
 
-        // Set initial icon based on theme
-        if (currentTheme === 'light') {
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-
-            // Toggle icon
-            if (newTheme === 'light') {
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            } else {
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
+            // Set initial icon
+            if (currentTheme === 'light') {
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
             }
-        });
 
-        // Mobile Navigation Toggle
-        const mobileToggle = document.getElementById('mobileToggle');
-        const navList = document.getElementById('navList');
+            // Theme toggle handler
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-        mobileToggle.addEventListener('click', () => {
-            navList.classList.toggle('nav__list--active');
-            mobileToggle.innerHTML = navList.classList.contains('nav__list--active')
-                ? '<i class="fas fa-times"></i>'
-                : '<i class="fas fa-bars"></i>';
-        });
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
 
-        // Initialize GSAP ScrollTriggers
-        gsap.registerPlugin(ScrollTrigger);
-
-        // Animation for section headers
-        gsap.utils.toArray('.section__header').forEach(header => {
-            gsap.from(header, {
-                scrollTrigger: {
-                    trigger: header,
-                    start: 'top 80%',
-                    toggleActions: 'play none none none'
-                },
-                y: 50,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out'
-            });
-        });
-
-        // Animation for cards
-        gsap.utils.toArray('.features__card, .products__card, .stats__card, .news__card').forEach(card => {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: 'top 90%',
-                    toggleActions: 'play none none none'
-                },
-                y: 30,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power2.out'
-            });
-        });
-
-        // Create floating crypto coins
-        function createCoins() {
-            const coinsContainer = document.getElementById('cryptoCoins');
-            const coinTypes = ['bitcoin', 'pax', 'tether'];
-            const symbols = ['₿', '₽', '₮'];
-
-            for (let i = 0; i < 12; i++) {
-                const coin = document.createElement('div');
-                coin.className = `coin ${coinTypes[i % 3]}`;
-                coin.innerHTML = symbols[i % 3];
-
-                // Random position
-                const leftPos = Math.random() * 100;
-                coin.style.left = `${leftPos}%`;
-
-                // Random animation delay and duration
-                const delay = Math.random() * 15;
-                const duration = 15 + Math.random() * 10;
-                coin.style.animationDelay = `${delay}s`;
-                coin.style.animationDuration = `${duration}s`;
-
-                coinsContainer.appendChild(coin);
-            }
-        }
-
-        // Initialize coin animation
-        createCoins();
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            // Tab to navigate focusable elements
-            if (e.key === 'Tab') {
-                const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-                const focusable = [...document.querySelectorAll(focusableElements)];
-
-                if (focusable.length > 0) {
-                    const first = focusable[0];
-                    const last = focusable[focusable.length - 1];
-                    const active = document.activeElement;
-
-                    if (!focusable.includes(active)) {
-                        first.focus();
-                        e.preventDefault();
-                    }
-
-                    if (e.shiftKey && active === first) {
-                        last.focus();
-                        e.preventDefault();
-                    } else if (!e.shiftKey && active === last) {
-                        first.focus();
-                        e.preventDefault();
-                    }
+                // Update icon
+                if (newTheme === 'light') {
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
                 }
+            });
+
+            // ================== MOBILE NAVIGATION ==================
+            const mobileToggle = document.getElementById('mobileToggle');
+            const closeMenuBtn = document.querySelector('.close-menu');
+            const navList = document.getElementById('navList');
+            const body = document.body;
+
+            // Toggle mobile menu
+            function toggleMobileMenu() {
+                navList.classList.toggle('active');
+                body.classList.toggle('menu-open');
+                mobileToggle.innerHTML = navList.classList.contains('active')
+                    ? '<i class="fas fa-times"></i>'
+                    : '<i class="fas fa-bars"></i>';
             }
 
-            // Escape to close mobile menu
-            if (e.key === 'Escape' && navList.classList.contains('nav__list--active')) {
-                navList.classList.remove('nav__list--active');
+            mobileToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMobileMenu();
+            });
+
+            closeMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navList.classList.remove('active');
+                body.classList.remove('menu-open');
                 mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            }
-        });
+            });
 
-        // ========== NEW FEATURES ==========
-
-        // Vertical Progress Bar
-        const progressFill = document.getElementById('progressFill');
-        const progressDots = document.querySelectorAll('.progress-dot');
-        const sections = document.querySelectorAll('section');
-
-        function updateProgress() {
-            const scrollPosition = window.scrollY;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrolled = (scrollPosition / docHeight) * 100;
-
-            progressFill.style.height = `${scrolled}%`;
-
-            // Update active dot
-            sections.forEach((section, index) => {
-                const rect = section.getBoundingClientRect();
-                if (rect.top <= 100 && rect.bottom >= 100) {
-                    progressDots.forEach(dot => dot.classList.remove('active'));
-                    progressDots[index].classList.add('active');
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (navList.classList.contains('active') &&
+                    !navList.contains(e.target) &&
+                    !mobileToggle.contains(e.target)) {
+                    toggleMobileMenu();
                 }
             });
-        }
 
-        window.addEventListener('scroll', updateProgress);
-        updateProgress();
+            // ================== DROPDOWNS ==================
+            function setupDropdowns() {
+                const dropdownParents = document.querySelectorAll('.has-dropdown');
 
-        // Click to scroll to section
-        progressDots.forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = dot.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
+                dropdownParents.forEach(parent => {
+                    const dropdown = parent.querySelector('.dropdown');
 
-                if (targetSection) {
-                    window.scrollTo({
-                        top: targetSection.offsetTop,
-                        behavior: 'smooth'
+                    // Desktop hover interaction
+                    parent.addEventListener('mouseenter', () => {
+                        if (window.innerWidth > 992 && dropdown) {
+                            parent.classList.add('active');
+                            gsap.fromTo(dropdown,
+                                { opacity: 0, y: 10 },
+                                { opacity: 1, y: 0, duration: 0.3 }
+                            );
+                        }
                     });
-                }
-            });
-        });
 
-        // Search Functionality
-        const searchContainer = document.getElementById('searchContainer');
-        const searchToggle = document.getElementById('searchToggle');
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
+                    parent.addEventListener('mouseleave', () => {
+                        if (window.innerWidth > 992 && dropdown) {
+                            gsap.to(dropdown, {
+                                opacity: 0,
+                                y: 10,
+                                duration: 0.2,
+                                onComplete: () => {
+                                    parent.classList.remove('active');
+                                }
+                            });
+                        }
+                    });
 
-        searchToggle.addEventListener('click', () => {
-            searchContainer.classList.toggle('active');
-            if (searchContainer.classList.contains('active')) {
-                searchInput.focus();
-            }
-        });
+                    // Mobile click interaction
+                    parent.addEventListener('click', (e) => {
+                        if (window.innerWidth <= 992) {
+                            e.preventDefault();
+                            e.stopPropagation();
 
-        // Sample search data
-        const searchData = [
-            { title: "ReRAM Technology", content: "CrossBar's revolutionary resistive RAM technology...", link: "#technology" },
-            { title: "Cramium PHSM", content: "Physically secure hardware security module for cryptographic key storage...", link: "#products" },
-            { title: "High Density Memory", content: "CrossBar's high-density memory solutions...", link: "#products" },
-            { title: "Latest Innovations", content: "Stay updated with the latest developments...", link: "#news" },
-            { title: "About CrossBar", content: "Learn about our company mission and history...", link: "#footer" },
-            { title: "Contact Us", content: "Get in touch with our team...", link: "#footer" }
-        ];
+                            // Close siblings
+                            const siblings = Array.from(parent.parentElement.children);
+                            siblings.forEach(sibling => {
+                                if (sibling !== parent && sibling.classList.contains('has-dropdown')) {
+                                    sibling.classList.remove('active');
+                                    const sibDropdown = sibling.querySelector('.dropdown');
+                                    if (sibDropdown) sibDropdown.classList.remove('active');
+                                }
+                            });
 
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            searchResults.innerHTML = '';
-
-            if (query.length < 2) return;
-
-            const results = searchData.filter(item =>
-                item.title.toLowerCase().includes(query) ||
-                item.content.toLowerCase().includes(query)
-            );
-
-            if (results.length === 0) {
-                searchResults.innerHTML = '<div class="search-result-item"><p>No results found</p></div>';
-                return;
-            }
-
-            results.forEach(result => {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.innerHTML = `
-                    <h4>${result.title}</h4>
-                    <p>${result.content}</p>
-                `;
-                item.addEventListener('click', () => {
-                    window.location.href = result.link;
-                    searchContainer.classList.remove('active');
+                            // Toggle current
+                            parent.classList.toggle('active');
+                            if (dropdown) dropdown.classList.toggle('active');
+                        }
+                    });
                 });
-                searchResults.appendChild(item);
+
+                // Close all dropdowns when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.has-dropdown')) {
+                        document.querySelectorAll('.has-dropdown').forEach(parent => {
+                            parent.classList.remove('active');
+                            const dropdown = parent.querySelector('.dropdown');
+                            if (dropdown) dropdown.classList.remove('active');
+                        });
+                    }
+                });
+            }
+            setupDropdowns();
+
+            // ================== SCROLL PROGRESS BAR ==================
+            const progressFill = document.getElementById('progressFill');
+            const progressDots = document.querySelectorAll('.progress-dot');
+            const sections = document.querySelectorAll('section');
+
+            function updateProgress() {
+                const scrollPosition = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrolled = Math.min(100, (scrollPosition / docHeight) * 100);
+
+                progressFill.style.height = `${scrolled}%`;
+
+                // Update active dot
+                sections.forEach((section, index) => {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        progressDots.forEach(dot => dot.classList.remove('active'));
+                        if (progressDots[index]) progressDots[index].classList.add('active');
+                    }
+                });
+            }
+
+            // Throttle scroll events for performance
+            let isScrolling;
+            window.addEventListener('scroll', () => {
+                window.clearTimeout(isScrolling);
+                isScrolling = setTimeout(updateProgress, 50);
+            }, { passive: true });
+
+            // Initialize progress
+            updateProgress();
+
+            // Dot click navigation
+            progressDots.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = dot.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+
+                    if (targetSection) {
+                        window.scrollTo({
+                            top: targetSection.offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
             });
-        });
 
-        // Close search when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!searchContainer.contains(e.target) && !searchToggle.contains(e.target)) {
-                searchContainer.classList.remove('active');
-            }
-        });
+            // ================== STICKY HEADER ==================
+            const header = document.querySelector('header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('sticky-active', window.scrollY > 50);
+            }, { passive: true });
 
-        // AI Assistant
-        const assistantBtn = document.querySelector('.assistant-btn');
-        const aiAssistant = document.querySelector('.ai-assistant');
-        const closeChat = document.querySelector('.close-chat');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendMessage');
+            // ================== SEARCH FUNCTIONALITY ==================
+            const searchContainer = document.getElementById('searchContainer');
+            const searchToggle = document.getElementById('searchToggle');
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
 
-        assistantBtn.addEventListener('click', () => {
-            aiAssistant.classList.toggle('active');
-        });
+            // Sample search data
+            const searchData = [
+                { title: "ReRAM Technology", content: "CrossBar's revolutionary resistive RAM technology...", link: "#technology" },
+                { title: "Cramium PHSM", content: "Physically secure hardware security module for cryptographic key storage...", link: "#products" },
+                { title: "High Density Memory", content: "CrossBar's high-density memory solutions...", link: "#products" },
+                { title: "Latest Innovations", content: "Stay updated with the latest developments...", link: "#news" }
+            ];
 
-        closeChat.addEventListener('click', () => {
-            aiAssistant.classList.remove('active');
-        });
+            // Toggle search visibility
+            searchToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                searchContainer.classList.toggle('active');
 
-        // Sample AI responses
-        const aiResponses = {
-            "hello": ["Hello! How can I help you with CrossBar technology today?", "Hi there! What would you like to know about our products?"],
-            "reram": ["ReRAM (Resistive Random-Access Memory) is our revolutionary non-volatile memory technology that offers high density, low power consumption, and fast read/write speeds.", "ReRAM technology enables terabyte-scale storage with minimal energy consumption, making it ideal for AI, IoT, and secure computing applications."],
-            "cramium": ["Cramium is our product family of ReRAM-based memory solutions. We offer three main products: Cramium PHSM for security, Cramium HPM for performance, and Cramium HDM for high-density storage.", "The Cramium product line includes physically secure modules, high-performance memory for AI, and high-density storage solutions."],
-            "performance": ["Our ReRAM technology delivers 20ns read latency, 12μs write times, and 1M+ write cycles. That's 100× faster reads and 1,000× faster writes than traditional memory.", "CrossBar memory provides 5× less energy than eFlash and 20× less than NAND flash memory."],
-            "applications": ["CrossBar memory is ideal for AI accelerators, IoT devices, secure computing, enterprise storage, and edge computing applications.", "Our technology is perfect for applications requiring high performance, low power consumption, and enhanced security."],
-            "contact": ["You can contact us through our website's contact form or email us at info@crossbar-inc.com", "For sales inquiries, please contact sales@crossbar-inc.com. For technical support, contact support@crossbar-inc.com"],
-            "default": ["I'm not sure I understand. Could you rephrase your question?", "I'm still learning about CrossBar technology. Could you ask something else?", "I'm an AI assistant specialized in CrossBar products. Try asking about ReRAM technology, Cramium products, or performance specifications."]
-        };
-
-        function addMessage(text, isUser = false) {
-            const message = document.createElement('div');
-            message.className = `message ${isUser ? 'user' : 'ai'}`;
-            message.textContent = text;
-            chatMessages.appendChild(message);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function getAIResponse(message) {
-            const lowerMsg = message.toLowerCase();
-
-            if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
-                return aiResponses.hello[Math.floor(Math.random() * aiResponses.hello.length)];
-            }
-            if (lowerMsg.includes('reram')) {
-                return aiResponses.reram[Math.floor(Math.random() * aiResponses.reram.length)];
-            }
-            if (lowerMsg.includes('cramium')) {
-                return aiResponses.cramium[Math.floor(Math.random() * aiResponses.cramium.length)];
-            }
-            if (lowerMsg.includes('performance') || lowerMsg.includes('speed')) {
-                return aiResponses.performance[Math.floor(Math.random() * aiResponses.performance.length)];
-            }
-            if (lowerMsg.includes('application') || lowerMsg.includes('use case')) {
-                return aiResponses.applications[Math.floor(Math.random() * aiResponses.applications.length)];
-            }
-            if (lowerMsg.includes('contact') || lowerMsg.includes('email')) {
-                return aiResponses.contact[Math.floor(Math.random() * aiResponses.contact.length)];
-            }
-
-            return aiResponses.default[Math.floor(Math.random() * aiResponses.default.length)];
-        }
-
-        function sendMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            addMessage(message, true);
-            chatInput.value = '';
-
-            // Simulate AI thinking
-            setTimeout(() => {
-                const response = getAIResponse(message);
-                addMessage(response);
-            }, 1000);
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        // Smoother transitions with Intersection Observer
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+                if (searchContainer.classList.contains('active')) {
+                    searchInput.focus();
+                } else {
+                    searchResults.style.display = 'none';
                 }
             });
-        }, observerOptions);
 
-        // Observe sections and cards
-        document.querySelectorAll('.section').forEach(section => {
-            observer.observe(section);
-        });
+            // Handle search input
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                searchResults.innerHTML = '';
 
-        document.querySelectorAll('.features__card, .products__card, .stats__card, .news__card').forEach(card => {
-            observer.observe(card);
-        });
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
 
-        // Enhanced animations for wallet and chip
-        const walletContainer = document.querySelector('.wallet-container');
-        const chipContainer = document.querySelector('.chip-container');
-        const wallet = document.querySelector('.wallet');
-        const chip = document.querySelector('.chip');
+                const results = searchData.filter(item =>
+                    item.title.toLowerCase().includes(query) ||
+                    item.content.toLowerCase().includes(query)
+                );
 
-        walletContainer.addEventListener('click', () => {
-            gsap.to(wallet, {
-                duration: 0.8,
-                rotation: '+=10',
-                y: -30,
-                ease: 'elastic.out(1, 0.5)',
-                onComplete: () => {
-                    gsap.to(wallet, { duration: 0.5, rotation: 0, y: 0 });
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="search-result-item"><p>No results found</p></div>';
+                    searchResults.style.display = 'block';
+                    return;
+                }
+
+                results.forEach(result => {
+                    const item = document.createElement('a');
+                    item.className = 'search-result-item';
+                    item.href = result.link;
+                    item.innerHTML = `
+                <h4>${result.title}</h4>
+                <p>${result.content}</p>
+            `;
+                    item.addEventListener('click', () => {
+                        searchContainer.classList.remove('active');
+                    });
+                    searchResults.appendChild(item);
+                });
+
+                searchResults.style.display = 'block';
+            });
+
+            // Close search when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchContainer.contains(e.target) && !searchToggle.contains(e.target)) {
+                    searchContainer.classList.remove('active');
+                    searchResults.style.display = 'none';
                 }
             });
-        });
 
-        chipContainer.addEventListener('click', () => {
-            gsap.to(chip, {
-                duration: 1,
-                rotationY: '+=360',
-                rotationX: '+=180',
-                scale: 1.2,
-                ease: 'elastic.out(1, 0.3)',
-                onComplete: () => {
-                    gsap.to(chip, { duration: 0.5, scale: 1 });
-                }
+            // ================== ANIMATIONS & EFFECTS ==================
+            // Initialize GSAP ScrollTriggers
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Section header animations
+            gsap.utils.toArray('.section__header').forEach(header => {
+                gsap.from(header, {
+                    scrollTrigger: {
+                        trigger: header,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none',
+                        markers: false
+                    },
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power2.out'
+                });
+            });
+
+            // Card animations
+            gsap.utils.toArray('.features__card, .products__card, .stats__card, .news__card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 95%',
+                        toggleActions: 'play none none none',
+                        markers: false
+                    },
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    ease: 'power1.out'
+                });
+            });
+
+            // Intersection Observer for smoother transitions
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.05
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all animated elements
+            document.querySelectorAll('.section, .features__card, .products__card, .stats__card, .news__card').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Initialize hero section as visible
+            document.querySelector('#hero').classList.add('visible');
+
+            // ================== PERFORMANCE OPTIMIZATIONS ==================
+            // Throttle resize events
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    setupDropdowns();
+                    ScrollTrigger.refresh();
+                }, 250);
+            });
+
+            // Cleanup GSAP ScrollTriggers on unmount
+            window.addEventListener('beforeunload', () => {
+                ScrollTrigger.getAll().forEach(trigger => trigger.kill());
             });
         });
-
-        // Initialize with hero section visible
-        document.querySelector('#hero').classList.add('visible');
     </script>
 </body>
 
