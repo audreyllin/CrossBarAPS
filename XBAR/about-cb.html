@@ -11,851 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
-    <style>
-        /* Color System - Orange/Chocolate Theme */
-        :root {
-            --color-primary: #FF6A13;
-            /* Vibrant Orange */
-            --color-primary-dark: #7B3F00;
-            /* Rich Chocolate */
-            --color-secondary: #FFB07C;
-            /* Light Orange */
-            --color-accent: #E0C097;
-            /* Creamy Chocolate */
-            --color-white: #FFFFFF;
-            --color-dark: #121212;
-            --color-dark-alt: #1A1A1A;
-            --color-mid: #333333;
-            --color-light: #F5F5F5;
-            --color-text: #F0F0F0;
-            --color-bg: #121212;
-
-            /* Glass Effect */
-            --glass-bg: rgba(35, 25, 15, 0.92);
-            /* Chocolate tint */
-            --glass-border: rgba(255, 106, 19, 0.25);
-            /* Orange border */
-
-            /* Typography */
-            --font-heading: 'Space Grotesk', sans-serif;
-            --font-body: 'Inter', sans-serif;
-
-            /* Spacing */
-            --space-xs: 0.5rem;
-            --space-sm: 1rem;
-            --space-md: 2rem;
-            --space-lg: 3rem;
-            --space-xl: 5rem;
-
-            /* Effects */
-            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --shadow-glow: 0 0 15px currentColor;
-            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        [data-theme="light"] {
-            --color-dark: #f8f9fa;
-            --color-dark-alt: #e9ecef;
-            --color-mid: #dee2e6;
-            --color-light: #212529;
-            --color-text: #212529;
-            --color-bg: #f8f9fa;
-            --glass-bg: rgba(255, 255, 255, 0.92);
-            --glass-border: rgba(123, 63, 0, 0.3);
-            --color-accent: #7B3F00;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .image-car {
-            width: 360px;
-        }
-
-        .image-light {
-            width: 90%;
-            margin-top: -12vh;
-            margin-left: 22vw;
-            background-color: rgb(255 165 0 / 20%);
-        }
-
-        body {
-            font-family: var(--font-heading);
-            background: var(--color-bg);
-            color: var(--color-text);
-            overflow-x: hidden;
-            line-height: 1.6;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23121212"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="%231a1a1a" stroke-width="0.5"/></svg>');
-            background-size: cover;
-        }
-
-        [data-theme="light"] body {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f8f9fa"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="%23e9ecef" stroke-width="0.5"/></svg>');
-        }
-
-        /* Glass effect utility */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Header Styles */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: var(--transition);
-        }
-
-        header.scrolled {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-sm);
-            padding: 0.5rem 2rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo-icon i {
-            font-size: 20px;
-            color: var(--color-white);
-        }
-
-        .logo-text {
-            font-weight: 700;
-            font-size: 1.5rem;
-            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        nav ul {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        nav a {
-            color: var(--color-text);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            padding: 0.5rem 0;
-            transition: var(--transition);
-        }
-
-        nav a:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--color-primary);
-            transition: var(--transition);
-        }
-
-        nav a:hover:after {
-            width: 100%;
-        }
-
-        nav a:hover {
-            color: var(--color-secondary);
-        }
-
-        .theme-toggle {
-            background: transparent;
-            border: none;
-            color: var(--color-text);
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin-left: var(--space-sm);
-            transition: var(--transition);
-        }
-
-        .theme-toggle:hover {
-            color: var(--color-primary);
-        }
-
-        /* Cinematic Sections */
-        .section {
-            min-height: 100vh;
-            padding: 5rem 2rem;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .hero {
-            position: relative;
-            background: linear-gradient(rgba(5, 5, 15, 0.9), rgba(10, 10, 25, 0.7));
-            text-align: center;
-            align-items: center;
-            padding-top: 8rem;
-        }
-
-        [data-theme="light"] .hero {
-            background: linear-gradient(rgba(248, 249, 250, 0.9), rgba(233, 236, 239, 0.7));
-        }
-
-        .hero-content {
-            max-width: 800px;
-            z-index: 20;
-            /* Higher z-index to ensure text is above animations */
-            position: relative;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.1;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            color: var(--color-accent);
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-button {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            background: linear-gradient(45deg, var(--color-primary), var(--color-primary-dark));
-            color: white;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: var(--transition);
-            box-shadow: 0 4px 20px rgba(255, 106, 19, 0.3);
-            margin-top: 1rem;
-            position: relative;
-            z-index: 20;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255, 106, 19, 0.5);
-        }
-
-        /* 3D Chip Animation */
-        .chip-container {
-            position: absolute;
-            top: 30%;
-            left: 10%;
-            transform: translateY(-50%);
-            width: 300px;
-            height: 300px;
-            perspective: 1000px;
-            z-index: 10;
-            /* Lower than content */
-        }
-
-        .chip {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(25deg) rotateY(-25deg);
-            animation: chip-float 8s infinite ease-in-out;
-        }
-
-        .chip-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(123, 63, 0, 0.5);
-            border: 2px solid var(--color-primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: var(--color-white);
-            text-shadow: 0 0 10px var(--color-primary);
-        }
-
-        .chip-front {
-            transform: translateZ(50px);
-        }
-
-        .chip-back {
-            transform: translateZ(-50px) rotateY(180deg);
-        }
-
-        .chip-top {
-            transform: rotateX(90deg) translateZ(50px);
-            height: 100px;
-        }
-
-        .chip-bottom {
-            transform: rotateX(-90deg) translateZ(50px);
-            height: 100px;
-        }
-
-        .chip-left {
-            transform: rotateY(-90deg) translateZ(50px);
-            width: 100px;
-        }
-
-        .chip-right {
-            transform: rotateY(90deg) translateZ(50px);
-            width: 100px;
-        }
-
-        @keyframes chip-float {
-
-            0%,
-            100% {
-                transform: rotateX(25deg) rotateY(-25deg) translateY(0);
-            }
-
-            50% {
-                transform: rotateX(30deg) rotateY(-20deg) translateY(-20px);
-            }
-        }
-
-        /* Crypto Wallet Animation */
-        .wallet-container {
-            position: absolute;
-            top: 70%;
-            right: 15%;
-            z-index: 10;
-            /* Lower than content */
-            transform-style: preserve-3d;
-            animation: wallet-float 10s infinite ease-in-out;
-        }
-
-        .wallet {
-            width: 200px;
-            height: 120px;
-            background: linear-gradient(135deg, var(--color-primary-dark), #333);
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transform: rotateX(15deg) rotateY(15deg);
-        }
-
-        .wallet::before {
-            content: '';
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            border: 2px solid var(--color-primary);
-            border-radius: 10px;
-            opacity: 0.5;
-        }
-
-        .wallet-screen {
-            position: absolute;
-            top: 20px;
-            left: 15px;
-            right: 15px;
-            height: 50px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--color-primary);
-            font-family: var(--font-heading);
-            font-size: 1.2rem;
-            overflow: hidden;
-        }
-
-        .wallet-buttons {
-            position: absolute;
-            bottom: 15px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .wallet-button {
-            width: 30px;
-            height: 30px;
-            background: var(--color-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--color-dark);
-            font-weight: bold;
-        }
-
-        @keyframes wallet-float {
-
-            0%,
-            100% {
-                transform: translateY(0) rotate(5deg);
-            }
-
-            50% {
-                transform: translateY(-20px) rotate(-5deg);
-            }
-        }
-
-        /* Floating Crypto Coins */
-        .crypto-coins {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-            /* Lower than content */
-        }
-
-        .coin {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #FFD700, #D4AF37);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #000;
-            font-weight: bold;
-            animation: coin-float 15s infinite linear;
-            opacity: 0.9;
-        }
-
-        .coin.bitcoin {
-            background: radial-gradient(circle at 30% 30%, #F7931A, #8B4513);
-        }
-
-        .coin.pax {
-            background: radial-gradient(circle at 30% 30%, #D4AF37, #8B7500);
-        }
-
-        .coin.tether {
-            background: radial-gradient(circle at 30% 30%, #26A17B, #006A4E);
-        }
-
-        @keyframes coin-float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* Hexagonal Pattern */
-        .hex-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="%23FF6A13" stroke-width="1"/></svg>');
-            background-size: 120px;
-            animation: moveBackground 100s linear infinite;
-        }
-
-        [data-theme="light"] .hex-pattern {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="%237B3F00" stroke-width="1"/></svg>');
-            opacity: 0.05;
-        }
-
-        @keyframes moveBackground {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: 1000px 1000px;
-            }
-        }
-
-        /* Hexagonal pattern overlay */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="rgba(255,106,19,0.05)" stroke-width="1"/></svg>');
-            background-size: 120px;
-            pointer-events: none;
-            z-index: 1000;
-            opacity: 0.3;
-        }
-
-        [data-theme="light"] body::after {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="rgba(123,63,0,0.1)" stroke-width="1"/></svg>');
-            opacity: 0.2;
-        }
-
-        /* Content Sections */
-        .content-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 15;
-            /* Higher than animations */
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--color-text);
-        }
-
-        .section-title p {
-            color: var(--color-accent);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .text-box {
-            background: var(--glass-bg);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid var(--glass-border);
-        }
-
-        .text-box h3 {
-            color: var(--color-primary);
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-
-        .text-box p {
-            margin-bottom: 1rem;
-            line-height: 1.8;
-            color: var(--color-text);
-        }
-
-        .text-box strong {
-            color: var(--color-secondary);
-        }
-
-        .tabs {
-            background: var(--glass-bg);
-            border-radius: 12px;
-            padding: 2rem;
-            border: 1px solid var(--glass-border);
-        }
-
-        .nav-tabs-wrapper {
-            border-bottom: 1px solid var(--glass-border);
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-tabs {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .nav-item {
-            margin-right: 1rem;
-        }
-
-        .nav-link {
-            padding: 0.8rem 1.5rem;
-            background: transparent;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: var(--color-text);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            border-radius: 0;
-        }
-
-        .nav-link.active {
-            border-bottom: 3px solid var(--color-primary);
-            color: var(--color-primary);
-        }
-
-        .nav-link:hover:not(.active) {
-            color: var(--color-secondary);
-        }
-
-        .tab-content {
-            padding: 1rem 0;
-        }
-
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        .tab-pane ul {
-            padding-left: 2rem;
-        }
-
-        .tab-pane li {
-            margin-bottom: 1rem;
-            position: relative;
-            color: var(--color-text);
-        }
-
-        .tab-pane li:before {
-            content: '•';
-            color: var(--color-primary);
-            position: absolute;
-            left: -1.5rem;
-            font-size: 1.2rem;
-        }
-
-        /* Footer */
-        footer {
-            background: var(--color-dark-alt);
-            padding: 4rem 2rem 2rem;
-            position: relative;
-            z-index: 20;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            max-width: 1200px;
-            margin: 0 auto 3rem;
-        }
-
-        .footer-logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .footer-links h4 {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            color: var(--color-primary);
-            position: relative;
-            display: inline-block;
-        }
-
-        .footer-links h4:after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 40px;
-            height: 2px;
-            background: var(--color-primary);
-        }
-
-        .footer-links ul {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-links a {
-            color: var(--color-accent);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .footer-links a:hover {
-            color: var(--color-primary);
-            padding-left: 5px;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .social-links a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--glass-bg);
-            color: var(--color-text);
-            transition: var(--transition);
-        }
-
-        .social-links a:hover {
-            background: var(--color-primary);
-            transform: translateY(-3px);
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid var(--glass-border);
-            color: var(--color-accent);
-            font-size: 0.9rem;
-        }
-
-        .copyright a {
-            color: var(--color-accent);
-            text-decoration: none;
-            margin: 0 0.5rem;
-        }
-
-        .copyright a:hover {
-            color: var(--color-primary);
-        }
-
-        /* Scroll Down Indicator */
-        .scroll-down {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--color-accent);
-            z-index: 20;
-        }
-
-        .scroll-down span {
-            font-size: 0.8rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .mouse {
-            width: 25px;
-            height: 40px;
-            border: 2px solid var(--color-accent);
-            border-radius: 20px;
-            position: relative;
-        }
-
-        .wheel {
-            width: 4px;
-            height: 8px;
-            background: var(--color-primary);
-            border-radius: 2px;
-            position: absolute;
-            top: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: scroll 1.5s infinite;
-        }
-
-        @keyframes scroll {
-            0% {
-                top: 6px;
-                opacity: 1;
-            }
-
-            30% {
-                opacity: 1;
-            }
-
-            100% {
-                top: 20px;
-                opacity: 0;
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            nav ul {
-                gap: 1rem;
-            }
-
-            .chip-container {
-                display: none;
-            }
-
-            .wallet-container {
-                display: none;
-            }
-        }
-    </style>
+    <link href="css/about-cb.css" rel="stylesheet">
 </head>
 
 <body>
@@ -910,6 +66,21 @@
                 and security for the AI era.</p>
             <a href="#about" class="cta-button">Discover ReRAM</a>
         </div>
+        <div class="innovation-icons">
+            <!-- Lightbulb -->
+            <div class="icon-container lightbulb" id="lightbulb">
+                <img class="image-light" src="img/lightbulb.png">
+            </div>
+            <!-- Car -->
+            <div class="icon-container car" id="car">
+                <img class="image-lcp" src="img/car.png">
+            </div>
+
+            <!-- Phone -->
+            <div class="icon-container phone" id="phone">
+                <img class="image-lcp" src="img/phone.png">
+            </div>
+        </div>
     </section>
 
     <!-- About Section -->
@@ -920,42 +91,53 @@
                 <p>Pioneering the future of storage technology</p>
             </div>
 
-            <img class="image-light" src="img/lightbulb.png" alt="light bulb">
-            <img class="image-car" src="img/car.png" alt="car">
-            <img class="image-car" src="img/phone.png" alt="phone">
-
             <div class="text-box glass">
                 <h3>ReThink Innovation</h3>
-                <p>The light bulb. The car. The telephone. All of these inventions had profound impacts on the world and
-                    people's lives. So, what's next? Natural Human-Machine interfaces, autonomous cars, and artificial
-                    intelligence are bringing yet another wave of invention that is shifting the trajectory of society
-                    in stunning and positive ways. These systems require instant, ubiquitous access to Secure Data. Data
-                    is the "New Air," wherever, whenever, always available. But to make data truly ubiquitous, inventors
-                    have to rethink the status quo. New technologies are needed to architect systems with no latency,
-                    high energy efficiency, high capacity, and uncompromised security. That's where CrossBar Resistive
+                <p>The light bulb. The car. The telephone. All of these inventions had profound impacts on the world
+                    and
+                    people's lives. So, what's next? Natural Human-Machine interfaces, autonomous cars, and
+                    artificial
+                    intelligence are bringing yet another wave of invention that is shifting the trajectory of
+                    society
+                    in stunning and positive ways. These systems require instant, ubiquitous access to Secure Data.
+                    Data
+                    is the "New Air," wherever, whenever, always available. But to make data truly ubiquitous,
+                    inventors
+                    have to rethink the status quo. New technologies are needed to architect systems with no
+                    latency,
+                    high energy efficiency, high capacity, and uncompromised security. That's where CrossBar
+                    Resistive
                     RAM (ReRAM) comes in.</p>
 
-                <p>CrossBar was founded in 2010 to commercialize a radically different approach to non-volatile memory
-                    called ReRAM. A unique memory technology that can be integrated inside a system-on-chip or produced
-                    as a standalone memory chip, CrossBar ReRAM is playing an important role in enabling this new world.
+                <p>CrossBar was founded in 2010 to commercialize a radically different approach to non-volatile
+                    memory
+                    called ReRAM. A unique memory technology that can be integrated inside a system-on-chip or
+                    produced
+                    as a standalone memory chip, CrossBar ReRAM is playing an important role in enabling this new
+                    world.
                 </p>
 
-                <p><strong>ReRAM makes tightly integrated compute/storage subsystems possible, freeing designers from
+                <p><strong>ReRAM makes tightly integrated compute/storage subsystems possible, freeing designers
+                        from
                         the traditional bus-based storage architectures.</strong></p>
 
-                <p>With ReRAM, designers can create entirely new subsystems from "persistent computing" where integrated
+                <p>With ReRAM, designers can create entirely new subsystems from "persistent computing" where
+                    integrated
                     data pods never shut down to "smart memory" that learns from every interaction and autonomously
                     retrieves, filters, and computes data without the intervention of the CPU.</p>
 
                 <p>CrossBar's Resistive RAM technology has numerous uses for high-performance and high-density
                     multiple-time programmable (MTP) memory as well as few-time programmable (FTP) and one-time
-                    programmable (OTP) non-volatile memories. In addition, the company is exploiting the benefits of its
-                    unique ReRAM technology for physically unclonable function (PUF) security keys, providing superior
+                    programmable (OTP) non-volatile memories. In addition, the company is exploiting the benefits of
+                    its
+                    unique ReRAM technology for physically unclonable function (PUF) security keys, providing
+                    superior
                     security characteristics, simpler implementations, higher speed processing, and semiconductor
                     fabrication synergy with embedded ReRAM memories.</p>
 
                 <p>Leveraging the unique features of ReRAM technology where security is paramount, CrossBar is also
-                    developing the Cramium product family of Secure Processing Units (SPU). This product family serves a
+                    developing the Cramium product family of Secure Processing Units (SPU). This product family
+                    serves a
                     broad variety of applications with a high performance CPU core, large memory, and physical
                     countermeasures to mitigate hacking. In addition, the Cramium product family contains hardware
                     accelerators specifically targeting blockchain transactions.</p>
@@ -964,8 +146,10 @@
             <div class="tabs glass">
                 <div class="nav-tabs-wrapper">
                     <ul class="nav nav-tabs">
-                        <li class="nav-item"><a class="nav-link active" data-toggle="facts">CrossBar Key Facts</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="highlights">Technology Highlights</a></li>
+                        <li class="nav-item"><a class="nav-link active" data-toggle="facts">CrossBar Key Facts</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="highlights">Technology Highlights</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="tab-content">
@@ -986,7 +170,8 @@
                     <div class="tab-pane" id="highlights">
                         <ul>
                             <li>Proven scalability below 10nm process node</li>
-                            <li>100x lower read latency, 20x better energy efficiency and 1000x faster write performance
+                            <li>100x lower read latency, 20x better energy efficiency and 1000x faster write
+                                performance
                                 than NAND Flash</li>
                             <li>No erase needed, bit/byte level overwrite capability</li>
                             <li>Manufactured on standard CMOS production lines</li>
@@ -1175,6 +360,61 @@
                     });
                 }
             });
+        });
+
+        // Interactive icon animations
+        const lightbulb = document.getElementById('lightbulb');
+        const car = document.getElementById('car');
+        const phone = document.getElementById('phone');
+
+        lightbulb.addEventListener('click', () => {
+            gsap.to('.lightbulb-filament', {
+                duration: 0.5,
+                attr: { 'stroke-dashoffset': 0 },
+                onComplete: () => {
+                    gsap.to('.lightbulb-glass', {
+                        duration: 1,
+                        fill: 'rgba(255, 255, 255, 0.8)',
+                        repeat: 3,
+                        yoyo: true
+                    });
+                }
+            });
+        });
+
+        car.addEventListener('click', () => {
+            gsap.to('.car-body', {
+                duration: 1,
+                x: 20,
+                repeat: 1,
+                yoyo: true,
+                ease: 'power2.inOut'
+            });
+        });
+
+        phone.addEventListener('click', () => {
+            gsap.to('.phone-screen', {
+                duration: 0.5,
+                fill: 'rgba(255, 255, 255, 0.7)',
+                onComplete: () => {
+                    gsap.to('.phone-screen', {
+                        duration: 0.5,
+                        fill: 'rgba(0, 0, 0, 0.7)',
+                        delay: 0.5
+                    });
+                }
+            });
+        });
+
+        // Auto-animate the icons on scroll
+        ScrollTrigger.create({
+            trigger: '.text-box',
+            start: 'top center',
+            onEnter: () => {
+                gsap.to('.lightbulb-filament', { duration: 2, attr: { 'stroke-dashoffset': 0 } });
+                gsap.to('.car-body', { duration: 3, x: 30, yoyo: true, repeat: -1, ease: 'none' });
+                gsap.to('.phone-screen', { duration: 4, fill: 'rgba(255, 255, 255, 0.5)', yoyo: true, repeat: -1 });
+            }
         });
     </script>
 </body>
