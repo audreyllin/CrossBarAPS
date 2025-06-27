@@ -3,299 +3,972 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
-    <meta name="description"
-        content="CrossBar was founded commercialize a radically different approach to NVM called ReRAM. A unique memory that can be integrated inside a SoC or as a standalone memory chip.">
-    <meta name="keywords"
-        content="RRAM, ReRAM, RRAM technology, Resistive random-access memory, memory, storage solution, storage, 1T1R, 1TnR, CrossBar, NAND flash memory, Flash, NOR flash, 3D ReRAM, 3D RRAM, ReRAM IP, RRAM IP, ReRAM IP cores, storage, persist computing, persist memory, MCU, SoC, FPGA, RRAM IP, ReRAM IP">
-    <meta name="revision" content="8b89c2ef">
-    <title>ReThink Innovation of Storage | CrossBar</title>
-    <meta name="google-site-verification" content="xUJoI6QxWAa3V1GaoVQEjZuv6qO0EJo0SuT7Zn1Rfsg">
-    <link rel="apple-touch-icon" sizes="180x180"
-        href="https://www.crossbar-inc.com/assets/images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" href="https://www.crossbar-inc.com/assets/images/favicon/favicon-32x32.png"
-        sizes="32x32">
-    <link rel="icon" type="image/png" href="https://www.crossbar-inc.com/assets/images/favicon/favicon-16x16.png"
-        sizes="16x16">
-    <link rel="manifest" href="https://www.crossbar-inc.com/assets/images/favicon/manifest.json">
-    <link rel="mask-icon" href="https://www.crossbar-inc.com/assets/images/favicon/safari-pinned-tab.svg"
-        color="#5bbad5">
-    <link rel="shortcut icon" href="https://www.crossbar-inc.com/assets/images/favicon/favicon.ico">
-    <meta name="msapplication-config" content="/assets/images/favicon/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/hp-26-v2.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrossBar | ReThink Innovation of Storage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+    <style>
+        /* Color System - Orange/Chocolate Theme */
+        :root {
+            --color-primary: #FF6A13;
+            /* Vibrant Orange */
+            --color-primary-dark: #7B3F00;
+            /* Rich Chocolate */
+            --color-secondary: #FFB07C;
+            /* Light Orange */
+            --color-accent: #E0C097;
+            /* Creamy Chocolate */
+            --color-white: #FFFFFF;
+            --color-dark: #121212;
+            --color-dark-alt: #1A1A1A;
+            --color-mid: #333333;
+            --color-light: #F5F5F5;
+            --color-text: #F0F0F0;
+            --color-bg: #121212;
+
+            /* Glass Effect */
+            --glass-bg: rgba(35, 25, 15, 0.92);
+            /* Chocolate tint */
+            --glass-border: rgba(255, 106, 19, 0.25);
+            /* Orange border */
+
+            /* Typography */
+            --font-heading: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 2rem;
+            --space-lg: 3rem;
+            --space-xl: 5rem;
+
+            /* Effects */
+            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 15px currentColor;
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="light"] {
+            --color-dark: #f8f9fa;
+            --color-dark-alt: #e9ecef;
+            --color-mid: #dee2e6;
+            --color-light: #212529;
+            --color-text: #212529;
+            --color-bg: #f8f9fa;
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-border: rgba(123, 63, 0, 0.3);
+            --color-accent: #7B3F00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .image-car {
+            width: 360px;
+        }
+
+        .image-light {
+            width: 90%;
+            margin-top: -12vh;
+            margin-left: 22vw;
+            background-color: rgb(255 165 0 / 20%);
+        }
+
+        body {
+            font-family: var(--font-heading);
+            background: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+            line-height: 1.6;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23121212"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="%231a1a1a" stroke-width="0.5"/></svg>');
+            background-size: cover;
+        }
+
+        [data-theme="light"] body {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f8f9fa"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="%23e9ecef" stroke-width="0.5"/></svg>');
+        }
+
+        /* Glass effect utility */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            padding: 0.5rem 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon i {
+            font-size: 20px;
+            color: var(--color-white);
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--color-text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: var(--transition);
+        }
+
+        nav a:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--color-primary);
+            transition: var(--transition);
+        }
+
+        nav a:hover:after {
+            width: 100%;
+        }
+
+        nav a:hover {
+            color: var(--color-secondary);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: var(--space-sm);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--color-primary);
+        }
+
+        /* Cinematic Sections */
+        .section {
+            min-height: 100vh;
+            padding: 5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero {
+            position: relative;
+            background: linear-gradient(rgba(5, 5, 15, 0.9), rgba(10, 10, 25, 0.7));
+            text-align: center;
+            align-items: center;
+            padding-top: 8rem;
+        }
+
+        [data-theme="light"] .hero {
+            background: linear-gradient(rgba(248, 249, 250, 0.9), rgba(233, 236, 239, 0.7));
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 20;
+            /* Higher z-index to ensure text is above animations */
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--color-accent);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(45deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(255, 106, 19, 0.3);
+            margin-top: 1rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 106, 19, 0.5);
+        }
+
+        /* 3D Chip Animation */
+        .chip-container {
+            position: absolute;
+            top: 30%;
+            left: 10%;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 300px;
+            perspective: 1000px;
+            z-index: 10;
+            /* Lower than content */
+        }
+
+        .chip {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(25deg) rotateY(-25deg);
+            animation: chip-float 8s infinite ease-in-out;
+        }
+
+        .chip-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(123, 63, 0, 0.5);
+            border: 2px solid var(--color-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--color-white);
+            text-shadow: 0 0 10px var(--color-primary);
+        }
+
+        .chip-front {
+            transform: translateZ(50px);
+        }
+
+        .chip-back {
+            transform: translateZ(-50px) rotateY(180deg);
+        }
+
+        .chip-top {
+            transform: rotateX(90deg) translateZ(50px);
+            height: 100px;
+        }
+
+        .chip-bottom {
+            transform: rotateX(-90deg) translateZ(50px);
+            height: 100px;
+        }
+
+        .chip-left {
+            transform: rotateY(-90deg) translateZ(50px);
+            width: 100px;
+        }
+
+        .chip-right {
+            transform: rotateY(90deg) translateZ(50px);
+            width: 100px;
+        }
+
+        @keyframes chip-float {
+
+            0%,
+            100% {
+                transform: rotateX(25deg) rotateY(-25deg) translateY(0);
+            }
+
+            50% {
+                transform: rotateX(30deg) rotateY(-20deg) translateY(-20px);
+            }
+        }
+
+        /* Crypto Wallet Animation */
+        .wallet-container {
+            position: absolute;
+            top: 70%;
+            right: 15%;
+            z-index: 10;
+            /* Lower than content */
+            transform-style: preserve-3d;
+            animation: wallet-float 10s infinite ease-in-out;
+        }
+
+        .wallet {
+            width: 200px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--color-primary-dark), #333);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: rotateX(15deg) rotateY(15deg);
+        }
+
+        .wallet::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid var(--color-primary);
+            border-radius: 10px;
+            opacity: 0.5;
+        }
+
+        .wallet-screen {
+            position: absolute;
+            top: 20px;
+            left: 15px;
+            right: 15px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+
+        .wallet-buttons {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .wallet-button {
+            width: 30px;
+            height: 30px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-dark);
+            font-weight: bold;
+        }
+
+        @keyframes wallet-float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(5deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(-5deg);
+            }
+        }
+
+        /* Floating Crypto Coins */
+        .crypto-coins {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            /* Lower than content */
+        }
+
+        .coin {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #D4AF37);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #000;
+            font-weight: bold;
+            animation: coin-float 15s infinite linear;
+            opacity: 0.9;
+        }
+
+        .coin.bitcoin {
+            background: radial-gradient(circle at 30% 30%, #F7931A, #8B4513);
+        }
+
+        .coin.pax {
+            background: radial-gradient(circle at 30% 30%, #D4AF37, #8B7500);
+        }
+
+        .coin.tether {
+            background: radial-gradient(circle at 30% 30%, #26A17B, #006A4E);
+        }
+
+        @keyframes coin-float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Hexagonal Pattern */
+        .hex-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="%23FF6A13" stroke-width="1"/></svg>');
+            background-size: 120px;
+            animation: moveBackground 100s linear infinite;
+        }
+
+        [data-theme="light"] .hex-pattern {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="%237B3F00" stroke-width="1"/></svg>');
+            opacity: 0.05;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 1000px 1000px;
+            }
+        }
+
+        /* Hexagonal pattern overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="rgba(255,106,19,0.05)" stroke-width="1"/></svg>');
+            background-size: 120px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.3;
+        }
+
+        [data-theme="light"] body::after {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,0 65,25 95,35 75,60 80,90 50,75 20,90 25,60 5,35 35,25" fill="none" stroke="rgba(123,63,0,0.1)" stroke-width="1"/></svg>');
+            opacity: 0.2;
+        }
+
+        /* Content Sections */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 15;
+            /* Higher than animations */
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+
+        .section-title p {
+            color: var(--color-accent);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .text-box {
+            background: var(--glass-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .text-box h3 {
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .text-box p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: var(--color-text);
+        }
+
+        .text-box strong {
+            color: var(--color-secondary);
+        }
+
+        .tabs {
+            background: var(--glass-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .nav-tabs-wrapper {
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-item {
+            margin-right: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--color-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 0;
+        }
+
+        .nav-link.active {
+            border-bottom: 3px solid var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .nav-link:hover:not(.active) {
+            color: var(--color-secondary);
+        }
+
+        .tab-content {
+            padding: 1rem 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .tab-pane ul {
+            padding-left: 2rem;
+        }
+
+        .tab-pane li {
+            margin-bottom: 1rem;
+            position: relative;
+            color: var(--color-text);
+        }
+
+        .tab-pane li:before {
+            content: '•';
+            color: var(--color-primary);
+            position: absolute;
+            left: -1.5rem;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--color-dark-alt);
+            padding: 4rem 2rem 2rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+        }
+
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .footer-links h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-primary);
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-links h4:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--color-primary);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--color-primary);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            color: var(--color-text);
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--color-primary);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            color: var(--color-accent);
+            font-size: 0.9rem;
+        }
+
+        .copyright a {
+            color: var(--color-accent);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .copyright a:hover {
+            color: var(--color-primary);
+        }
+
+        /* Scroll Down Indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--color-accent);
+            z-index: 20;
+        }
+
+        .scroll-down span {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .mouse {
+            width: 25px;
+            height: 40px;
+            border: 2px solid var(--color-accent);
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .wheel {
+            width: 4px;
+            height: 8px;
+            background: var(--color-primary);
+            border-radius: 2px;
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll 1.5s infinite;
+        }
+
+        @keyframes scroll {
+            0% {
+                top: 6px;
+                opacity: 1;
+            }
+
+            30% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 20px;
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            .chip-container {
+                display: none;
+            }
+
+            .wallet-container {
+                display: none;
+            }
+        }
+    </style>
 </head>
 
-<body class="page company about-crossbar" id="about-crossbar">
-    <header class="clearfix">
-        <div class="social float-right"><a target="_blank" title="CrossBar at Linkedin"
-                href="https://www.crossbar-inc.com//www.linkedin.com/company/crossbar-inc"><i
-                    class="fa-brands fa-linkedin"></i></a> <a target="_blank" title="CrossBar at Twitter"
-                href="https://www.crossbar-inc.com//twitter.com/crossbarinc"><i class="fa-brands fa-twitter"></i></a>
+<body>
+    <!-- Header -->
+    <header id="main-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-microchip"></i>
+            </div>
+            <div class="logo-text">CROSSBAR</div>
         </div>
-    </header><!--[if lt IE 11]>
-<div class="alert alert-danger" role="alert">
-    You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
-</div>
-<![endif]-->
-    <nav class="navbar navbar-light navbar-expand-md" id="nav">
-        <div class="container h-100"><button class="navbar-toggler navbar-toggler-right collapsed" type="button"
-                data-toggle="collapse" data-target="#navbarNavDropdown"><span
-                    class="navbar-toggler-icon"></span></button> <a class="navbar-brand"
-                href="https://www.crossbar-inc.com/">
-                <?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns:dc="http://purl.org/dc/elements/1.1/"
-                    xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                    xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" height="60.5"
-                    width="189.89999" xml:space="preserve" enable-background="new 0 0 283.4 132"
-                    viewBox="0 0 189.9 60.5" y="0px" x="0px" id="Layer_1" version="1.1">
-                    <title id="title3479">CrossBar Inc.</title>
-                    <metadata id="metadata49">
-                        <rdf:RDF>
-                            <cc:Work rdf:about="">
-                                <dc:format>image/svg+xml</dc:format>
-                                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-                                <dc:title>CrossBar Inc.</dc:title>
-                            </cc:Work>
-                        </rdf:RDF>
-                    </metadata>
-                    <defs id="defs47" />
-                    <g transform="translate(-46.7,-30.7)" id="g3461">
-                        <g id="g3443">
-                            <path
-                                d="m 105.9,75.7 c -0.4,-0.5 -1,-0.9 -1.6,-1.2 -0.6,-0.3 -1.4,-0.4 -2.2,-0.4 -0.8,0 -1.6,0.2 -2.3,0.5 -0.7,0.3 -1.3,0.8 -1.8,1.3 -0.5,0.6 -0.9,1.3 -1.2,2 -0.3,0.8 -0.4,1.6 -0.4,2.6 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.2,2 0.5,0.6 1.1,1 1.8,1.3 0.7,0.3 1.4,0.5 2.2,0.5 0.9,0 1.7,-0.2 2.4,-0.6 0.7,-0.4 1.3,-0.9 1.7,-1.6 l 3.7,2.7 c -0.8,1.2 -1.9,2.1 -3.2,2.6 -1.3,0.6 -2.6,0.8 -4,0.8 -1.6,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 0.6,0 1.2,0.1 1.8,0.2 0.6,0.1 1.2,0.3 1.8,0.5 0.6,0.2 1.2,0.5 1.7,0.9 0.5,0.4 1,0.8 1.5,1.4 l -3.5,2.7 z"
-                                id="path13" style="fill:#54585a" />
-                            <path
-                                d="m 111.4,70.5 7.7,0 c 1,0 2,0.1 2.9,0.3 0.9,0.2 1.7,0.5 2.4,1 0.7,0.5 1.2,1.1 1.6,1.9 0.4,0.8 0.6,1.8 0.6,2.9 0,1.4 -0.4,2.6 -1.1,3.6 -0.7,1 -1.8,1.6 -3.2,1.9 l 5.1,8.4 -5.3,0 -4.2,-8 -2.2,0 0,8 -4.4,0 0,-20 z m 4.4,8.3 2.6,0 c 0.4,0 0.8,0 1.3,0 0.4,0 0.8,-0.1 1.2,-0.3 0.4,-0.1 0.7,-0.4 0.9,-0.7 0.2,-0.3 0.4,-0.7 0.4,-1.3 0,-0.5 -0.1,-0.9 -0.3,-1.2 -0.2,-0.3 -0.5,-0.5 -0.8,-0.7 -0.3,-0.2 -0.7,-0.3 -1.1,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -2.9,0 0,4.6 z"
-                                id="path15" style="fill:#54585a" />
-                            <path
-                                d="m 128,80.5 c 0,-1.6 0.3,-3 0.8,-4.3 0.5,-1.3 1.3,-2.4 2.2,-3.3 1,-0.9 2.1,-1.6 3.4,-2.1 1.3,-0.5 2.8,-0.7 4.3,-0.7 1.5,0 3,0.2 4.3,0.7 1.3,0.5 2.5,1.2 3.4,2.1 1,0.9 1.7,2 2.2,3.3 0.5,1.3 0.8,2.7 0.8,4.3 0,1.6 -0.3,3 -0.8,4.3 -0.5,1.3 -1.3,2.4 -2.2,3.3 -1,0.9 -2.1,1.6 -3.4,2.1 -1.3,0.5 -2.8,0.7 -4.3,0.7 -1.5,0 -3,-0.2 -4.3,-0.7 -1.3,-0.5 -2.5,-1.2 -3.4,-2.1 -1,-0.9 -1.7,-2 -2.2,-3.3 -0.5,-1.3 -0.8,-2.7 -0.8,-4.3 z m 4.5,0 c 0,0.9 0.1,1.8 0.4,2.6 0.3,0.8 0.7,1.5 1.3,2 0.5,0.6 1.2,1 2,1.3 0.8,0.3 1.6,0.5 2.6,0.5 0.9,0 1.8,-0.2 2.6,-0.5 0.8,-0.3 1.4,-0.8 2,-1.3 0.5,-0.6 1,-1.3 1.3,-2 0.3,-0.8 0.4,-1.6 0.4,-2.6 0,-0.9 -0.1,-1.8 -0.4,-2.6 -0.3,-0.8 -0.7,-1.5 -1.3,-2 -0.5,-0.6 -1.2,-1 -2,-1.3 -0.8,-0.3 -1.6,-0.5 -2.6,-0.5 -0.9,0 -1.8,0.2 -2.6,0.5 -0.8,0.3 -1.4,0.8 -2,1.3 -0.5,0.6 -1,1.3 -1.3,2 -0.2,0.8 -0.4,1.7 -0.4,2.6 z"
-                                id="path17" style="fill:#54585a" />
-                            <path
-                                d="m 161.6,75.4 c -0.4,-0.5 -0.8,-0.8 -1.5,-1 -0.6,-0.2 -1.2,-0.3 -1.7,-0.3 -0.3,0 -0.6,0 -1,0.1 -0.3,0.1 -0.7,0.2 -1,0.4 -0.3,0.2 -0.5,0.4 -0.7,0.6 -0.2,0.2 -0.3,0.6 -0.3,1 0,0.6 0.2,1.1 0.7,1.4 0.5,0.3 1,0.6 1.7,0.8 0.7,0.2 1.4,0.5 2.2,0.7 0.8,0.2 1.5,0.5 2.2,1 0.7,0.4 1.3,1 1.7,1.7 0.5,0.7 0.7,1.6 0.7,2.8 0,1.1 -0.2,2.1 -0.6,2.9 -0.4,0.8 -1,1.5 -1.7,2.1 -0.7,0.5 -1.5,1 -2.5,1.2 -1,0.2 -1.8,0.2 -2.8,0.2 -1.3,0 -2.5,-0.2 -3.6,-0.6 -1.1,-0.4 -2.1,-1 -3.1,-1.9 l 3.1,-3.4 c 0.5,0.6 1,1.1 1.7,1.4 0.7,0.3 1.4,0.5 2.1,0.5 0.4,0 0.7,0 1.1,-0.1 0.4,-0.1 0.7,-0.2 1,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.6 0.2,-0.3 0.3,-0.6 0.3,-0.9 0,-0.6 -0.2,-1.1 -0.7,-1.4 -0.5,-0.3 -1,-0.6 -1.7,-0.9 -0.7,-0.2 -1.4,-0.5 -2.3,-0.7 -0.8,-0.2 -1.6,-0.6 -2.3,-1 -0.7,-0.4 -1.3,-1 -1.7,-1.6 -0.5,-0.7 -0.7,-1.6 -0.7,-2.7 0,-1.1 0.2,-2 0.6,-2.8 0.4,-0.8 1,-1.5 1.7,-2 0.7,-0.5 1.5,-1 2.4,-1.2 0.9,-0.3 1.9,-0.4 2.9,-0.4 1.1,0 2.2,0.2 3.3,0.5 1.1,0.3 2,0.9 2.9,1.6 l -3.1,3 z"
-                                id="path19" style="fill:#54585a" />
-                            <path
-                                d="m 176.9,75.4 c -0.4,-0.5 -0.8,-0.8 -1.5,-1 -0.6,-0.2 -1.2,-0.3 -1.7,-0.3 -0.3,0 -0.6,0 -1,0.1 -0.3,0.1 -0.7,0.2 -1,0.4 -0.3,0.2 -0.5,0.4 -0.7,0.6 -0.2,0.2 -0.3,0.6 -0.3,1 0,0.6 0.2,1.1 0.7,1.4 0.5,0.3 1,0.6 1.7,0.8 0.7,0.2 1.4,0.5 2.2,0.7 0.8,0.2 1.5,0.5 2.2,1 0.7,0.4 1.3,1 1.7,1.7 0.5,0.7 0.7,1.6 0.7,2.8 0,1.1 -0.2,2.1 -0.6,2.9 -0.4,0.8 -1,1.5 -1.7,2.1 -0.7,0.5 -1.5,1 -2.5,1.2 -1,0.2 -1.9,0.4 -3,0.4 -1.3,0 -2.5,-0.2 -3.6,-0.6 -1.1,-0.4 -2.1,-1 -3.1,-1.9 l 3.1,-3.4 c 0.5,0.6 1,1.1 1.7,1.4 0.7,0.3 1.4,0.5 2.1,0.5 0.4,0 0.7,0 1.1,-0.1 0.4,-0.1 0.7,-0.2 1,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.6 0.2,-0.3 0.3,-0.6 0.3,-0.9 0,-0.6 -0.2,-1.1 -0.7,-1.4 -0.5,-0.3 -1,-0.6 -1.7,-0.9 -0.7,-0.2 -1.4,-0.5 -2.3,-0.7 -0.8,-0.2 -1.6,-0.6 -2.3,-1 -0.7,-0.4 -1.3,-1 -1.7,-1.6 -0.5,-0.7 -0.7,-1.6 -0.7,-2.7 0,-1.1 0.2,-2 0.6,-2.8 0.4,-0.8 1,-1.5 1.7,-2 0.7,-0.5 1.5,-1 2.4,-1.2 0.9,-0.2 1.9,-0.4 2.9,-0.4 1.1,0 2.2,0.2 3.3,0.5 1.1,0.3 2,0.9 2.9,1.6 l -2.9,2.8 z"
-                                id="path21" style="fill:#54585a" />
-                            <path
-                                d="m 182.6,70.5 7.5,0 c 0.9,0 1.7,0.1 2.6,0.2 0.9,0.1 1.7,0.4 2.4,0.7 0.7,0.4 1.3,0.9 1.7,1.5 0.4,0.7 0.6,1.5 0.6,2.6 0,1.1 -0.3,2.1 -0.9,2.8 -0.6,0.7 -1.5,1.3 -2.5,1.6 l 0,0.1 c 0.7,0.1 1.3,0.3 1.8,0.5 0.5,0.3 1,0.6 1.4,1 0.4,0.4 0.7,0.9 0.9,1.5 0.2,0.6 0.3,1.2 0.3,1.8 0,1.1 -0.2,1.9 -0.7,2.6 -0.5,0.7 -1,1.3 -1.8,1.7 -0.7,0.4 -1.5,0.7 -2.4,0.9 -0.9,0.2 -1.8,0.3 -2.7,0.3 l -8.2,0 0,-19.8 z m 4.4,8 3.2,0 c 0.3,0 0.7,0 1,-0.1 0.3,-0.1 0.6,-0.2 0.9,-0.4 0.3,-0.2 0.5,-0.4 0.6,-0.7 0.2,-0.3 0.2,-0.6 0.2,-1 0,-0.4 -0.1,-0.8 -0.3,-1 -0.2,-0.3 -0.4,-0.5 -0.7,-0.6 -0.3,-0.2 -0.6,-0.3 -1,-0.3 -0.4,-0.1 -0.7,-0.1 -1,-0.1 l -3,0 0,4.2 z m 0,8.3 4,0 c 0.3,0 0.7,0 1,-0.1 0.3,-0.1 0.7,-0.2 0.9,-0.4 0.3,-0.2 0.5,-0.4 0.7,-0.7 0.2,-0.3 0.3,-0.7 0.3,-1.1 0,-0.5 -0.1,-0.9 -0.4,-1.1 -0.2,-0.3 -0.5,-0.5 -0.9,-0.7 -0.4,-0.2 -0.7,-0.3 -1.2,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -3.2,0 0,4.5 z"
-                                id="path23" style="fill:#54585a" />
-                            <path
-                                d="m 206.8,70.5 3.6,0 8.7,20 -5,0 -1.7,-4.2 -7.8,0 -1.7,4.2 -4.9,0 8.8,-20 z m 1.7,5.8 -2.4,6.2 4.9,0 -2.5,-6.2 z"
-                                id="path25" style="fill:#54585a" />
-                            <path
-                                d="m 220.6,70.5 7.7,0 c 1,0 2,0.1 2.9,0.3 0.9,0.2 1.7,0.5 2.4,1 0.7,0.5 1.2,1.1 1.6,1.9 0.4,0.8 0.6,1.8 0.6,2.9 0,1.4 -0.4,2.6 -1.1,3.6 -0.7,1 -1.8,1.6 -3.2,1.9 l 5.1,8.4 -5.3,0 -4.2,-8 -2.1,0 0,8 -4.4,0 0,-20 z m 4.4,8.3 2.6,0 c 0.4,0 0.8,0 1.3,0 0.4,0 0.8,-0.1 1.2,-0.3 0.4,-0.1 0.7,-0.4 0.9,-0.7 0.2,-0.3 0.4,-0.7 0.4,-1.3 0,-0.5 -0.1,-0.9 -0.3,-1.2 -0.2,-0.3 -0.5,-0.5 -0.8,-0.7 -0.3,-0.2 -0.7,-0.3 -1.1,-0.3 -0.4,-0.1 -0.8,-0.1 -1.2,-0.1 l -3,0 0,4.6 z"
-                                id="path27" style="fill:#54585a" />
-                        </g>
-                        <g id="g3453">
-                            <polygon points="73.5,72.2 55.1,76 62.5,83.7 80.7,80.5 83.3,67 79.6,67.8 75.3,63.9 "
-                                id="polygon33" style="fill:#54585a" />
-                            <polygon style="fill:#a9abac" id="polygon35"
-                                points="57.8,67.6 75.3,63.9 73.5,72.2 55.1,76 " />
-                            <polyline style="fill:#54585a" id="polyline37"
-                                points="80.9,39.1 82.7,30.7 82.7,30.7 88.5,37.1   " />
-                            <polygon style="fill:#ffb489" id="polygon39"
-                                points="46.7,63.7 87.5,54.8 90.5,39.4 51.1,50.1 " />
-                            <polygon style="fill:#ff6a13" id="polygon41"
-                                points="77.1,60.4 81.2,64.1 94.1,61.4 94.1,61.4 94.1,61.4 94.1,61.4 94.1,61.3 96.7,46.1 90.5,39.4 87.5,54.8 46.7,63.7 53,70.3 54.6,65.2 " />
-                            <polygon style="fill:#a9abac" id="polygon43"
-                                points="82.7,30.7 67.9,35.2 65.2,43.4 80.9,39.1 " />
-                        </g>
-                    </g>
-                </svg>
-            </a>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown"><a class="nav-link" href="#"
-                            data-toggle="dropdown"><span>Technology</span></a>
-                        <div class="dropdown-menu"><a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/technology/reram-overview/">ReRAM
-                                Overview</a> <a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/technology/reram-advantages/">ReRAM
-                                Advantages</a>
-                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
-                                    data-toggle="dropdown">ReRAM Offerings</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/offerings/high-performance-memory/">High-Performance
-                                            Memory</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/offerings/high-density-memory/">High-Density
-                                            Memory</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/offerings/ftp-otp-memory/">ReRAM
-                                            as
-                                            FTP/OTP Memory</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/offerings/reram-secure-keys/">ReRAM
-                                            Secure Keys</a></li>
-                                </ul>
-                            </div>
-                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
-                                    data-toggle="dropdown">ReRAM Applications</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/artificial-intelligence/">Artificial
-                                            Intelligence</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/automotive-industrial-medical/">Automotive/Industrial/Medical</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/consumer-electronics/">Consumer
-                                            Electronics</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/data-center/">Data
-                                            Center</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/internet-of-things/">Internet
-                                            of Things</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/mobile-computing/">Mobile
-                                            Computing</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/applications/secure-computing/">Secure
-                                            Computing</a></li>
-                                </ul>
-                            </div>
-                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
-                                    data-toggle="dropdown">Develop</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/develop/design-resources/">Design
-                                            Resources</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/develop/design-start/">DesignStart</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/technology/develop/customer-support/">Customer
-                                            Support</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown"><a class="nav-link" href="#"
-                            data-toggle="dropdown"><span>Products</span></a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#"
-                                    data-toggle="dropdown">Cramium Family of Secure Processing Units</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/products/secure-processing-units/overview/">Cramium
-                                            Mission</a></li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/products/secure-processing-units/motivation/">Motivation</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/products/secure-processing-units/solution/">Solution</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/products/secure-processing-units/architecture/">Architecture</a>
-                                    </li>
-                                    <li><a class="dropdown-item"
-                                            href="https://www.crossbar-inc.com/products/secure-processing-units/reram-memory/">ReRAM
-                                            Memory</a></li>
-                                </ul>
-                            </div><a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/products/cramium-family-reference-design/">Cramium
-                                Personal Hardware Security Module (PHSM)</a>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown"><a class="nav-link" href="#"
-                            data-toggle="dropdown"><span>News</span></a>
-                        <div class="dropdown-menu"><a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/news/press-releases/">Press
-                                Releases</a> <a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/news/in-the-news/">In The News</a></div>
-                    </li>
-                    <li class="nav-item dropdown active"><a class="nav-link" href="#"
-                            data-toggle="dropdown"><span>Company</span></a>
-                        <div class="dropdown-menu"><a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/company/about-crossbar/">About
-                                CrossBar</a> <a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/company/media-resources/">Media
-                                Resources</a> <a class="dropdown-item"
-                                href="https://www.crossbar-inc.com/company/careers/">Careers</a> <a
-                                class="dropdown-item" href="https://www.crossbar-inc.com/company/contact/">Contact</a>
-                        </div>
-                    </li>
-                </ul>
+        <nav>
+            <ul>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="#news">News</a></li>
+                <li><a href="#company">Company</a></li>
+            </ul>
+        </nav>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="section hero" id="hero">
+        <div class="hex-pattern"></div>
+        <div class="crypto-coins" id="crypto-coins"></div>
+        <div class="chip-container">
+            <div class="chip">
+                <div class="chip-face chip-front">CB</div>
+                <div class="chip-face chip-back"></div>
+                <div class="chip-face chip-top"></div>
+                <div class="chip-face chip-bottom"></div>
+                <div class="chip-face chip-left"></div>
+                <div class="chip-face chip-right"></div>
             </div>
         </div>
-    </nav>
-    <section id="hero" class="scroll-reveal">
-        <div class="hero-background"></div>
-        <div class="hero-caption w-100">
-            <div class="container">
-                <h1>About CrossBar</h1>
-                <div class="mascot">
-                    <svg viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="#FF6A13" opacity="0.8" />
-                        <rect x="30" y="30" width="40" height="40" fill="#121212" />
-                        <path d="M40,40 L60,60 M60,40 L40,60" stroke="#FFB07C" stroke-width="5" />
-                    </svg>
+        <div class="wallet-container">
+            <div class="wallet">
+                <div class="wallet-screen">Cramium</div>
+                <div class="wallet-buttons">
+                    <div class="wallet-button">A</div>
+                    <div class="wallet-button">B</div>
+                    <div class="wallet-button">C</div>
                 </div>
-                <div class="pages pages-l2"><a class="active"
-                        href="https://www.crossbar-inc.com/company/about-crossbar/">About CrossBar</a>
-                    <a class="" href="https://www.crossbar-inc.com/company/media-resources/">Media Resources</a><a
-                        class="" href="https://www.crossbar-inc.com/company/careers/">Careers</a><a class=""
-                        href="https://www.crossbar-inc.com/company/contact/">Contact</a>
-                </div>
-                <div class="pages pages-l3 no-l3">&nbsp;</div>
             </div>
+        </div>
+        <div class="hero-content">
+            <h1>ReThink Innovation of Storage</h1>
+            <p>CrossBar is pioneering ReRAM technology to revolutionize storage with unprecedented speed, efficiency,
+                and security for the AI era.</p>
+            <a href="#about" class="cta-button">Discover ReRAM</a>
         </div>
     </section>
-    <section class="main">
-        <div class="container">
-            <h1 id="rethink-innovation">ReThink Innovation</h1>
-            <p>The light bulb. The car. The telephone. All of these inventions had profound impacts on the world and
-                people&rsquo;s lives. So, what&rsquo;s next? Natural Human-Machine interfaces, autonomous cars, and
-                artificial intelligence are bringing yet another wave of invention that is shifting the trajectory of
-                society in stunning and positive ways. These systems require instant, ubiquitous access to Secure Data.
-                Data is the &ldquo;New Air,&rdquo; wherever, whenever, always available. But to make data truly
-                ubiquitous, inventors have to rethink the status quo. New technologies are needed to architect systems
-                with no latency, high energy efficiency, high capacity, and uncompromised security. That&rsquo;s where
-                CrossBar Resistive RAM (ReRAM) comes in.</p>
-            <div class="image text-box image-right align-items-center">
-                <div class="inner d-flex align-items-center align-self-stretch inner light-gray-background">
-                    <div class="text">
-                        <p>CrossBar was founded in 2010 to commercialize a radically different approach to non-volatile
-                            memory called ReRAM. A unique memory technology that can be integrated inside a
-                            system-on-chip or produced as a standalone memory chip, CrossBar ReRAM is playing an
-                            important role in enabling this new world.</p>
-                        <p><strong>ReRAM makes tightly integrated compute/storage subsystems possible, freeing designers
-                                from the traditional bus-based storage architectures.</strong></p>
-                    </div>
-                </div>
-                <div class="image-container image-right align-self-stretch"><img
-                        src="/assets/images/company/about-crossbar.jpg"></div>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="content-section">
+            <div class="section-title">
+                <h2>About <span style="color: var(--color-primary);">CrossBar</span></h2>
+                <p>Pioneering the future of storage technology</p>
             </div>
-            <p>With ReRAM, designers can create entirely new subsystems from &ldquo;persistent computing&rdquo; where
-                integrated data pods never shut down to &ldquo;smart memory&rdquo; that learns from every interaction
-                and autonomously retrieves, filters, and computes data without the intervention of the CPU.</p>
-            <p>CrossBar&rsquo;s Resistive RAM technology has numerous uses for high-performance and high-density
-                multiple-time programmable (MTP) memory as well as few-time programmable (FTP) and one-time programmable
-                (OTP) non-volatile memories. In addition, the company is exploiting the benefits of its unique ReRAM
-                technology for physically unclonable function (PUF) security keys, providing superior security
-                characteristics, simpler implementations, higher speed processing, and semiconductor fabrication synergy
-                with embedded ReRAM memories.</p>
-            <p>Leveraging the unique features of ReRAM technology where security is paramount, CrossBar is also
-                developing the Cramium product family of Secure Processing Units (SPU). This product family serves a
-                broad variety of applications with a high performance CPU core, large memory, and physical
-                countermeasures to mitigate hacking. In addition, the Cramium product family contains hardware
-                accelerators specifically targeting blockchain transactions.</p>
-            <div class="tabs">
+
+            <img class="image-light" src="img/lightbulb.png" alt="light bulb">
+            <img class="image-car" src="img/car.png" alt="car">
+            <img class="image-car" src="img/phone.png" alt="phone">
+
+            <div class="text-box glass">
+                <h3>ReThink Innovation</h3>
+                <p>The light bulb. The car. The telephone. All of these inventions had profound impacts on the world and
+                    people's lives. So, what's next? Natural Human-Machine interfaces, autonomous cars, and artificial
+                    intelligence are bringing yet another wave of invention that is shifting the trajectory of society
+                    in stunning and positive ways. These systems require instant, ubiquitous access to Secure Data. Data
+                    is the "New Air," wherever, whenever, always available. But to make data truly ubiquitous, inventors
+                    have to rethink the status quo. New technologies are needed to architect systems with no latency,
+                    high energy efficiency, high capacity, and uncompromised security. That's where CrossBar Resistive
+                    RAM (ReRAM) comes in.</p>
+
+                <p>CrossBar was founded in 2010 to commercialize a radically different approach to non-volatile memory
+                    called ReRAM. A unique memory technology that can be integrated inside a system-on-chip or produced
+                    as a standalone memory chip, CrossBar ReRAM is playing an important role in enabling this new world.
+                </p>
+
+                <p><strong>ReRAM makes tightly integrated compute/storage subsystems possible, freeing designers from
+                        the traditional bus-based storage architectures.</strong></p>
+
+                <p>With ReRAM, designers can create entirely new subsystems from "persistent computing" where integrated
+                    data pods never shut down to "smart memory" that learns from every interaction and autonomously
+                    retrieves, filters, and computes data without the intervention of the CPU.</p>
+
+                <p>CrossBar's Resistive RAM technology has numerous uses for high-performance and high-density
+                    multiple-time programmable (MTP) memory as well as few-time programmable (FTP) and one-time
+                    programmable (OTP) non-volatile memories. In addition, the company is exploiting the benefits of its
+                    unique ReRAM technology for physically unclonable function (PUF) security keys, providing superior
+                    security characteristics, simpler implementations, higher speed processing, and semiconductor
+                    fabrication synergy with embedded ReRAM memories.</p>
+
+                <p>Leveraging the unique features of ReRAM technology where security is paramount, CrossBar is also
+                    developing the Cramium product family of Secure Processing Units (SPU). This product family serves a
+                    broad variety of applications with a high performance CPU core, large memory, and physical
+                    countermeasures to mitigate hacking. In addition, the Cramium product family contains hardware
+                    accelerators specifically targeting blockchain transactions.</p>
+            </div>
+
+            <div class="tabs glass">
                 <div class="nav-tabs-wrapper">
                     <ul class="nav nav-tabs">
-                        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#facts">CrossBar Key
-                                Facts</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#highlights">Technology
-                                Highlights</a></li>
+                        <li class="nav-item"><a class="nav-link active" data-toggle="facts">CrossBar Key Facts</a></li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="highlights">Technology Highlights</a></li>
                     </ul>
                 </div>
-                <div class="tab-content d-flex">
+                <div class="tab-content">
                     <div class="tab-pane active" id="facts">
                         <ul>
                             <li>Founded in 2010, headquartered in Santa Clara, California</li>
@@ -326,92 +999,183 @@
             </div>
         </div>
     </section>
-    <div class="page-footer"></div>
+
+    <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="line1 clearfix">
-                <div class="social float-sm-right"><a target="_blank" title="CrossBar at Linkedin"
-                        href="https://www.crossbar-inc.com//www.linkedin.com/company/crossbar-inc"><i
-                            class="fa-brands fa-linkedin"></i></a><a target="_blank" title="CrossBar at Twitter"
-                        href="https://www.crossbar-inc.com//twitter.com/crossbarinc"><i
-                            class="fa-brands fa-twitter"></i></a></div>
-                <div class="pages float-left"><a title="Company"
-                        href="https://www.crossbar-inc.com/company/">Company</a><span class="divider"></span><a
-                        title="Careers" href="https://www.crossbar-inc.com/company/careers/">Careers</a><span
-                        class="divider"></span><a title="Contact"
-                        href="https://www.crossbar-inc.com/company/contact/">Contact</a></div>
+        <div class="footer-grid">
+            <div class="footer-about">
+                <div class="footer-logo">CROSSBAR</div>
+                <p>Pioneering ReRAM technology to enable the next generation of computing and storage solutions.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
             </div>
-            <div class="divider"></div>
-            <div class="line2">
-                <div class="copyright float-sm-right">Copyright &copy; CrossBar, Inc. All rights reserved.</div>
-                <div class="pages"><a title="Terms of Use" href="https://www.crossbar-inc.com/terms-of-use/">Terms of
-                        Use</a><span class="divider"></span><a title="Privacy Policy"
-                        href="https://www.crossbar-inc.com/privacy-policy/">Privacy Policy</a><span
-                        class="divider"></span><a title="Sitemap"
-                        href="https://www.crossbar-inc.com/sitemap/">Sitemap</a></div>
+            <div class="footer-links">
+                <h4>Technology</h4>
+                <ul>
+                    <li><a href="#">ReRAM Overview</a></li>
+                    <li><a href="#">ReRAM Advantages</a></li>
+                    <li><a href="#">ReRAM Offerings</a></li>
+                    <li><a href="#">ReRAM Applications</a></li>
+                    <li><a href="#">Develop</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Products</h4>
+                <ul>
+                    <li><a href="#">Cramium SPUs</a></li>
+                    <li><a href="#">Secure Processing Units</a></li>
+                    <li><a href="#">Cramium Mission</a></li>
+                    <li><a href="#">Architecture</a></li>
+                    <li><a href="#">ReRAM Memory</a></li>
+                    <li><a href="#">Cramium PHSM</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Media Resources</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
             </div>
         </div>
+        <div class="copyright">
+            <p>Copyright &copy; CrossBar, Inc. All rights reserved.
+                <a href="#">Terms of Use</a> |
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Sitemap</a>
+            </p>
+        </div>
     </footer>
-    <script src="/assets/vendor.js"></script>
-    <script src="/assets/app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+
     <script>
-        var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-        if (dnt != "1" && dnt != "yes") {
-
-            (function (i, s, o, g, r, a, m) { i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }, i[r].l = 1 * new Date(); a = s.createElement(o), m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m) })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga'); ga('create', 'UA-42686857-1', 'auto'); ga('require', 'dnt'); ga('send', 'pageview');
-
-
-        }
-    </script>
-    <script>
-        // Initialize ScrollTrigger
+        // Initialize GSAP and ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
 
-        // Scroll reveal animations
-        document.querySelectorAll('.scroll-reveal').forEach(section => {
-            gsap.fromTo(section,
-                { autoAlpha: 0, y: 50 },
-                {
-                    autoAlpha: 1,
-                    y: 0,
-                    duration: 1,
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
-                    }
-                }
-            );
-        });
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
 
-        // Sticky navigation
-        ScrollTrigger.create({
-            start: 'top top',
-            end: 'max',
-            toggleClass: { targets: 'nav.nav', className: 'sticky-active' },
-            markers: false
-        });
+        // Check for saved theme preference
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
 
-        // Parallax effect
-        gsap.to('.hero-background', {
-            yPercent: 20,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: '#hero',
-                scrub: true
+        // Set initial icon based on theme
+        if (currentTheme === 'light') {
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Toggle icon
+            if (newTheme === 'light') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
             }
         });
 
-        // Animation toggle functionality
-        const toggle = document.querySelector('.animation-toggle');
-        if (toggle) {
-            toggle.addEventListener('click', () => {
-                document.body.classList.toggle('reduced-motion');
-                toggle.classList.toggle('active');
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.nav-link').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-toggle');
+
+                // Remove active class from all tabs
+                document.querySelectorAll('.nav-link').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                // Add active class to clicked tab
+                tab.classList.add('active');
+
+                // Hide all tab panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+
+                // Show selected tab pane
+                document.getElementById(tabId).classList.add('active');
             });
+        });
+
+        // Create floating crypto coins
+        function createFloatingCoins() {
+            const coinsContainer = document.getElementById('crypto-coins');
+            const coinTypes = ['bitcoin', 'pax', 'tether'];
+
+            for (let i = 0; i < 15; i++) {
+                const coin = document.createElement('div');
+                coin.classList.add('coin');
+                coin.classList.add(coinTypes[Math.floor(Math.random() * coinTypes.length)]);
+
+                // Random position
+                coin.style.left = `${Math.random() * 100}%`;
+
+                // Random delay
+                coin.style.animationDelay = `${Math.random() * 15}s`;
+
+                // Random size
+                const size = 30 + Math.random() * 30;
+                coin.style.width = `${size}px`;
+                coin.style.height = `${size}px`;
+
+                coinsContainer.appendChild(coin);
+            }
         }
+
+        createFloatingCoins();
+
+        // Scroll animations for content sections
+        gsap.utils.toArray('.text-box, .tabs').forEach(section => {
+            gsap.from(section, {
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 0,
+                y: 50,
+                duration: 1
+            });
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    gsap.to(window, {
+                        duration: 1,
+                        scrollTo: target,
+                        ease: "power2.inOut"
+                    });
+                }
+            });
+        });
     </script>
 </body>
 
