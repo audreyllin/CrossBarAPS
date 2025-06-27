@@ -591,12 +591,14 @@ body::after {
     width: 90vw;
     margin-left: 90vw;
     margin-top: 140vh;
+    max-width: 360px;
 }
 
 .image-lcp {
     width: 250px;
     margin-left: 30vw;
-    margin-bottom: 30vh;
+    margin-bottom: 40vh;
+    margin-top: 40vh;
 }
 
 .icon-container {
@@ -622,8 +624,9 @@ body::after {
 }
 
 .icon-container.car {
-    top: 30%;
+    top: 75%;
     right: 10%;
+    margin-right: 10vw;
 }
 
 .icon-container.phone {
@@ -978,11 +981,6 @@ footer {
     .icon-container.lightbulb {
         top: 5%;
         left: 5%;
-    }
-
-    .icon-container.car {
-        top: 20%;
-        right: 5%;
     }
 
     .icon-container.phone {
