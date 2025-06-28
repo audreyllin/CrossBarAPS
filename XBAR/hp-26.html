@@ -255,6 +255,7 @@
                 </div>
             </div>
         </div>
+        <button id="animation-toggle" class="toggle-btn">Stop All Animations</button>
     </header>
 
     <!-- Main Content -->
@@ -828,6 +829,45 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ================== ANIMATION STATE MANAGEMENT ==================
+            let animationsEnabled = true;
+            const animationToggle = document.getElementById('animation-toggle');
+
+            // Initialize animation state
+            function initAnimationState() {
+                document.body.classList.toggle('no-animation', !animationsEnabled);
+                document.body.classList.toggle('coins-hidden', !animationsEnabled);
+            }
+
+            // Toggle animation function
+            function toggleAnimations() {
+                animationsEnabled = !animationsEnabled;
+
+                // Update button text
+                animationToggle.textContent = animationsEnabled
+                    ? 'Stop All Animations'
+                    : 'Play All Animations';
+
+                // Toggle CSS classes
+                document.body.classList.toggle('no-animation', !animationsEnabled);
+                document.body.classList.toggle('coins-hidden', !animationsEnabled);
+
+                // Recreate coins if enabling animations
+                if (animationsEnabled) {
+                    const coinsContainer = document.getElementById('cryptoCoins');
+                    coinsContainer.innerHTML = '';
+                    createCoins();
+                }
+            }
+
+            // Add event listener for animation toggle
+            if (animationToggle) {
+                animationToggle.addEventListener('click', toggleAnimations);
+            }
+
+            // Initialize animation state
+            initAnimationState();
+
             // ================== THEME MANAGEMENT ==================
             const themeToggle = document.getElementById('themeToggle');
             const themeIcon = themeToggle.querySelector('i');
@@ -1066,9 +1106,9 @@
                     item.className = 'search-result-item';
                     item.href = result.link;
                     item.innerHTML = `
-                <h4>${result.title}</h4>
-                <p>${result.content}</p>
-            `;
+            <h4>${result.title}</h4>
+            <p>${result.content}</p>
+        `;
                     item.addEventListener('click', () => {
                         searchContainer.classList.remove('active');
                     });
@@ -1086,12 +1126,51 @@
                 }
             });
 
+            // ================== COIN ANIMATION SYSTEM ==================
+            function createCoins() {
+                if (!animationsEnabled) return; // Skip if animations disabled
+
+                const coinsContainer = document.getElementById('cryptoCoins');
+                if (!coinsContainer) return;
+
+                const coinTypes = ['bitcoin', 'pax', 'tether'];
+                const symbols = ['₿', '₽', '₮'];
+
+                // Clear previous coins
+                coinsContainer.innerHTML = '';
+
+                for (let i = 0; i < 12; i++) {
+                    const coin = document.createElement('div');
+                    coin.className = `coin ${coinTypes[i % 3]}`;
+                    coin.innerHTML = symbols[i % 3];
+
+                    // Random position
+                    const leftPos = Math.random() * 100;
+                    coin.style.left = `${leftPos}%`;
+
+                    // Random animation delay and duration
+                    const delay = Math.random() * 15;
+                    const duration = 15 + Math.random() * 10;
+                    coin.style.animationDelay = `${delay}s`;
+                    coin.style.animationDuration = `${duration}s`;
+
+                    coinsContainer.appendChild(coin);
+                }
+            }
+
             // ================== ANIMATIONS & EFFECTS ==================
             // Initialize GSAP ScrollTriggers
             gsap.registerPlugin(ScrollTrigger);
 
             // Section header animations
             gsap.utils.toArray('.section__header').forEach(header => {
+                // Skip if animations disabled
+                if (!animationsEnabled) {
+                    header.style.opacity = 1;
+                    header.style.transform = 'translateY(0)';
+                    return;
+                }
+
                 gsap.from(header, {
                     scrollTrigger: {
                         trigger: header,
@@ -1108,6 +1187,13 @@
 
             // Card animations
             gsap.utils.toArray('.features__card, .products__card, .stats__card, .news__card').forEach(card => {
+                // Skip if animations disabled
+                if (!animationsEnabled) {
+                    card.style.opacity = 1;
+                    card.style.transform = 'translateY(0)';
+                    return;
+                }
+
                 gsap.from(card, {
                     scrollTrigger: {
                         trigger: card,
@@ -1134,6 +1220,12 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('visible');
+
+                        // For card animations when disabled
+                        if (!animationsEnabled) {
+                            entry.target.style.opacity = 1;
+                            entry.target.style.transform = 'translateY(0)';
+                        }
                     }
                 });
             }, observerOptions);
@@ -1145,6 +1237,9 @@
 
             // Initialize hero section as visible
             document.querySelector('#hero').classList.add('visible');
+
+            // Initialize coin animations
+            createCoins();
 
             // ================== PERFORMANCE OPTIMIZATIONS ==================
             // Throttle resize events
