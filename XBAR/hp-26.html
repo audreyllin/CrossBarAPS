@@ -1002,11 +1002,14 @@
                 // Close button
                 document.querySelector('.close-menu').addEventListener('click', closeMenu);
 
+                // Track open dropdown state
+                let openDropdown = null;
+
                 dropdownParents.forEach(parent => {
                     const link = parent.querySelector('a');
                     const dropdown = parent.querySelector('.dropdown');
 
-                    // Desktop hover
+                    // Desktop hover interaction
                     parent.addEventListener('mouseenter', () => {
                         if (window.innerWidth > 992 && dropdown) {
                             parent.classList.add('active');
@@ -1024,23 +1027,27 @@
                         }
                     });
 
-                    // Mobile click
+                    // Mobile click interaction - ENHANCED
                     link.addEventListener('click', (e) => {
                         if (window.innerWidth <= 992 && dropdown) {
                             e.preventDefault();
                             e.stopPropagation();
 
-                            // Close siblings
-                            dropdownParents.forEach(sibling => {
-                                if (sibling !== parent) {
-                                    sibling.classList.remove('active');
-                                    sibling.querySelector('.dropdown')?.classList.remove('active');
-                                }
-                            });
+                            // Check if this dropdown is already open
+                            const isOpen = parent.classList.contains('active');
 
-                            // Toggle current
+                            // Close previously open dropdown if any
+                            if (openDropdown && openDropdown !== parent) {
+                                openDropdown.classList.remove('active');
+                                openDropdown.querySelector('.dropdown')?.classList.remove('active');
+                            }
+
+                            // Toggle current dropdown
                             parent.classList.toggle('active');
                             dropdown.classList.toggle('active');
+
+                            // Update open dropdown reference
+                            openDropdown = parent.classList.contains('active') ? parent : null;
                         }
                     });
                 });
@@ -1051,8 +1058,26 @@
                         if (window.innerWidth <= 992) closeMenu();
                     });
                 });
-            }
 
+                // Always prevent navigation for parent links on mobile
+                document.querySelectorAll('.has-dropdown > a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        if (window.innerWidth <= 992) {
+                            e.preventDefault();
+                        }
+                    });
+                });
+
+                // Close dropdowns when scrolling
+                window.addEventListener('scroll', () => {
+                    if (window.innerWidth <= 992 && openDropdown) {
+                        openDropdown.classList.remove('active');
+                        openDropdown.querySelector('.dropdown')?.classList.remove('active');
+                        openDropdown = null;
+                    }
+                });
+            }
+            
             // ================== SCROLL PROGRESS BAR ==================
             const progressFill = document.getElementById('progressFill');
             const progressDots = document.querySelectorAll('.progress-dot');
