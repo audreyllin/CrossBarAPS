@@ -442,8 +442,7 @@
                     <div class="video-card">
                         <div class="video-thumb"
                             data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/storage.mp4">
-                            <img src="img/EnterpriseStorage.png"
-                                alt="Enterprise Storage">
+                            <img src="img/EnterpriseStorage.png" alt="Enterprise Storage">
                             <div class="play-btn">
                                 <i class="fas fa-play"></i>
                             </div>
@@ -458,8 +457,7 @@
                     <div class="video-card">
                         <div class="video-thumb"
                             data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/wearables.mp4">
-                            <img src="img/WearableDevice.jpg"
-                                alt="Wearable Device">
+                            <img src="img/WearableDevice.jpg" alt="Wearable Device">
                             <div class="play-btn">
                                 <i class="fas fa-play"></i>
                             </div>
@@ -474,8 +472,7 @@
                     <div class="video-card">
                         <div class="video-thumb"
                             data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/iot.mp4">
-                            <img src="img/StorageInnovation.jpg"
-                                alt="Storage Innovation">
+                            <img src="img/StorageInnovation.jpg" alt="Storage Innovation">
                             <div class="play-btn">
                                 <i class="fas fa-play"></i>
                             </div>
@@ -490,8 +487,7 @@
                     <div class="video-card">
                         <div class="video-thumb"
                             data-video="https://www.crossbar-inc.com/assets/resources/videos/270p/whiteboard.mp4">
-                            <img src="img/OutdatedFlash.jpg"
-                                alt="Outdated flash technology">
+                            <img src="img/OutdatedFlash.jpg" alt="Outdated flash technology">
                             <div class="play-btn">
                                 <i class="fas fa-play"></i>
                             </div>
@@ -949,7 +945,6 @@
             const navList = document.getElementById('navList');
             const body = document.body;
 
-            // Toggle mobile menu
             function toggleMobileMenu() {
                 navList.classList.toggle('active');
                 body.classList.toggle('menu-open');
@@ -970,7 +965,6 @@
                 mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
             });
 
-            // Close menu when clicking outside
             document.addEventListener('click', (e) => {
                 if (navList.classList.contains('active') &&
                     !navList.contains(e.target) &&
@@ -984,6 +978,7 @@
                 const dropdownParents = document.querySelectorAll('.has-dropdown');
 
                 dropdownParents.forEach(parent => {
+                    const link = parent.querySelector('a');
                     const dropdown = parent.querySelector('.dropdown');
 
                     // Desktop hover interaction
@@ -999,20 +994,14 @@
 
                     parent.addEventListener('mouseleave', () => {
                         if (window.innerWidth > 992 && dropdown) {
-                            gsap.to(dropdown, {
-                                opacity: 0,
-                                y: 10,
-                                duration: 0.2,
-                                onComplete: () => {
-                                    parent.classList.remove('active');
-                                }
-                            });
+                            parent.classList.remove('active');
+                            gsap.to(dropdown, { opacity: 0, y: 10, duration: 0.2 });
                         }
                     });
 
                     // Mobile click interaction
-                    parent.addEventListener('click', (e) => {
-                        if (window.innerWidth <= 992) {
+                    link.addEventListener('click', (e) => {
+                        if (window.innerWidth <= 992 && dropdown) {
                             e.preventDefault();
                             e.stopPropagation();
 
@@ -1028,12 +1017,11 @@
 
                             // Toggle current
                             parent.classList.toggle('active');
-                            if (dropdown) dropdown.classList.toggle('active');
+                            dropdown.classList.toggle('active');
                         }
                     });
                 });
 
-                // Close all dropdowns when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.has-dropdown')) {
                         document.querySelectorAll('.has-dropdown').forEach(parent => {
