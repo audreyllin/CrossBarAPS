@@ -76,6 +76,16 @@ body {
     overflow-x: hidden;
 }
 
+body.no-animation * {
+    animation: none !important;
+    transition: none !important;
+}
+
+.no-animation * {
+    animation: none !important;
+    transition: none !important;
+}
+
 h1,
 h2,
 h3,
@@ -218,6 +228,7 @@ header.header {
 }
 
 .header.glass {
+    background-color: dimgray;
     border-radius: 0;
     border: none;
     border-bottom: 1px solid var(--glass-border);
@@ -234,6 +245,7 @@ header.header {
 .logo {
     display: flex;
     align-items: center;
+    mix-blend-mode: plus-lighter;
 }
 
 .logo svg text {
@@ -395,6 +407,23 @@ header.header {
 .theme-toggle:hover {
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
+}
+
+.toggle-btn {
+    background: rgba(78, 204, 163, 0.2);
+    border: 2px solid #4ecca3;
+    color: #4ecca3;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    /* Ensure button is always clickable */
+}
+
+.toggle-btn:hover {
+    background: rgba(78, 204, 163, 0.3);
 }
 
 /* Hero Section - Enhanced */
@@ -675,6 +704,10 @@ header.header {
 
 .coin.tether {
     background: radial-gradient(circle at 30% 30%, #26A17B, #006A4E);
+}
+
+.coins-hidden .crypto-coins {
+    display: none;
 }
 
 @keyframes coin-float {
@@ -1195,6 +1228,11 @@ footer.footer {
         display: block;
     }
 
+    .toggle-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
     .nav__list {
         position: fixed;
         top: 0;
@@ -1646,6 +1684,11 @@ footer.footer {
     transform: translateY(30px);
     transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
     transition-delay: calc(0.1s * var(--index));
+    position: relative;
+    z-index: 20;
+    /* Higher than coins (z-index: 15) */
+    overflow: visible !important;
+    /* Prevent text cropping */
 }
 
 .features__card.visible,
