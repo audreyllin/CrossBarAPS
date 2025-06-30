@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CrossBar - Advanced ReRAM Memory Solutions</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
@@ -976,12 +976,37 @@
             // ================== DROPDOWNS ==================
             function setupDropdowns() {
                 const dropdownParents = document.querySelectorAll('.has-dropdown');
+                const backdrop = document.createElement('div');
+                backdrop.className = 'menu-backdrop';
+                document.body.appendChild(backdrop);
+
+                // Mobile menu toggle
+                document.querySelector('.mobile-toggle').addEventListener('click', () => {
+                    document.getElementById('navList').classList.add('nav__list--active');
+                    backdrop.style.display = 'block';
+                });
+
+                // Close menu function
+                function closeMenu() {
+                    document.getElementById('navList').classList.remove('nav__list--active');
+                    backdrop.style.display = 'none';
+                    dropdownParents.forEach(parent => {
+                        parent.classList.remove('active');
+                        parent.querySelector('.dropdown')?.classList.remove('active');
+                    });
+                }
+
+                // Backdrop close
+                backdrop.addEventListener('click', closeMenu);
+
+                // Close button
+                document.querySelector('.close-menu').addEventListener('click', closeMenu);
 
                 dropdownParents.forEach(parent => {
                     const link = parent.querySelector('a');
                     const dropdown = parent.querySelector('.dropdown');
 
-                    // Desktop hover interaction
+                    // Desktop hover
                     parent.addEventListener('mouseenter', () => {
                         if (window.innerWidth > 992 && dropdown) {
                             parent.classList.add('active');
@@ -999,19 +1024,17 @@
                         }
                     });
 
-                    // Mobile click interaction
+                    // Mobile click
                     link.addEventListener('click', (e) => {
                         if (window.innerWidth <= 992 && dropdown) {
                             e.preventDefault();
                             e.stopPropagation();
 
                             // Close siblings
-                            const siblings = Array.from(parent.parentElement.children);
-                            siblings.forEach(sibling => {
-                                if (sibling !== parent && sibling.classList.contains('has-dropdown')) {
+                            dropdownParents.forEach(sibling => {
+                                if (sibling !== parent) {
                                     sibling.classList.remove('active');
-                                    const sibDropdown = sibling.querySelector('.dropdown');
-                                    if (sibDropdown) sibDropdown.classList.remove('active');
+                                    sibling.querySelector('.dropdown')?.classList.remove('active');
                                 }
                             });
 
@@ -1022,17 +1045,13 @@
                     });
                 });
 
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.has-dropdown')) {
-                        document.querySelectorAll('.has-dropdown').forEach(parent => {
-                            parent.classList.remove('active');
-                            const dropdown = parent.querySelector('.dropdown');
-                            if (dropdown) dropdown.classList.remove('active');
-                        });
-                    }
+                // Auto-close when clicking leaf links
+                document.querySelectorAll('.dropdown-item:not(.has-dropdown) a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 992) closeMenu();
+                    });
                 });
             }
-            setupDropdowns();
 
             // ================== SCROLL PROGRESS BAR ==================
             const progressFill = document.getElementById('progressFill');
