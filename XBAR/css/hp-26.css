@@ -177,7 +177,7 @@ img {
 }
 
 .section--pinned {
-    min-height: 100vh;
+    min-height: 60vh;
     display: flex;
     align-items: center;
 }
