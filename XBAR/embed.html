@@ -356,105 +356,6 @@
             background-color: white;
         }
 
-        .style-preview {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .style-preview-item {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .style-preview-item.active {
-            border-color: white;
-            transform: scale(1.1);
-        }
-
-        .professional-bg {
-            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
-        }
-
-        .creative-bg {
-            background: linear-gradient(45deg, #6A5ACD, #9370DB);
-        }
-
-        .minimalist-bg {
-            background: linear-gradient(45deg, #4B5563, #9CA3AF);
-        }
-
-        .tech-bg {
-            background: linear-gradient(45deg, #0F766E, #14B8A6);
-        }
-
-        .macari-bg {
-            background: linear-gradient(45deg, #FFFFFF, #FF0000);
-        }
-
-        .strategic-bg {
-            background: linear-gradient(45deg, #0D47A1, #424242);
-        }
-
-        .crypto-bg {
-            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
-        }
-
-        .banking-bg {
-            background: linear-gradient(45deg, #2c3e50, #4ca1af);
-        }
-
-        .sustainability-bg {
-            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #1a2a6c);
-        }
-
-        .pitch-bg {
-            background: linear-gradient(45deg, #4776E6, #8E54E9);
-        }
-
-        .mobile-banking-bg {
-            background: linear-gradient(45deg, #1D976C, #93F9B9);
-        }
-
-        .blockchain-bg {
-            background: linear-gradient(45deg, #1e3c72, #2a5298);
-        }
-
-        .social-media-bg {
-            background: linear-gradient(45deg, #3a6186, #89253e);
-        }
-
-        .multimedia-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .url-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .url-input-group input {
-            flex: 1;
-        }
-
-        .url-input-group button {
-            padding: 10px 15px;
-            background: #6a5acd;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
         .template-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -523,6 +424,32 @@
             border: none;
         }
 
+        .multimedia-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+        }
+
+        .url-input-group button {
+            padding: 10px 15px;
+            background: #6a5acd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
         footer {
             text-align: center;
             padding: 40px 0 20px;
@@ -530,6 +457,55 @@
             color: #a0a0e0;
             font-size: 0.9rem;
             border-top: 1px solid rgba(106, 90, 205, 0.3);
+        }
+
+        /* Template backgrounds */
+        .professional-bg {
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+        }
+
+        .creative-bg {
+            background: linear-gradient(45deg, #6A5ACD, #9370DB);
+        }
+
+        .minimalist-bg {
+            background: linear-gradient(45deg, #4B5563, #9CA3AF);
+        }
+
+        .tech-bg {
+            background: linear-gradient(45deg, #0F766E, #14B8A6);
+        }
+
+        .macari-bg {
+            background: linear-gradient(45deg, #FFFFFF, #FF0000);
+        }
+
+        .strategic-bg {
+            background: linear-gradient(45deg, #0D47A1, #424242);
+        }
+
+        .crypto-bg {
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+        }
+
+        .banking-bg {
+            background: linear-gradient(45deg, #2c3e50, #4ca1af);
+        }
+
+        .sustainability-bg {
+            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #1a2a6c);
+        }
+
+        .pitch-bg {
+            background: linear-gradient(45deg, #4776E6, #8E54E9);
+        }
+
+        .mobile-banking-bg {
+            background: linear-gradient(45deg, #1D976C, #93F9B9);
+        }
+
+        .blockchain-bg {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
         }
 
         @media (max-width: 768px) {
@@ -570,8 +546,9 @@
 
                 <div class="form-group">
                     <label for="presentation-topic"><i class="fas fa-lightbulb"></i> Presentation Topic</label>
-                    <textarea id="presentation-topic"
-                        placeholder="Describe what your presentation should be about">Artificial Intelligence is transforming business operations across all industries. This presentation should cover key applications, benefits, challenges, and future trends of AI in business. Focus on real-world examples from finance, healthcare, and manufacturing.</textarea>
+                    <textarea id="presentation-topic" placeholder="Describe what your presentation should be about">Slide Title: Lego-Styled Minimalist Apple Watch Concept
+Slide Description: A centered 3D visual of a sleek, all-black Apple Watch rendered in a Lego-inspired aesthetic. The watch, facing forward, features a square screen and matching sport band—both finished in a glossy black that catches soft, even lighting. The stark black background enhances the premium design, emphasizing the product’s contours and texture. This modern, text-free composition captures the essence of minimalist sophistication, ideal for branding, concept design, or next-gen wearable showcases.
+</textarea>
                 </div>
 
                 <div class="form-group">
@@ -736,7 +713,7 @@
         let generatedSlides = [];
         let presentationData = null;
 
-        // Style templates
+        // Style templates with advanced layouts
         const styleTemplates = {
             professional: {
                 bgColor: '#1E3A8A',
@@ -747,7 +724,10 @@
                 titleSize: 36,
                 textSize: 20,
                 bulletColor: '#3B82F6',
-                name: 'Professional'
+                name: 'Professional',
+                layout: 'header-footer',
+                typography: 'sans-serif',
+                graphics: 'minimal'
             },
             creative: {
                 bgColor: '#6A5ACD',
@@ -758,7 +738,10 @@
                 titleSize: 40,
                 textSize: 22,
                 bulletColor: '#FFD700',
-                name: 'Creative'
+                name: 'Creative',
+                layout: 'asymmetric',
+                typography: 'serif',
+                graphics: 'ornate'
             },
             minimalist: {
                 bgColor: '#FFFFFF',
@@ -769,7 +752,10 @@
                 titleSize: 32,
                 textSize: 18,
                 bulletColor: '#9CA3AF',
-                name: 'Minimalist'
+                name: 'Minimalist',
+                layout: 'clean',
+                typography: 'sans-serif',
+                graphics: 'none'
             },
             tech: {
                 bgColor: '#0F172A',
@@ -780,7 +766,10 @@
                 titleSize: 34,
                 textSize: 18,
                 bulletColor: '#14B8A6',
-                name: 'Tech'
+                name: 'Tech',
+                layout: 'grid',
+                typography: 'monospace',
+                graphics: 'tech'
             },
             macari: {
                 bgColor: '#FFFFFF',
@@ -791,7 +780,10 @@
                 titleSize: 38,
                 textSize: 20,
                 bulletColor: '#FF0000',
-                name: 'Macari Company'
+                name: 'Macari Company',
+                layout: 'corporate',
+                typography: 'sans-serif',
+                graphics: 'geometric'
             },
             strategic: {
                 bgColor: '#0D47A1',
@@ -802,7 +794,10 @@
                 titleSize: 34,
                 textSize: 18,
                 bulletColor: '#FFFFFF',
-                name: 'Strategic Business'
+                name: 'Strategic Business',
+                layout: 'master',
+                typography: 'sans-serif',
+                graphics: 'timeline'
             },
             crypto: {
                 bgColor: '#0f0c29',
@@ -813,7 +808,10 @@
                 titleSize: 36,
                 textSize: 20,
                 bulletColor: '#00d2ff',
-                name: 'Crypto Theme'
+                name: 'Crypto Theme',
+                layout: 'dark-grid',
+                typography: 'sans-serif',
+                graphics: 'blockchain'
             },
             banking: {
                 bgColor: '#2c3e50',
@@ -824,7 +822,10 @@
                 titleSize: 34,
                 textSize: 18,
                 bulletColor: '#4ca1af',
-                name: 'Banking & Finance'
+                name: 'Banking & Finance',
+                layout: 'corporate',
+                typography: 'sans-serif',
+                graphics: 'financial'
             },
             sustainability: {
                 bgColor: '#1a2a6c',
@@ -835,7 +836,10 @@
                 titleSize: 36,
                 textSize: 20,
                 bulletColor: '#fdbb2d',
-                name: 'Sustainability'
+                name: 'Sustainability',
+                layout: 'eco',
+                typography: 'sans-serif',
+                graphics: 'nature'
             },
             pitch: {
                 bgColor: '#4776E6',
@@ -846,7 +850,10 @@
                 titleSize: 38,
                 textSize: 20,
                 bulletColor: '#ffffff',
-                name: 'Pitch Deck'
+                name: 'Pitch Deck',
+                layout: 'modern',
+                typography: 'sans-serif',
+                graphics: 'dynamic'
             },
             'mobile-banking': {
                 bgColor: '#1D976C',
@@ -857,7 +864,10 @@
                 titleSize: 34,
                 textSize: 18,
                 bulletColor: '#93F9B9',
-                name: 'Mobile Banking'
+                name: 'Mobile Banking',
+                layout: 'app',
+                typography: 'sans-serif',
+                graphics: 'mobile'
             },
             blockchain: {
                 bgColor: '#1e3c72',
@@ -868,7 +878,10 @@
                 titleSize: 36,
                 textSize: 20,
                 bulletColor: '#00d2ff',
-                name: 'Blockchain'
+                name: 'Blockchain',
+                layout: 'tech-grid',
+                typography: 'sans-serif',
+                graphics: 'crypto'
             }
         };
 
@@ -1034,7 +1047,7 @@
                 media: multimediaResources.length > 0 ? multimediaResources[0] : null
             });
 
-            // Content slides
+            // Content slides with different layouts
             const contentPoints = [
                 "Introduction to the topic",
                 "Key concepts and definitions",
@@ -1052,6 +1065,14 @@
                 const slideTitle = contentPoints[Math.min(i - 1, contentPoints.length - 1)];
                 const content = generateSlideContent(topic, slideTitle, i);
 
+                // Determine slide type based on position
+                let slideType = "content";
+                if (i === 1) slideType = "section-header";
+                else if (i === slideCount - 1) slideType = "conclusion";
+                else if (i % 3 === 0) slideType = "infographic";
+                else if (i % 4 === 0) slideType = "timeline";
+                else if (i % 5 === 0) slideType = "team";
+
                 // Assign media resource to slide (round-robin)
                 const mediaIndex = i % multimediaResources.length;
                 const media = multimediaResources.length > 0 ? multimediaResources[mediaIndex] : null;
@@ -1059,7 +1080,7 @@
                 slides.push({
                     title: slideTitle,
                     content: content,
-                    type: i === slideCount - 1 ? "conclusion" : "content",
+                    type: slideType,
                     style: style,
                     media: media
                 });
@@ -1266,51 +1287,197 @@
                 }
             }
 
-            // Add title
+            // Add title based on slide type
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            title.setAttribute('x', '50');
-            title.setAttribute('y', slide.type === "title" ? '150' : '80');
             title.setAttribute('font-size', style.titleSize);
             title.setAttribute('font-weight', 'bold');
             title.setAttribute('fill', style.titleColor);
             title.setAttribute('font-family', style.font);
+            title.textContent = slide.title;
 
-            // Center title on title slide
             if (slide.type === "title") {
                 title.setAttribute('x', '400');
+                title.setAttribute('y', '150');
                 title.setAttribute('text-anchor', 'middle');
+                slideSvg.appendChild(title);
+            }
+            else if (slide.type === "section-header") {
+                // Section header with accent bar
+                const accentBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                accentBar.setAttribute('x', '0');
+                accentBar.setAttribute('y', '80');
+                accentBar.setAttribute('width', '800');
+                accentBar.setAttribute('height', '5');
+                accentBar.setAttribute('fill', style.accentColor);
+                slideSvg.appendChild(accentBar);
+
+                title.setAttribute('x', '50');
+                title.setAttribute('y', '70');
+                slideSvg.appendChild(title);
+            }
+            else {
+                title.setAttribute('x', '50');
+                title.setAttribute('y', '80');
+                slideSvg.appendChild(title);
             }
 
-            title.textContent = slide.title;
-            slideSvg.appendChild(title);
+            // Add content based on slide type
+            if (slide.type === "infographic") {
+                // Create infographic layout
+                const infographic = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-            // Add content
-            slide.content.forEach((point, index) => {
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', slide.type === "title" ? '400' : '70');
-                text.setAttribute('y', slide.type === "title" ? (200 + index * 40) : (130 + index * 40));
-                text.setAttribute('font-size', style.textSize);
-                text.setAttribute('fill', style.textColor);
-                text.setAttribute('font-family', style.font);
+                // Create circles representing data points
+                for (let i = 0; i < slide.content.length; i++) {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    const cx = 200 + i * 150;
+                    const cy = 250;
+                    const r = 40 + i * 5;
 
-                // Center content on title slide
-                if (slide.type === "title") {
+                    circle.setAttribute('cx', cx);
+                    circle.setAttribute('cy', cy);
+                    circle.setAttribute('r', r);
+                    circle.setAttribute('fill', style.accentColor);
+                    circle.setAttribute('opacity', '0.5');
+                    infographic.appendChild(circle);
+
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', cx);
+                    text.setAttribute('y', cy);
                     text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'middle');
+                    text.setAttribute('fill', style.textColor);
+                    text.setAttribute('font-size', '20');
+                    text.textContent = slide.content[i].substring(0, 3);
+                    infographic.appendChild(text);
+
+                    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    label.setAttribute('x', cx);
+                    label.setAttribute('y', cy + 60);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', style.textColor);
+                    label.setAttribute('font-size', '16');
+                    label.textContent = slide.content[i].substring(0, 20) + (slide.content[i].length > 20 ? '...' : '');
+                    infographic.appendChild(label);
                 }
 
-                // Add bullet point (not on title slide)
-                if (slide.type !== "title") {
-                    const bullet = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    bullet.setAttribute('cx', '55');
-                    bullet.setAttribute('cy', 130 + index * 40 - 5);
-                    bullet.setAttribute('r', '5');
-                    bullet.setAttribute('fill', style.bulletColor);
-                    slideSvg.appendChild(bullet);
+                slideSvg.appendChild(infographic);
+            }
+            else if (slide.type === "timeline") {
+                // Create timeline layout
+                const timeline = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+                // Timeline line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', '100');
+                line.setAttribute('y1', '250');
+                line.setAttribute('x2', '700');
+                line.setAttribute('y2', '250');
+                line.setAttribute('stroke', style.accentColor);
+                line.setAttribute('stroke-width', '3');
+                timeline.appendChild(line);
+
+                // Timeline points
+                for (let i = 0; i < slide.content.length; i++) {
+                    const x = 100 + (i * 600 / (slide.content.length - 1));
+
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', '250');
+                    circle.setAttribute('r', '15');
+                    circle.setAttribute('fill', style.bulletColor);
+                    timeline.appendChild(circle);
+
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', '200');
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', style.textColor);
+                    text.setAttribute('font-size', '16');
+                    text.textContent = `Step ${i + 1}`;
+                    timeline.appendChild(text);
+
+                    const content = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    content.setAttribute('x', x);
+                    content.setAttribute('y', '290');
+                    content.setAttribute('text-anchor', 'middle');
+                    content.setAttribute('fill', style.textColor);
+                    content.setAttribute('font-size', '14');
+                    content.textContent = slide.content[i].substring(0, 20) + (slide.content[i].length > 20 ? '...' : '');
+                    timeline.appendChild(content);
                 }
 
-                text.textContent = slide.type === "title" ? point : `• ${point}`;
-                slideSvg.appendChild(text);
-            });
+                slideSvg.appendChild(timeline);
+            }
+            else if (slide.type === "team") {
+                // Team profile layout
+                const team = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+                // Create team member profiles
+                for (let i = 0; i < Math.min(slide.content.length, 4); i++) {
+                    const x = 150 + (i % 2) * 300;
+                    const y = 150 + Math.floor(i / 2) * 150;
+
+                    // Profile circle
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('r', '40');
+                    circle.setAttribute('fill', style.accentColor);
+                    circle.setAttribute('opacity', '0.7');
+                    team.appendChild(circle);
+
+                    // Name
+                    const name = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    name.setAttribute('x', x);
+                    name.setAttribute('y', y + 60);
+                    name.setAttribute('text-anchor', 'middle');
+                    name.setAttribute('fill', style.textColor);
+                    name.setAttribute('font-size', '16');
+                    name.textContent = `Member ${i + 1}`;
+                    team.appendChild(name);
+
+                    // Role
+                    const role = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    role.setAttribute('x', x);
+                    role.setAttribute('y', y + 85);
+                    role.setAttribute('text-anchor', 'middle');
+                    role.setAttribute('fill', style.textColor);
+                    role.setAttribute('font-size', '14');
+                    role.textContent = slide.content[i].substring(0, 20) + (slide.content[i].length > 20 ? '...' : '');
+                    team.appendChild(role);
+                }
+
+                slideSvg.appendChild(team);
+            }
+            else {
+                // Standard content layout
+                slide.content.forEach((point, index) => {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', slide.type === "title" ? '400' : '70');
+                    text.setAttribute('y', slide.type === "title" ? (200 + index * 40) : (130 + index * 40));
+                    text.setAttribute('font-size', style.textSize);
+                    text.setAttribute('fill', style.textColor);
+                    text.setAttribute('font-family', style.font);
+
+                    // Center content on title slide
+                    if (slide.type === "title") {
+                        text.setAttribute('text-anchor', 'middle');
+                    }
+
+                    // Add bullet point (not on title slide)
+                    if (slide.type !== "title" && slide.type !== "section-header") {
+                        const bullet = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        bullet.setAttribute('cx', '55');
+                        bullet.setAttribute('cy', 130 + index * 40 - 5);
+                        bullet.setAttribute('r', '5');
+                        bullet.setAttribute('fill', style.bulletColor);
+                        slideSvg.appendChild(bullet);
+                    }
+
+                    text.textContent = slide.type === "title" ? point : `• ${point}`;
+                    slideSvg.appendChild(text);
+                });
+            }
 
             // Add footer
             const footer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -1340,16 +1507,21 @@
                 if (slide.media.type === 'image') {
                     const img = document.createElement('img');
                     img.src = slide.media.source;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
                     slideMedia.appendChild(img);
                 } else if (slide.media.type === 'video') {
                     const video = document.createElement('video');
                     video.src = slide.media.source;
                     video.controls = true;
+                    video.style.maxWidth = '100%';
+                    video.style.maxHeight = '100%';
                     slideMedia.appendChild(video);
                 } else if (slide.media.type === 'audio') {
                     const audio = document.createElement('audio');
                     audio.src = slide.media.source;
                     audio.controls = true;
+                    audio.style.maxWidth = '100%';
                     slideMedia.appendChild(audio);
                 } else if (slide.media.type === 'youtube') {
                     const videoId = extractYouTubeId(slide.media.source);
@@ -1358,6 +1530,8 @@
                         iframe.src = `https://www.youtube.com/embed/${videoId}`;
                         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                         iframe.allowFullscreen = true;
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
                         slideMedia.appendChild(iframe);
                     }
                 }
