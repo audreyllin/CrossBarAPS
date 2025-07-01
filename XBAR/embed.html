@@ -329,18 +329,12 @@
             background-color: white;
         }
 
-        .slide-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: white;
-        }
-
         .style-preview {
             display: flex;
             gap: 10px;
             margin-top: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .style-preview-item {
@@ -353,6 +347,7 @@
 
         .style-preview-item.active {
             border-color: white;
+            transform: scale(1.1);
         }
 
         .professional-bg {
@@ -369,6 +364,14 @@
 
         .tech-bg {
             background: linear-gradient(45deg, #0F766E, #14B8A6);
+        }
+
+        .macari-bg {
+            background: linear-gradient(45deg, #FFFFFF, #FF0000);
+        }
+
+        .strategic-bg {
+            background: linear-gradient(45deg, #0D47A1, #424242);
         }
 
         footer {
@@ -435,12 +438,16 @@
                         <option value="creative">Creative</option>
                         <option value="minimalist">Minimalist</option>
                         <option value="tech">Tech-Inspired</option>
+                        <option value="macari">Macari Company</option>
+                        <option value="strategic">Strategic Business</option>
                     </select>
                     <div class="style-preview">
                         <div class="style-preview-item professional-bg active" data-style="professional"></div>
                         <div class="style-preview-item creative-bg" data-style="creative"></div>
                         <div class="style-preview-item minimalist-bg" data-style="minimalist"></div>
                         <div class="style-preview-item tech-bg" data-style="tech"></div>
+                        <div class="style-preview-item macari-bg" data-style="macari"></div>
+                        <div class="style-preview-item strategic-bg" data-style="strategic"></div>
                     </div>
                 </div>
 
@@ -551,7 +558,8 @@
                 font: 'Arial, sans-serif',
                 titleSize: 36,
                 textSize: 20,
-                bulletColor: '#3B82F6'
+                bulletColor: '#3B82F6',
+                name: 'Professional'
             },
             creative: {
                 bgColor: '#6A5ACD',
@@ -561,7 +569,8 @@
                 font: 'Georgia, serif',
                 titleSize: 40,
                 textSize: 22,
-                bulletColor: '#FFD700'
+                bulletColor: '#FFD700',
+                name: 'Creative'
             },
             minimalist: {
                 bgColor: '#FFFFFF',
@@ -571,7 +580,8 @@
                 font: 'Helvetica, sans-serif',
                 titleSize: 32,
                 textSize: 18,
-                bulletColor: '#9CA3AF'
+                bulletColor: '#9CA3AF',
+                name: 'Minimalist'
             },
             tech: {
                 bgColor: '#0F172A',
@@ -581,7 +591,30 @@
                 font: 'Consolas, monospace',
                 titleSize: 34,
                 textSize: 18,
-                bulletColor: '#14B8A6'
+                bulletColor: '#14B8A6',
+                name: 'Tech'
+            },
+            macari: {
+                bgColor: '#FFFFFF',
+                titleColor: '#FF0000',
+                textColor: '#000000',
+                accentColor: '#FF0000',
+                font: 'Montserrat, sans-serif',
+                titleSize: 38,
+                textSize: 20,
+                bulletColor: '#FF0000',
+                name: 'Macari Company'
+            },
+            strategic: {
+                bgColor: '#0D47A1',
+                titleColor: '#FFFFFF',
+                textColor: '#E0E0E0',
+                accentColor: '#424242',
+                font: 'Roboto, sans-serif',
+                titleSize: 34,
+                textSize: 18,
+                bulletColor: '#FFFFFF',
+                name: 'Strategic Business'
             }
         };
 
@@ -757,8 +790,9 @@
             bg.setAttribute('fill', style.bgColor);
             slideSvg.appendChild(bg);
 
-            // Add decorative elements based on style
+            // Template-specific decorative elements
             if (slide.style === 'professional') {
+                // Professional template design
                 const accentBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 accentBar.setAttribute('x', '0');
                 accentBar.setAttribute('y', '0');
@@ -776,6 +810,7 @@
                 slideSvg.appendChild(footerBar);
             }
             else if (slide.style === 'creative') {
+                // Creative template design
                 const circle1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle1.setAttribute('cx', '700');
                 circle1.setAttribute('cy', '50');
@@ -793,7 +828,7 @@
                 slideSvg.appendChild(circle2);
             }
             else if (slide.style === 'tech') {
-                // Tech pattern
+                // Tech template design
                 for (let i = 0; i < 20; i++) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     const x1 = Math.random() * 800;
@@ -810,6 +845,55 @@
                     slideSvg.appendChild(line);
                 }
             }
+            else if (slide.style === 'macari') {
+                // Macari template design
+                const accentBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                accentBar.setAttribute('x', '0');
+                accentBar.setAttribute('y', '0');
+                accentBar.setAttribute('width', '100%');
+                accentBar.setAttribute('height', '10');
+                accentBar.setAttribute('fill', style.accentColor);
+                slideSvg.appendChild(accentBar);
+
+                const footerBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                footerBar.setAttribute('x', '0');
+                footerBar.setAttribute('y', '440');
+                footerBar.setAttribute('width', '100%');
+                footerBar.setAttribute('height', '10');
+                footerBar.setAttribute('fill', style.accentColor);
+                slideSvg.appendChild(footerBar);
+
+                // Add geometric elements for Macari style
+                const rect1 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect1.setAttribute('x', '650');
+                rect1.setAttribute('y', '50');
+                rect1.setAttribute('width', '100');
+                rect1.setAttribute('height', '100');
+                rect1.setAttribute('fill', style.accentColor);
+                rect1.setAttribute('opacity', '0.1');
+                slideSvg.appendChild(rect1);
+            }
+            else if (slide.style === 'strategic') {
+                // Strategic template design
+                const wave = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                wave.setAttribute('d', 'M0,100 Q150,50 300,100 T600,100 T800,50 L800,450 L0,450 Z');
+                wave.setAttribute('fill', style.accentColor);
+                wave.setAttribute('opacity', '0.15');
+                slideSvg.appendChild(wave);
+
+                // Add subtle grid lines
+                for (let i = 0; i < 5; i++) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', '0');
+                    line.setAttribute('y1', 90 + i * 80);
+                    line.setAttribute('x2', '800');
+                    line.setAttribute('y2', 90 + i * 80);
+                    line.setAttribute('stroke', style.textColor);
+                    line.setAttribute('stroke-width', '0.5');
+                    line.setAttribute('opacity', '0.1');
+                    slideSvg.appendChild(line);
+                }
+            }
 
             // Add title
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -819,27 +903,41 @@
             title.setAttribute('font-weight', 'bold');
             title.setAttribute('fill', style.titleColor);
             title.setAttribute('font-family', style.font);
+
+            // Center title on title slide
+            if (slide.type === "title") {
+                title.setAttribute('x', '400');
+                title.setAttribute('text-anchor', 'middle');
+            }
+
             title.textContent = slide.title;
             slideSvg.appendChild(title);
 
             // Add content
             slide.content.forEach((point, index) => {
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', '70');
+                text.setAttribute('x', slide.type === "title" ? '400' : '70');
                 text.setAttribute('y', slide.type === "title" ? (200 + index * 40) : (130 + index * 40));
                 text.setAttribute('font-size', style.textSize);
                 text.setAttribute('fill', style.textColor);
                 text.setAttribute('font-family', style.font);
 
-                // Add bullet point
-                const bullet = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                bullet.setAttribute('cx', '55');
-                bullet.setAttribute('cy', slide.type === "title" ? (200 + index * 40 - 5) : (130 + index * 40 - 5));
-                bullet.setAttribute('r', '5');
-                bullet.setAttribute('fill', style.bulletColor);
-                slideSvg.appendChild(bullet);
+                // Center content on title slide
+                if (slide.type === "title") {
+                    text.setAttribute('text-anchor', 'middle');
+                }
 
-                text.textContent = point;
+                // Add bullet point (not on title slide)
+                if (slide.type !== "title") {
+                    const bullet = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    bullet.setAttribute('cx', '55');
+                    bullet.setAttribute('cy', 130 + index * 40 - 5);
+                    bullet.setAttribute('r', '5');
+                    bullet.setAttribute('fill', style.bulletColor);
+                    slideSvg.appendChild(bullet);
+                }
+
+                text.textContent = slide.type === "title" ? point : `• ${point}`;
                 slideSvg.appendChild(text);
             });
 
@@ -906,11 +1004,11 @@
                 // Set background
                 pptxSlide.background = { color: style.bgColor };
 
-                // Add title
+                // Add title with proper positioning
                 pptxSlide.addText(slide.title, {
-                    x: 0.5,
-                    y: slide.type === "title" ? 2.0 : 0.5,
-                    w: "90%",
+                    x: slide.type === "title" ? 0 : 0.5,
+                    y: slide.type === "title" ? 1.5 : 0.5,
+                    w: slide.type === "title" ? '100%' : '90%',
                     h: 1.5,
                     fontSize: style.titleSize,
                     bold: true,
@@ -923,15 +1021,16 @@
                 let yPos = slide.type === "title" ? 3.0 : 1.5;
                 slide.content.forEach((point, i) => {
                     pptxSlide.addText(point, {
-                        x: 1.0,
+                        x: slide.type === "title" ? 0.5 : 1.0,
                         y: yPos,
-                        w: "85%",
+                        w: slide.type === "title" ? '90%' : '85%',
                         fontSize: style.textSize,
                         color: style.textColor,
                         fontFace: style.font,
-                        bullet: { code: "25CF", color: style.bulletColor }
+                        align: slide.type === "title" ? "center" : "left",
+                        bullet: slide.type === "title" ? false : { code: "25CF", color: style.bulletColor }
                     });
-                    yPos += 0.5; // Increment vertical position
+                    yPos += 0.6; // Increment vertical position with more space
                 });
 
                 // Add footer
