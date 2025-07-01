@@ -1738,3 +1738,54 @@ body::after {
         padding-top: 120px;
     }
 }
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+    /* Matches header height */
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* ===== Z-INDEX FIXES ===== */
+.header {
+    z-index: 1000;
+}
+
+.content-section {
+    position: relative;
+    z-index: 20;
+}
+
+.particles,
+.hex-pattern,
+.crypto-coins {
+    z-index: -1 !important;
+}
+
+/* ===== ANIMATION CONTROL ===== */
+body.no-animation .particle,
+body.no-animation .coin,
+body.no-animation .chip {
+    animation: none !important;
+}
+
+/* ===== HEADER/FIXED ELEMENT FIXES ===== */
+.header.sticky {
+    position: sticky;
+    top: 0;
+}
+
+/* ===== FOOTER FIXES ===== */
+footer {
+    position: relative;
+    z-index: 30;
+}
+
+/* ===== CONTENT SPACING ===== */
+.content-section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
