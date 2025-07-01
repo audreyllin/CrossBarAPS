@@ -151,12 +151,25 @@ a:hover {
     border-radius: 16px;
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
-    padding: 2rem;
     color: var(--color-text);
 }
 
 .glass:hover {
     box-shadow: 0 0 20px rgba(255, 106, 19, 0.2), var(--shadow-md);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #a0a0e0;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
 }
 
 .btn {
@@ -198,6 +211,12 @@ a:hover {
     left: 100%;
 }
 
+.btn-primary {
+    background: linear-gradient(90deg, #bc13fe, #00f5ff);
+    border: none;
+    box-shadow: 0 0 15px rgba(188, 19, 254, 0.4);
+}
+
 /* ====== HEADER ====== */
 header {
     position: fixed;
@@ -221,7 +240,6 @@ header {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 1rem 8vw;
 }
 
 .header-content {
@@ -552,7 +570,7 @@ nav a:hover:after {
 
 /* Floating Crypto Coins */
 .crypto-coins {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -561,33 +579,55 @@ nav a:hover:after {
     z-index: 5;
 }
 
+/* Individual coin */
 .coin {
     position: absolute;
-    width: 60px;
-    height: 60px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #FFD700, #D4AF37);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: #000;
     font-weight: bold;
-    animation: coin-float 15s infinite linear;
-    opacity: 0.9;
+    animation: coin-float linear infinite;
+    will-change: transform;
+    box-shadow: 0 0 15px currentColor;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+    z-index: 5;
 }
 
+/* Coin types */
 .coin.bitcoin {
-    background: radial-gradient(circle at 30% 30%, #F7931A, #8B4513);
+    background: radial-gradient(circle at 30% 30%, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-secondary);
 }
 
 .coin.pax {
     background: radial-gradient(circle at 30% 30%, #D4AF37, #8B7500);
+    color: #FFF8DC;
 }
 
 .coin.tether {
     background: radial-gradient(circle at 30% 30%, #26A17B, #006A4E);
+    color: #7FFFD4;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+    }
+
+    5% {
+        opacity: 0.3;
+    }
+
+    95% {
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+    }
 }
 
 @keyframes coin-float {
@@ -608,6 +648,55 @@ nav a:hover:after {
         transform: translateY(-100px) rotate(360deg);
         opacity: 0;
     }
+}
+
+.animation-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+}
+
+.animation-box {
+    flex: 1;
+    min-width: 300px;
+    background: rgba(20, 15, 50, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.animation-box h2 {
+    margin-bottom: 1.5rem;
+    color: #00f5ff;
+    text-align: center;
+}
+
+.demo-area {
+    height: 300px;
+    border-radius: 15px;
+    background: rgba(10, 5, 30, 0.4);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-panel {
+    margin-top: 3rem;
+    background: rgba(20, 15, 50, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-panel h2 {
+    color: #ff9500;
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
 
 /* ====== MAIN CONTENT ====== */
@@ -847,6 +936,26 @@ figcaption {
     color: var(--color-secondary);
 }
 
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.feature {
+    background: rgba(30, 25, 60, 0.4);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.feature i {
+    font-size: 2rem;
+    color: #bc13fe;
+    margin-bottom: 1rem;
+}
+
 .innovation-icons {
     position: absolute;
     width: 100%;
@@ -938,6 +1047,16 @@ figcaption {
 
 .phone-button {
     fill: #FF6A13;
+}
+
+/* Disabled states */
+body.no-animation .particle,
+body.no-animation .coin {
+    animation: none !important;
+}
+
+body.coins-hidden .crypto-coins {
+    display: none;
 }
 
 @keyframes draw {
@@ -1226,7 +1345,6 @@ footer {
     background: var(--glass-bg);
     backdrop-filter: blur(16px) saturate(180%);
     border-top: 1px solid var(--glass-border);
-    padding: 5rem 0;
 }
 
 .social-icons a {
@@ -1303,9 +1421,10 @@ footer {
 .particle {
     position: absolute;
     border-radius: 50%;
-    background: var(--neon-orange);
+    pointer-events: none;
+    animation: float linear infinite;
+    will-change: transform;
     opacity: 0.3;
-    animation: float 15s infinite linear;
 }
 
 @keyframes float {
@@ -1440,7 +1559,7 @@ body::after {
     }
 }
 
-.mascot {
+/* .mascot {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -1448,15 +1567,13 @@ body::after {
     height: 120px;
     z-index: 999;
     pointer-events: none;
-}
+} */
 
-.mascot-inner {
+/* .mascot-inner {
     animation: floatMascot 6s infinite ease-in-out;
-}
+} */
 
-
-
-@keyframes floatMascot {
+/* @keyframes floatMascot {
 
     0%,
     100% {
@@ -1466,7 +1583,7 @@ body::after {
     50% {
         transform: translateY(-20px);
     }
-}
+} */
 
 /* ====== RESPONSIVE DESIGN ====== */
 @media (min-width: 993px) {
@@ -1586,10 +1703,6 @@ body::after {
 
     .footer-col {
         margin-bottom: 2rem;
-    }
-
-    .header-inner {
-        padding: 1rem 5vw;
     }
 
     .sidebar {
