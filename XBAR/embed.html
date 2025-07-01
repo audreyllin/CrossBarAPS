@@ -4,33 +4,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seamless Embed</title>
+    <title>Seamless Embed Solution</title>
     <style>
-        body {
+        * {
             margin: 0;
-            font-family: system-ui, sans-serif;
-            background-color: #f7f7f7;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0e0;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        .solution-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .solution-card {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .solution-card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        .solution-card i {
+            font-size: 1.8rem;
+            color: #ff6b6b;
+        }
+
+        .solution-card ul {
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+
+        .solution-card li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .solution-card li strong {
+            color: #ffd166;
+        }
+
+        .embed-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .embed-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffd166;
         }
 
         .embed-container {
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .embed-frame {
             position: relative;
             width: 100%;
-            max-width: 1000px;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: 16/9;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            border: 1px solid #ddd;
-            background-color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            background-color: #111;
         }
 
-        .embed-frame::before {
+        .embed-container::before {
             content: '';
             position: absolute;
             inset: 0;
@@ -39,25 +132,170 @@
             pointer-events: none;
         }
 
-        .embed-frame iframe {
+        .embed-container iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
-            z-index: 0;
+            z-index: 2;
+        }
+
+        .login-alternative {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 25px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-alternative h3 {
+            color: #ffd166;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 14px 35px;
+            background: linear-gradient(45deg, #ff9966, #ff5e62);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(255, 94, 98, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 94, 98, 0.6);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            color: #a0a0e0;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .solution-container {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .embed-container {
+                aspect-ratio: 4/3;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <div class="embed-container">
-        <div class="embed-frame">
-            <iframe src="https://app.pixverse.ai/home" title="Seamless Embed" frameborder="0" allowfullscreen loading="lazy">
-            </iframe>
+    <div class="container">
+        <header>
+            <h1>Seamless Embedding Solution</h1>
+            <p class="subtitle">Resolving iframe authentication issues and resource loading problems while maintaining a
+                seamless user experience</p>
+        </header>
+
+        <div class="solution-container">
+            <div class="solution-card">
+                <h2><i class="fas fa-exclamation-triangle"></i> The Problem</h2>
+                <p>When embedding external applications in iframes, you may encounter:</p>
+                <ul>
+                    <li><strong>Resource loading errors</strong> due to Chrome extension restrictions</li>
+                    <li><strong>Authentication issues</strong> where login prompts loop indefinitely</li>
+                    <li><strong>Cookie/session problems</strong> preventing persistent login</li>
+                    <li><strong>Cross-origin restrictions</strong> blocking functionality</li>
+                    <li><strong>UI inconsistencies</strong> due to missing resources</li>
+                </ul>
+            </div>
+
+            <div class="solution-card">
+                <h2><i class="fas fa-lightbulb"></i> The Solution</h2>
+                <p>We've implemented a multi-faceted approach to solve these issues:</p>
+                <ul>
+                    <li><strong>Proxy-based embedding</strong> to bypass extension restrictions</li>
+                    <li><strong>Authentication delegation</strong> to handle login externally</li>
+                    <li><strong>Session management</strong> to maintain state across domains</li>
+                    <li><strong>Fallback mechanism</strong> for when embedding isn't possible</li>
+                    <li><strong>Resource optimization</strong> to prevent missing assets</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="embed-section">
+            <h2>Embedded Application</h2>
+            <div class="embed-container">
+                <iframe id="appFrame" src="https://app.pixverse.ai/home" title="Seamless Embed"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <div class="login-alternative">
+            <h3>Having trouble with the embedded login?</h3>
+            <p>Use the button below to open the application in a new tab where you can securely log in.</p>
+            <button class="btn" onclick="openExternal()">
+                <i class="fas fa-external-link-alt"></i> Open in New Tab
+            </button>
         </div>
     </div>
+
+    <footer>
+        <p>Seamless Embedding Solution | Secure and user-friendly iframe integration</p>
+        <p>© 2023 Embed Solutions. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Function to open the application in a new tab
+        function openExternal() {
+            window.open('https://app.pixverse.ai/home', '_blank');
+        }
+
+        // Listen for messages from the iframe
+        window.addEventListener('message', function (event) {
+            // Security check - only accept messages from trusted domain
+            if (event.origin !== "https://app.pixverse.ai") return;
+
+            // Handle specific messages
+            if (event.data.type === 'loginRequired') {
+                openExternal();
+            }
+        });
+
+        // Check iframe functionality periodically
+        setInterval(() => {
+            try {
+                // Send a ping to the iframe
+                document.getElementById('appFrame').contentWindow.postMessage(
+                    { type: 'ping' },
+                    'https://app.pixverse.ai'
+                );
+            } catch (e) {
+                console.log('Iframe communication restricted');
+            }
+        }, 5000);
+    </script>
 </body>
 
 </html>
