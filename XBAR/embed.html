@@ -162,7 +162,7 @@
             font-size: 1.2rem;
         }
 
-        .image-upload {
+        .multimedia-upload {
             border: 2px dashed rgba(106, 90, 205, 0.5);
             border-radius: 8px;
             padding: 25px;
@@ -171,30 +171,57 @@
             transition: all 0.3s ease;
         }
 
-        .image-upload:hover {
+        .multimedia-upload:hover {
             border-color: #6a5acd;
             background: rgba(40, 40, 80, 0.3);
         }
 
-        .image-upload i {
+        .multimedia-upload i {
             font-size: 3rem;
             color: #9370db;
             margin-bottom: 15px;
         }
 
-        .image-preview {
+        .multimedia-preview {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             margin-top: 15px;
         }
 
-        .preview-image {
+        .preview-item {
             width: 80px;
             height: 80px;
             border-radius: 8px;
             object-fit: cover;
             border: 2px solid #6a5acd;
+            position: relative;
+        }
+
+        .preview-item.video::before {
+            content: '\f144';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-item.audio::before {
+            content: '\f028';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         .preview-container {
@@ -374,6 +401,128 @@
             background: linear-gradient(45deg, #0D47A1, #424242);
         }
 
+        .crypto-bg {
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+        }
+
+        .banking-bg {
+            background: linear-gradient(45deg, #2c3e50, #4ca1af);
+        }
+
+        .sustainability-bg {
+            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #1a2a6c);
+        }
+
+        .pitch-bg {
+            background: linear-gradient(45deg, #4776E6, #8E54E9);
+        }
+
+        .mobile-banking-bg {
+            background: linear-gradient(45deg, #1D976C, #93F9B9);
+        }
+
+        .blockchain-bg {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+        }
+
+        .social-media-bg {
+            background: linear-gradient(45deg, #3a6186, #89253e);
+        }
+
+        .multimedia-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+        }
+
+        .url-input-group button {
+            padding: 10px 15px;
+            background: #6a5acd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .template-item {
+            height: 80px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .template-item.active {
+            border-color: #6a5acd;
+            transform: scale(1.05);
+        }
+
+        .template-item .template-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px;
+            text-align: center;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide-media {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .slide-media img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .slide-media video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .slide-media iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         footer {
             text-align: center;
             padding: 40px 0 20px;
@@ -391,6 +540,10 @@
             h1 {
                 font-size: 2.2rem;
             }
+
+            .template-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
         }
     </style>
 </head>
@@ -399,7 +552,7 @@
     <div class="container">
         <header>
             <h1>SlidesAI.io Presentation Generator</h1>
-            <p class="subtitle">Create stunning presentations with AI - directly on this page</p>
+            <p class="subtitle">Create stunning presentations with AI - Embed images, videos, and multimedia</p>
         </header>
 
         <div class="main-content">
@@ -432,33 +585,64 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="presentation-style"><i class="fas fa-palette"></i> Presentation Style</label>
-                    <select id="presentation-style">
-                        <option value="professional">Professional</option>
-                        <option value="creative">Creative</option>
-                        <option value="minimalist">Minimalist</option>
-                        <option value="tech">Tech-Inspired</option>
-                        <option value="macari">Macari Company</option>
-                        <option value="strategic">Strategic Business</option>
-                    </select>
-                    <div class="style-preview">
-                        <div class="style-preview-item professional-bg active" data-style="professional"></div>
-                        <div class="style-preview-item creative-bg" data-style="creative"></div>
-                        <div class="style-preview-item minimalist-bg" data-style="minimalist"></div>
-                        <div class="style-preview-item tech-bg" data-style="tech"></div>
-                        <div class="style-preview-item macari-bg" data-style="macari"></div>
-                        <div class="style-preview-item strategic-bg" data-style="strategic"></div>
+                    <label><i class="fas fa-palette"></i> Presentation Template</label>
+                    <div class="template-grid" id="template-grid">
+                        <div class="template-item professional-bg active" data-style="professional">
+                            <div class="template-name">Professional</div>
+                        </div>
+                        <div class="template-item creative-bg" data-style="creative">
+                            <div class="template-name">Creative</div>
+                        </div>
+                        <div class="template-item minimalist-bg" data-style="minimalist">
+                            <div class="template-name">Minimalist</div>
+                        </div>
+                        <div class="template-item tech-bg" data-style="tech">
+                            <div class="template-name">Tech</div>
+                        </div>
+                        <div class="template-item macari-bg" data-style="macari">
+                            <div class="template-name">Macari</div>
+                        </div>
+                        <div class="template-item strategic-bg" data-style="strategic">
+                            <div class="template-name">Strategic</div>
+                        </div>
+                        <div class="template-item crypto-bg" data-style="crypto">
+                            <div class="template-name">Crypto</div>
+                        </div>
+                        <div class="template-item banking-bg" data-style="banking">
+                            <div class="template-name">Banking</div>
+                        </div>
+                        <div class="template-item sustainability-bg" data-style="sustainability">
+                            <div class="template-name">Sustainability</div>
+                        </div>
+                        <div class="template-item pitch-bg" data-style="pitch">
+                            <div class="template-name">Pitch Deck</div>
+                        </div>
+                        <div class="template-item mobile-banking-bg" data-style="mobile-banking">
+                            <div class="template-name">Mobile Banking</div>
+                        </div>
+                        <div class="template-item blockchain-bg" data-style="blockchain">
+                            <div class="template-name">Blockchain</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-image"></i> Add Images (Optional)</label>
-                    <div class="image-upload" id="image-upload">
+                    <label><i class="fas fa-photo-video"></i> Add Multimedia Resources</label>
+                    <div class="multimedia-upload" id="multimedia-upload">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Drag & drop images here or click to browse</p>
-                        <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+                        <p>Drag & drop images/videos/audio here or click to browse</p>
+                        <input type="file" id="file-input" accept="image/*,video/*,audio/*" multiple
+                            style="display: none;">
                     </div>
-                    <div class="image-preview" id="image-preview"></div>
+
+                    <div class="multimedia-controls">
+                        <div class="url-input-group">
+                            <input type="text" id="media-url" placeholder="Paste image, video or audio URL">
+                            <button id="add-url-btn">Add URL</button>
+                        </div>
+                    </div>
+
+                    <div class="multimedia-preview" id="multimedia-preview"></div>
                 </div>
 
                 <button class="btn" id="generate-btn">
@@ -486,6 +670,7 @@
                     </div>
 
                     <div id="slide-container" class="hidden">
+                        <div class="slide-media" id="slide-media"></div>
                         <svg class="slide-svg" id="slide-svg" viewBox="0 0 800 450"></svg>
                     </div>
                 </div>
@@ -519,20 +704,21 @@
         </div>
 
         <footer>
-            <p>Integrated SlidesAI.io Solution | Seamless Presentation Generation</p>
+            <p>Integrated SlidesAI.io Solution | Multimedia Presentation Generator</p>
             <p>© 2023 AI Presentation Tools. All rights reserved.</p>
         </footer>
     </div>
 
     <script>
         // DOM Elements
-        const imageUpload = document.getElementById('image-upload');
+        const multimediaUpload = document.getElementById('multimedia-upload');
         const fileInput = document.getElementById('file-input');
-        const imagePreview = document.getElementById('image-preview');
+        const multimediaPreview = document.getElementById('multimedia-preview');
         const generateBtn = document.getElementById('generate-btn');
         const generatingOverlay = document.getElementById('generating-overlay');
         const previewPlaceholder = document.getElementById('preview-placeholder');
         const slideSvg = document.getElementById('slide-svg');
+        const slideMedia = document.getElementById('slide-media');
         const prevSlideBtn = document.getElementById('prev-slide');
         const nextSlideBtn = document.getElementById('next-slide');
         const currentSlideEl = document.getElementById('current-slide');
@@ -540,10 +726,12 @@
         const downloadBtn = document.getElementById('download-btn');
         const saveNotification = document.getElementById('save-notification');
         const slideContainer = document.getElementById('slide-container');
-        const stylePreviewItems = document.querySelectorAll('.style-preview-item');
+        const templateItems = document.querySelectorAll('.template-item');
+        const mediaUrlInput = document.getElementById('media-url');
+        const addUrlBtn = document.getElementById('add-url-btn');
 
         // State
-        let uploadedImages = [];
+        let multimediaResources = [];
         let currentSlideIndex = 0;
         let generatedSlides = [];
         let presentationData = null;
@@ -615,11 +803,77 @@
                 textSize: 18,
                 bulletColor: '#FFFFFF',
                 name: 'Strategic Business'
+            },
+            crypto: {
+                bgColor: '#0f0c29',
+                titleColor: '#00d2ff',
+                textColor: '#a8ff78',
+                accentColor: '#302b63',
+                font: 'Orbitron, sans-serif',
+                titleSize: 36,
+                textSize: 20,
+                bulletColor: '#00d2ff',
+                name: 'Crypto Theme'
+            },
+            banking: {
+                bgColor: '#2c3e50',
+                titleColor: '#ecf0f1',
+                textColor: '#bdc3c7',
+                accentColor: '#4ca1af',
+                font: 'Roboto, sans-serif',
+                titleSize: 34,
+                textSize: 18,
+                bulletColor: '#4ca1af',
+                name: 'Banking & Finance'
+            },
+            sustainability: {
+                bgColor: '#1a2a6c',
+                titleColor: '#ffffff',
+                textColor: '#e9f7ca',
+                accentColor: '#b21f1f',
+                font: 'Open Sans, sans-serif',
+                titleSize: 36,
+                textSize: 20,
+                bulletColor: '#fdbb2d',
+                name: 'Sustainability'
+            },
+            pitch: {
+                bgColor: '#4776E6',
+                titleColor: '#ffffff',
+                textColor: '#f5f7fa',
+                accentColor: '#8E54E9',
+                font: 'Montserrat, sans-serif',
+                titleSize: 38,
+                textSize: 20,
+                bulletColor: '#ffffff',
+                name: 'Pitch Deck'
+            },
+            'mobile-banking': {
+                bgColor: '#1D976C',
+                titleColor: '#ffffff',
+                textColor: '#e9f7ca',
+                accentColor: '#93F9B9',
+                font: 'Roboto, sans-serif',
+                titleSize: 34,
+                textSize: 18,
+                bulletColor: '#93F9B9',
+                name: 'Mobile Banking'
+            },
+            blockchain: {
+                bgColor: '#1e3c72',
+                titleColor: '#ffffff',
+                textColor: '#a8ff78',
+                accentColor: '#2a5298',
+                font: 'Orbitron, sans-serif',
+                titleSize: 36,
+                textSize: 20,
+                bulletColor: '#00d2ff',
+                name: 'Blockchain'
             }
         };
 
         // Event Listeners
-        imageUpload.addEventListener('click', () => {
+        multimediaUpload.addEventListener('click', () => {
             fileInput.click();
         });
 
@@ -627,15 +881,43 @@
             const files = e.target.files;
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        uploadedImages.push(event.target.result);
-                        updateImagePreview();
-                    };
-                    reader.readAsDataURL(file);
-                }
+                let type = 'image';
+
+                if (file.type.startsWith('video/')) type = 'video';
+                else if (file.type.startsWith('audio/')) type = 'audio';
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    multimediaResources.push({
+                        type: type,
+                        source: event.target.result,
+                        name: file.name,
+                        id: 'media-' + Date.now() + Math.random().toString(36).substr(2, 5)
+                    });
+                    updateMultimediaPreview();
+                };
+                reader.readAsDataURL(file);
             }
+        });
+
+        addUrlBtn.addEventListener('click', () => {
+            const url = mediaUrlInput.value.trim();
+            if (!url) return;
+
+            let type = 'image';
+            if (url.match(/\.(mp4|webm|ogg|mov)$/i)) type = 'video';
+            else if (url.match(/\.(mp3|wav|ogg)$/i)) type = 'audio';
+            else if (url.match(/youtube\.com|youtu\.be/i)) type = 'youtube';
+
+            multimediaResources.push({
+                type: type,
+                source: url,
+                name: url.substring(url.lastIndexOf('/') + 1),
+                id: 'url-' + Date.now() + Math.random().toString(36).substr(2, 5)
+            });
+
+            updateMultimediaPreview();
+            mediaUrlInput.value = '';
         });
 
         generateBtn.addEventListener('click', generatePresentation);
@@ -643,23 +925,55 @@
         nextSlideBtn.addEventListener('click', showNextSlide);
         downloadBtn.addEventListener('click', downloadPresentation);
 
-        // Style preview selection
-        stylePreviewItems.forEach(item => {
+        // Template selection
+        templateItems.forEach(item => {
             item.addEventListener('click', () => {
-                stylePreviewItems.forEach(i => i.classList.remove('active'));
+                templateItems.forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
-                document.getElementById('presentation-style').value = item.dataset.style;
             });
         });
 
         // Functions
-        function updateImagePreview() {
-            imagePreview.innerHTML = '';
-            uploadedImages.forEach(imgSrc => {
-                const img = document.createElement('img');
-                img.src = imgSrc;
-                img.classList.add('preview-image');
-                imagePreview.appendChild(img);
+        function updateMultimediaPreview() {
+            multimediaPreview.innerHTML = '';
+            multimediaResources.forEach(resource => {
+                const preview = document.createElement('div');
+                preview.classList.add('preview-item', resource.type);
+
+                if (resource.type === 'image') {
+                    preview.style.backgroundImage = `url(${resource.source})`;
+                    preview.style.backgroundSize = 'cover';
+                    preview.style.backgroundPosition = 'center';
+                } else {
+                    preview.style.backgroundColor = '#6a5acd';
+                }
+
+                const removeBtn = document.createElement('div');
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '5px';
+                removeBtn.style.right = '5px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.color = 'white';
+                removeBtn.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '20px';
+                removeBtn.style.height = '20px';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.alignItems = 'center';
+
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = multimediaResources.findIndex(r => r.id === resource.id);
+                    if (index !== -1) {
+                        multimediaResources.splice(index, 1);
+                        updateMultimediaPreview();
+                    }
+                });
+
+                preview.appendChild(removeBtn);
+                multimediaPreview.appendChild(preview);
             });
         }
 
@@ -668,7 +982,8 @@
             const title = document.getElementById('presentation-title').value;
             const topic = document.getElementById('presentation-topic').value;
             const slideCount = parseInt(document.getElementById('slide-count').value);
-            const style = document.getElementById('presentation-style').value;
+            const activeTemplate = document.querySelector('.template-item.active');
+            const style = activeTemplate ? activeTemplate.dataset.style : 'professional';
 
             // Validate input
             if (!title.trim() || !topic.trim()) {
@@ -715,7 +1030,8 @@
                     "Created with SlidesAI.io"
                 ],
                 type: "title",
-                style: style
+                style: style,
+                media: multimediaResources.length > 0 ? multimediaResources[0] : null
             });
 
             // Content slides
@@ -736,11 +1052,16 @@
                 const slideTitle = contentPoints[Math.min(i - 1, contentPoints.length - 1)];
                 const content = generateSlideContent(topic, slideTitle, i);
 
+                // Assign media resource to slide (round-robin)
+                const mediaIndex = i % multimediaResources.length;
+                const media = multimediaResources.length > 0 ? multimediaResources[mediaIndex] : null;
+
                 slides.push({
                     title: slideTitle,
                     content: content,
                     type: i === slideCount - 1 ? "conclusion" : "content",
-                    style: style
+                    style: style,
+                    media: media
                 });
             }
 
@@ -782,6 +1103,7 @@
             const slide = generatedSlides[currentSlideIndex];
             const style = styleTemplates[slide.style] || styleTemplates.professional;
             slideSvg.innerHTML = '';
+            slideMedia.innerHTML = '';
 
             // Create SVG slide background
             const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -894,6 +1216,55 @@
                     slideSvg.appendChild(line);
                 }
             }
+            else if (slide.style === 'crypto') {
+                // Crypto template design
+                const circle1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle1.setAttribute('cx', '50');
+                circle1.setAttribute('cy', '50');
+                circle1.setAttribute('r', '40');
+                circle1.setAttribute('fill', style.accentColor);
+                circle1.setAttribute('opacity', '0.2');
+                slideSvg.appendChild(circle1);
+
+                const circle2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle2.setAttribute('cx', '750');
+                circle2.setAttribute('cy', '400');
+                circle2.setAttribute('r', '60');
+                circle2.setAttribute('fill', style.accentColor);
+                circle2.setAttribute('opacity', '0.2');
+                slideSvg.appendChild(circle2);
+
+                // Add blockchain nodes
+                for (let i = 0; i < 8; i++) {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', 100 + i * 20);
+                    rect.setAttribute('y', 350);
+                    rect.setAttribute('width', '10');
+                    rect.setAttribute('height', '10');
+                    rect.setAttribute('fill', style.bulletColor);
+                    rect.setAttribute('opacity', '0.5');
+                    slideSvg.appendChild(rect);
+                }
+            }
+            else if (slide.style === 'banking') {
+                // Banking template design
+                const wave = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                wave.setAttribute('d', 'M0,150 C150,100 350,200 500,150 C650,100 750,250 800,200 L800,450 L0,450 Z');
+                wave.setAttribute('fill', style.accentColor);
+                wave.setAttribute('opacity', '0.2');
+                slideSvg.appendChild(wave);
+
+                // Add coins
+                for (let i = 0; i < 5; i++) {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', 700 - i * 40);
+                    circle.setAttribute('cy', 50);
+                    circle.setAttribute('r', '20');
+                    circle.setAttribute('fill', style.titleColor);
+                    circle.setAttribute('opacity', '0.1');
+                    slideSvg.appendChild(circle);
+                }
+            }
 
             // Add title
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -964,7 +1335,41 @@
                 slideSvg.appendChild(logo);
             }
 
+            // Add media to slide
+            if (slide.media) {
+                if (slide.media.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = slide.media.source;
+                    slideMedia.appendChild(img);
+                } else if (slide.media.type === 'video') {
+                    const video = document.createElement('video');
+                    video.src = slide.media.source;
+                    video.controls = true;
+                    slideMedia.appendChild(video);
+                } else if (slide.media.type === 'audio') {
+                    const audio = document.createElement('audio');
+                    audio.src = slide.media.source;
+                    audio.controls = true;
+                    slideMedia.appendChild(audio);
+                } else if (slide.media.type === 'youtube') {
+                    const videoId = extractYouTubeId(slide.media.source);
+                    if (videoId) {
+                        const iframe = document.createElement('iframe');
+                        iframe.src = `https://www.youtube.com/embed/${videoId}`;
+                        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                        iframe.allowFullscreen = true;
+                        slideMedia.appendChild(iframe);
+                    }
+                }
+            }
+
             currentSlideEl.textContent = currentSlideIndex + 1;
+        }
+
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
 
         function showPrevSlide() {
@@ -1054,6 +1459,21 @@
                         fontFace: style.font,
                         align: "center"
                     });
+                }
+
+                // Add media to slide (images only for PPTX)
+                if (slide.media && slide.media.type === 'image') {
+                    try {
+                        pptxSlide.addImage({
+                            data: slide.media.source,
+                            x: 5.0,
+                            y: 2.0,
+                            w: 3.0,
+                            h: 3.0
+                        });
+                    } catch (e) {
+                        console.error("Error adding image to slide:", e);
+                    }
                 }
             });
 
