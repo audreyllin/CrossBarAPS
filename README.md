@@ -2,7 +2,7 @@ RAG failed draft page: https://audreyllin.github.io/CrossBarAPS/rag-0605.html
 
 CrossBar new web design
 
-1: https://audreyllin.github.io/CrossBarAPS/XBAR/red.html
+1: https://audreyllin.github.io/CrossBarAPS/XBAR/embed.html
 
 2. https://audreyllin.github.io/CrossBarAPS/XBAR/hp-26.html
 
