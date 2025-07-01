@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seamless Embed</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        .embed-container {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .embed-frame {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .embed-frame::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .embed-frame iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="embed-container">
+        <div class="embed-frame">
+            <iframe src="https://app.pixverse.ai/home" title="Seamless Embed" frameborder="0" allowfullscreen loading="lazy">
+            </iframe>
+        </div>
+    </div>
+</body>
+
+</html>
