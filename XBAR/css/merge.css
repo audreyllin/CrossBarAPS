@@ -264,6 +264,10 @@ header {
 }
 
 a.logo {
+    mix-blend-mode: plus-lighter;
+}
+
+[data-theme="light"] a.logo {
     mix-blend-mode: normal;
 }
 
@@ -1540,7 +1544,7 @@ body::after {
 }
 
 .image-light {
-    max-height: 750px;
+    max-height: 550px;
 }
 
 @keyframes scroll {
