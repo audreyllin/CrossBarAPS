@@ -206,13 +206,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-        }
-
-        .slide-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: #fff;
+            min-height: 400px;
         }
 
         .slide-nav {
@@ -320,6 +314,7 @@
         .preview-placeholder {
             text-align: center;
             color: #a0a0e0;
+            padding: 20px;
         }
 
         .preview-placeholder i {
@@ -332,6 +327,48 @@
             width: 100%;
             height: 100%;
             background-color: white;
+        }
+
+        .slide-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+
+        .style-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .style-preview-item {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .style-preview-item.active {
+            border-color: white;
+        }
+
+        .professional-bg {
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+        }
+
+        .creative-bg {
+            background: linear-gradient(45deg, #6A5ACD, #9370DB);
+        }
+
+        .minimalist-bg {
+            background: linear-gradient(45deg, #4B5563, #9CA3AF);
+        }
+
+        .tech-bg {
+            background: linear-gradient(45deg, #0F766E, #14B8A6);
         }
 
         footer {
@@ -399,6 +436,12 @@
                         <option value="minimalist">Minimalist</option>
                         <option value="tech">Tech-Inspired</option>
                     </select>
+                    <div class="style-preview">
+                        <div class="style-preview-item professional-bg active" data-style="professional"></div>
+                        <div class="style-preview-item creative-bg" data-style="creative"></div>
+                        <div class="style-preview-item minimalist-bg" data-style="minimalist"></div>
+                        <div class="style-preview-item tech-bg" data-style="tech"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -435,7 +478,9 @@
                         <p>Click "Generate Presentation" to create your slides</p>
                     </div>
 
-                    <svg class="slide-svg hidden" id="slide-svg" viewBox="0 0 800 450"></svg>
+                    <div id="slide-container" class="hidden">
+                        <svg class="slide-svg" id="slide-svg" viewBox="0 0 800 450"></svg>
+                    </div>
                 </div>
 
                 <div class="slide-nav">
@@ -487,12 +532,58 @@
         const totalSlidesEl = document.getElementById('total-slides');
         const downloadBtn = document.getElementById('download-btn');
         const saveNotification = document.getElementById('save-notification');
+        const slideContainer = document.getElementById('slide-container');
+        const stylePreviewItems = document.querySelectorAll('.style-preview-item');
 
         // State
         let uploadedImages = [];
         let currentSlideIndex = 0;
         let generatedSlides = [];
         let presentationData = null;
+
+        // Style templates
+        const styleTemplates = {
+            professional: {
+                bgColor: '#1E3A8A',
+                titleColor: '#FFFFFF',
+                textColor: '#FFFFFF',
+                accentColor: '#3B82F6',
+                font: 'Arial, sans-serif',
+                titleSize: 36,
+                textSize: 20,
+                bulletColor: '#3B82F6'
+            },
+            creative: {
+                bgColor: '#6A5ACD',
+                titleColor: '#FFFFFF',
+                textColor: '#F0F8FF',
+                accentColor: '#9370DB',
+                font: 'Georgia, serif',
+                titleSize: 40,
+                textSize: 22,
+                bulletColor: '#FFD700'
+            },
+            minimalist: {
+                bgColor: '#FFFFFF',
+                titleColor: '#333333',
+                textColor: '#555555',
+                accentColor: '#4B5563',
+                font: 'Helvetica, sans-serif',
+                titleSize: 32,
+                textSize: 18,
+                bulletColor: '#9CA3AF'
+            },
+            tech: {
+                bgColor: '#0F172A',
+                titleColor: '#0EA5E9',
+                textColor: '#E2E8F0',
+                accentColor: '#14B8A6',
+                font: 'Consolas, monospace',
+                titleSize: 34,
+                textSize: 18,
+                bulletColor: '#14B8A6'
+            }
+        };
 
         // Event Listeners
         imageUpload.addEventListener('click', () => {
@@ -518,6 +609,15 @@
         prevSlideBtn.addEventListener('click', showPrevSlide);
         nextSlideBtn.addEventListener('click', showNextSlide);
         downloadBtn.addEventListener('click', downloadPresentation);
+
+        // Style preview selection
+        stylePreviewItems.forEach(item => {
+            item.addEventListener('click', () => {
+                stylePreviewItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById('presentation-style').value = item.dataset.style;
+            });
+        });
 
         // Functions
         function updateImagePreview() {
@@ -546,7 +646,7 @@
             // Show generating overlay
             generatingOverlay.classList.remove('hidden');
             previewPlaceholder.classList.add('hidden');
-            slideSvg.classList.add('hidden');
+            slideContainer.classList.add('hidden');
 
             // Generate presentation structure
             presentationData = generatePresentationStructure(title, topic, slideCount, style);
@@ -558,7 +658,7 @@
                 // Update UI
                 generatingOverlay.classList.add('hidden');
                 previewPlaceholder.classList.add('hidden');
-                slideSvg.classList.remove('hidden');
+                slideContainer.classList.remove('hidden');
 
                 // Show first slide
                 currentSlideIndex = 0;
@@ -647,26 +747,78 @@
             if (generatedSlides.length === 0) return;
 
             const slide = generatedSlides[currentSlideIndex];
+            const style = styleTemplates[slide.style] || styleTemplates.professional;
             slideSvg.innerHTML = '';
 
             // Create SVG slide background
             const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             bg.setAttribute('width', '100%');
             bg.setAttribute('height', '100%');
-            bg.setAttribute('fill', slide.style === 'creative' ? '#f0f8ff' :
-                slide.style === 'minimalist' ? '#ffffff' :
-                    slide.style === 'tech' ? '#e6f7ff' : '#ffffff');
+            bg.setAttribute('fill', style.bgColor);
             slideSvg.appendChild(bg);
+
+            // Add decorative elements based on style
+            if (slide.style === 'professional') {
+                const accentBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                accentBar.setAttribute('x', '0');
+                accentBar.setAttribute('y', '0');
+                accentBar.setAttribute('width', '100%');
+                accentBar.setAttribute('height', '15');
+                accentBar.setAttribute('fill', style.accentColor);
+                slideSvg.appendChild(accentBar);
+
+                const footerBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                footerBar.setAttribute('x', '0');
+                footerBar.setAttribute('y', '435');
+                footerBar.setAttribute('width', '100%');
+                footerBar.setAttribute('height', '15');
+                footerBar.setAttribute('fill', style.accentColor);
+                slideSvg.appendChild(footerBar);
+            }
+            else if (slide.style === 'creative') {
+                const circle1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle1.setAttribute('cx', '700');
+                circle1.setAttribute('cy', '50');
+                circle1.setAttribute('r', '50');
+                circle1.setAttribute('fill', style.accentColor);
+                circle1.setAttribute('opacity', '0.3');
+                slideSvg.appendChild(circle1);
+
+                const circle2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle2.setAttribute('cx', '50');
+                circle2.setAttribute('cy', '400');
+                circle2.setAttribute('r', '70');
+                circle2.setAttribute('fill', style.accentColor);
+                circle2.setAttribute('opacity', '0.2');
+                slideSvg.appendChild(circle2);
+            }
+            else if (slide.style === 'tech') {
+                // Tech pattern
+                for (let i = 0; i < 20; i++) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    const x1 = Math.random() * 800;
+                    const y1 = Math.random() * 450;
+                    const x2 = x1 + (Math.random() * 100 - 50);
+                    const y2 = y1 + (Math.random() * 100 - 50);
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke', style.accentColor);
+                    line.setAttribute('stroke-width', '0.5');
+                    line.setAttribute('opacity', '0.2');
+                    slideSvg.appendChild(line);
+                }
+            }
 
             // Add title
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             title.setAttribute('x', '50');
-            title.setAttribute('y', '80');
-            title.setAttribute('font-size', '36');
+            title.setAttribute('y', slide.type === "title" ? '150' : '80');
+            title.setAttribute('font-size', style.titleSize);
             title.setAttribute('font-weight', 'bold');
-            title.setAttribute('fill', slide.style === 'creative' ? '#6a5acd' :
-                slide.style === 'minimalist' ? '#333333' :
-                    slide.style === 'tech' ? '#0078d7' : '#2c3e50');
+            title.setAttribute('fill', style.titleColor);
+            title.setAttribute('font-family', style.font);
             title.textContent = slide.title;
             slideSvg.appendChild(title);
 
@@ -674,10 +826,20 @@
             slide.content.forEach((point, index) => {
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 text.setAttribute('x', '70');
-                text.setAttribute('y', 150 + index * 40);
-                text.setAttribute('font-size', '24');
-                text.setAttribute('fill', '#333333');
-                text.textContent = `• ${point}`;
+                text.setAttribute('y', slide.type === "title" ? (200 + index * 40) : (130 + index * 40));
+                text.setAttribute('font-size', style.textSize);
+                text.setAttribute('fill', style.textColor);
+                text.setAttribute('font-family', style.font);
+
+                // Add bullet point
+                const bullet = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                bullet.setAttribute('cx', '55');
+                bullet.setAttribute('cy', slide.type === "title" ? (200 + index * 40 - 5) : (130 + index * 40 - 5));
+                bullet.setAttribute('r', '5');
+                bullet.setAttribute('fill', style.bulletColor);
+                slideSvg.appendChild(bullet);
+
+                text.textContent = point;
                 slideSvg.appendChild(text);
             });
 
@@ -686,9 +848,23 @@
             footer.setAttribute('x', '700');
             footer.setAttribute('y', '430');
             footer.setAttribute('font-size', '16');
-            footer.setAttribute('fill', '#777777');
+            footer.setAttribute('fill', style.textColor);
+            footer.setAttribute('font-family', style.font);
             footer.textContent = `Slide ${currentSlideIndex + 1} of ${generatedSlides.length}`;
             slideSvg.appendChild(footer);
+
+            // Add logo for title slide
+            if (slide.type === "title") {
+                const logo = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                logo.setAttribute('x', '400');
+                logo.setAttribute('y', '400');
+                logo.setAttribute('font-size', '24');
+                logo.setAttribute('fill', style.textColor);
+                logo.setAttribute('font-family', style.font);
+                logo.setAttribute('text-anchor', 'middle');
+                logo.textContent = "SlidesAI.io";
+                slideSvg.appendChild(logo);
+            }
 
             currentSlideEl.textContent = currentSlideIndex + 1;
         }
@@ -719,42 +895,67 @@
             pptx.title = presentationData.title;
             pptx.company = "AI Presentation Tools";
 
-            // Add slides
+            // Set layout for all slides
+            pptx.layout = 'LAYOUT_16x9';
+
+            // Add slides with proper positioning
             presentationData.slides.forEach((slide, index) => {
+                const style = styleTemplates[slide.style] || styleTemplates.professional;
                 const pptxSlide = pptx.addSlide();
 
-                // Title
+                // Set background
+                pptxSlide.background = { color: style.bgColor };
+
+                // Add title
                 pptxSlide.addText(slide.title, {
                     x: 0.5,
-                    y: 0.5,
+                    y: slide.type === "title" ? 2.0 : 0.5,
                     w: "90%",
                     h: 1.5,
-                    fontSize: 24,
+                    fontSize: style.titleSize,
                     bold: true,
-                    color: "363636"
+                    color: style.titleColor,
+                    fontFace: style.font,
+                    align: slide.type === "title" ? "center" : "left"
                 });
 
-                // Content
+                // Add content with proper positioning
+                let yPos = slide.type === "title" ? 3.0 : 1.5;
                 slide.content.forEach((point, i) => {
                     pptxSlide.addText(point, {
                         x: 1.0,
-                        y: 1.5 + (i * 0.5),
+                        y: yPos,
                         w: "85%",
-                        h: 0.4,
-                        fontSize: 18,
-                        bullet: true
+                        fontSize: style.textSize,
+                        color: style.textColor,
+                        fontFace: style.font,
+                        bullet: { code: "25CF", color: style.bulletColor }
                     });
+                    yPos += 0.5; // Increment vertical position
                 });
 
-                // Footer
+                // Add footer
                 pptxSlide.addText(`Slide ${index + 1} of ${presentationData.slides.length}`, {
                     x: 7.0,
                     y: 6.5,
                     w: 2.0,
-                    h: 0.4,
                     fontSize: 12,
-                    color: "777777"
+                    color: style.textColor,
+                    fontFace: style.font
                 });
+
+                // Add logo for title slide
+                if (slide.type === "title") {
+                    pptxSlide.addText("SlidesAI.io", {
+                        x: "50%",
+                        y: 6.0,
+                        w: "100%",
+                        fontSize: 18,
+                        color: style.textColor,
+                        fontFace: style.font,
+                        align: "center"
+                    });
+                }
             });
 
             // Download the presentation
