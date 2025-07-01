@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedding Solutions for AI Tools</title>
+    <title>SlidesAI.io Presentation Generator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.11.0/dist/pptxgen.bundle.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,7 +16,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background: linear-gradient(135deg, #0f1a3d, #2a0c3d, #0f1a3d);
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
@@ -31,11 +32,11 @@
         header {
             text-align: center;
             padding: 40px 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(15, 25, 60, 0.7);
             border-radius: 15px;
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(106, 90, 205, 0.3);
             position: relative;
             overflow: hidden;
         }
@@ -47,14 +48,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at top right, rgba(255, 106, 0, 0.2), transparent 70%);
+            background: radial-gradient(circle at top right, rgba(106, 90, 205, 0.3), transparent 70%);
             z-index: -1;
         }
 
         h1 {
             font-size: 2.8rem;
             margin-bottom: 15px;
-            background: linear-gradient(to right, #ff9966, #ff5e62);
+            background: linear-gradient(to right, #6a5acd, #9370db);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -68,215 +69,74 @@
             margin: 0 auto 30px;
         }
 
-        .solution-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        .main-content {
+            display: flex;
             gap: 30px;
             margin-bottom: 40px;
         }
 
-        .solution-card {
-            background: rgba(30, 30, 60, 0.7);
+        .input-section {
+            flex: 1;
+            background: rgba(20, 25, 50, 0.7);
             border-radius: 15px;
             padding: 25px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(106, 90, 205, 0.3);
+        }
+
+        .preview-section {
+            flex: 1;
+            background: rgba(20, 25, 50, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(106, 90, 205, 0.3);
             display: flex;
             flex-direction: column;
         }
 
-        .solution-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .solution-card h2 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: #4ecdc4;
-        }
-
-        .solution-card i {
-            font-size: 1.8rem;
-            color: #ff6b6b;
-        }
-
-        .solution-card ul {
-            padding-left: 20px;
-            margin: 15px 0;
-            flex-grow: 1;
-        }
-
-        .solution-card li {
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
-
-        .solution-card li strong {
-            color: #ffd166;
-        }
-
-        .card-footer {
-            margin-top: auto;
-        }
-
-        .card-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #4ecdc4, #2a9d8f);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .card-btn:hover {
-            background: linear-gradient(45deg, #2a9d8f, #21867a);
-            transform: translateY(-2px);
-        }
-
-        .tools-section {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 40px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
         .section-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .section-header h2 {
             font-size: 2.2rem;
             margin-bottom: 10px;
-            color: #ffd166;
+            color: #9370db;
         }
 
-        .section-header p {
-            color: #a0a0e0;
-            max-width: 800px;
-            margin: 0 auto;
+        .form-group {
+            margin-bottom: 25px;
         }
 
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .tool-card {
-            background: rgba(40, 40, 80, 0.7);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-8px);
-        }
-
-        .tool-image {
-            height: 180px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .tool-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-            padding: 15px;
-        }
-
-        .tool-card h3 {
-            color: #fff;
-            font-size: 1.4rem;
-            margin-bottom: 5px;
-        }
-
-        .tool-card p {
-            color: #a0a0e0;
-            font-size: 0.9rem;
-        }
-
-        .tool-content {
-            padding: 20px;
-        }
-
-        .tool-features {
-            margin: 15px 0;
-            padding-left: 20px;
-        }
-
-        .tool-features li {
-            margin-bottom: 8px;
-            color: #ccc;
-            font-size: 0.95rem;
-        }
-
-        .tool-btn {
+        label {
             display: block;
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(45deg, #ff9966, #ff5e62);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            margin-bottom: 8px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
+            color: #a0a0e0;
         }
 
-        .tool-btn:hover {
-            background: linear-gradient(45deg, #ff8a50, #ff4a4e);
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(40, 40, 80, 0.5);
+            border: 1px solid rgba(106, 90, 205, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
         }
 
-        .login-alternative {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            padding: 35px 25px;
-            background: rgba(30, 30, 60, 0.7);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .login-alternative h3 {
-            color: #ffd166;
-            font-size: 1.8rem;
-        }
-
-        .login-alternative p {
-            max-width: 700px;
-            color: #ccc;
-            margin-bottom: 10px;
+        textarea {
+            min-height: 120px;
+            resize: vertical;
         }
 
         .btn {
             padding: 16px 40px;
-            background: linear-gradient(45deg, #ff9966, #ff5e62);
+            background: linear-gradient(45deg, #6a5acd, #9370db);
             color: white;
             border: none;
             border-radius: 50px;
@@ -287,16 +147,191 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 5px 20px rgba(255, 94, 98, 0.5);
+            box-shadow: 0 5px 20px rgba(106, 90, 205, 0.5);
+            width: 100%;
+            justify-content: center;
         }
 
         .btn:hover {
+            background: linear-gradient(45deg, #5a4acd, #8360db);
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 94, 98, 0.7);
+            box-shadow: 0 8px 25px rgba(106, 90, 205, 0.7);
         }
 
         .btn i {
             font-size: 1.2rem;
+        }
+
+        .image-upload {
+            border: 2px dashed rgba(106, 90, 205, 0.5);
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload:hover {
+            border-color: #6a5acd;
+            background: rgba(40, 40, 80, 0.3);
+        }
+
+        .image-upload i {
+            font-size: 3rem;
+            color: #9370db;
+            margin-bottom: 15px;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #6a5acd;
+        }
+
+        .preview-container {
+            flex: 1;
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .slide-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #fff;
+        }
+
+        .slide-nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        .slide-nav-btn {
+            background: rgba(40, 40, 80, 0.5);
+            color: #ccc;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slide-nav-btn:hover {
+            background: linear-gradient(45deg, #6a5acd, #9370db);
+            color: white;
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            color: #a0a0e0;
+        }
+
+        .download-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .save-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+        }
+
+        .save-notification.show {
+            transform: translateX(0);
+        }
+
+        .save-notification i {
+            font-size: 1.5rem;
+        }
+
+        .generating-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .generating-overlay.hidden {
+            display: none;
+        }
+
+        .generating-overlay i {
+            font-size: 3rem;
+            color: #6a5acd;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #a0a0e0;
+        }
+
+        .preview-placeholder i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #6a5acd;
+        }
+
+        .slide-svg {
+            width: 100%;
+            height: 100%;
+            background-color: white;
         }
 
         footer {
@@ -305,21 +340,16 @@
             margin-top: 40px;
             color: #a0a0e0;
             font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(106, 90, 205, 0.3);
         }
 
         @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
             h1 {
                 font-size: 2.2rem;
-            }
-
-            .section-header h2 {
-                font-size: 1.8rem;
-            }
-
-            .btn {
-                padding: 14px 30px;
-                font-size: 1rem;
             }
         }
     </style>
@@ -328,198 +358,421 @@
 <body>
     <div class="container">
         <header>
-            <h1>Seamless Embedding Solutions</h1>
-            <p class="subtitle">Overcoming iframe limitations for AI tools while maintaining a seamless user experience
-            </p>
+            <h1>SlidesAI.io Presentation Generator</h1>
+            <p class="subtitle">Create stunning presentations with AI - directly on this page</p>
         </header>
 
-        <div class="solution-container">
-            <div class="solution-card">
-                <h2><i class="fas fa-exclamation-triangle"></i> The Problem</h2>
-                <p>Embedding complex applications in iframes often leads to:</p>
-                <ul>
-                    <li><strong>Resource loading errors</strong> due to browser security restrictions</li>
-                    <li><strong>Authentication issues</strong> with persistent login prompts</li>
-                    <li><strong>Cookie/session problems</strong> preventing persistent login</li>
-                    <li><strong>Cross-origin restrictions</strong> blocking functionality</li>
-                    <li><strong>UI inconsistencies</strong> due to missing resources</li>
-                </ul>
-                <div class="card-footer">
-                    <button class="card-btn" onclick="showDetails('problem')">
-                        <i class="fas fa-info-circle"></i> Technical Details
-                    </button>
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-header">
+                    <h2>Create Your Presentation</h2>
+                    <p>Enter your content and let AI generate your slides</p>
                 </div>
+
+                <div class="form-group">
+                    <label for="presentation-title"><i class="fas fa-heading"></i> Presentation Title</label>
+                    <input type="text" id="presentation-title" placeholder="Enter presentation title"
+                        value="Future of AI in Business">
+                </div>
+
+                <div class="form-group">
+                    <label for="presentation-topic"><i class="fas fa-lightbulb"></i> Presentation Topic</label>
+                    <textarea id="presentation-topic"
+                        placeholder="Describe what your presentation should be about">Artificial Intelligence is transforming business operations across all industries. This presentation should cover key applications, benefits, challenges, and future trends of AI in business. Focus on real-world examples from finance, healthcare, and manufacturing.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="slide-count"><i class="fas fa-layer-group"></i> Number of Slides</label>
+                    <select id="slide-count">
+                        <option value="5">5 Slides</option>
+                        <option value="10" selected>10 Slides</option>
+                        <option value="15">15 Slides</option>
+                        <option value="20">20 Slides</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="presentation-style"><i class="fas fa-palette"></i> Presentation Style</label>
+                    <select id="presentation-style">
+                        <option value="professional">Professional</option>
+                        <option value="creative">Creative</option>
+                        <option value="minimalist">Minimalist</option>
+                        <option value="tech">Tech-Inspired</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Add Images (Optional)</label>
+                    <div class="image-upload" id="image-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop images here or click to browse</p>
+                        <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+                    </div>
+                    <div class="image-preview" id="image-preview"></div>
+                </div>
+
+                <button class="btn" id="generate-btn">
+                    <i class="fas fa-magic"></i> Generate Presentation
+                </button>
             </div>
 
-            <div class="solution-card">
-                <h2><i class="fas fa-lightbulb"></i> Direct Solutions</h2>
-                <p>Effective approaches to overcome these challenges:</p>
-                <ul>
-                    <li><strong>Launch Button</strong> - Open in new tab for full functionality</li>
-                    <li><strong>API Integration</strong> - Use official SDKs when available</li>
-                    <li><strong>Widget Embedding</strong> - Use platform-provided widgets</li>
-                    <li><strong>Alternative Tools</strong> - Use embed-friendly alternatives</li>
-                    <li><strong>Service Provider Contact</strong> - Request embed support</li>
-                </ul>
-                <div class="card-footer">
-                    <button class="card-btn" onclick="showDetails('solutions')">
-                        <i class="fas fa-cogs"></i> Implementation Guide
+            <div class="preview-section">
+                <div class="section-header">
+                    <h2>Presentation Preview</h2>
+                    <p>Your AI-generated slides will appear here</p>
+                </div>
+
+                <div class="preview-container">
+                    <div class="generating-overlay hidden" id="generating-overlay">
+                        <i class="fas fa-spinner"></i>
+                        <h3>Generating Your Presentation</h3>
+                        <p>This usually takes 5-10 seconds...</p>
+                    </div>
+
+                    <div class="preview-placeholder" id="preview-placeholder">
+                        <i class="fas fa-file-powerpoint"></i>
+                        <h3>No Presentation Generated Yet</h3>
+                        <p>Click "Generate Presentation" to create your slides</p>
+                    </div>
+
+                    <svg class="slide-svg hidden" id="slide-svg" viewBox="0 0 800 450"></svg>
+                </div>
+
+                <div class="slide-nav">
+                    <button class="slide-nav-btn" id="prev-slide">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="slide-counter">
+                        <span id="current-slide">0</span> / <span id="total-slides">0</span>
+                    </div>
+                    <button class="slide-nav-btn" id="next-slide">
+                        <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-            </div>
 
-            <div class="solution-card">
-                <h2><i class="fas fa-rocket"></i> Recommended Approach</h2>
-                <p>For the best user experience:</p>
-                <ul>
-                    <li>Use a visually appealing launch button</li>
-                    <li>Provide tool previews with screenshots</li>
-                    <li>Offer alternative embeddable tools</li>
-                    <li>Clearly communicate benefits of each option</li>
-                    <li>Maintain seamless design transitions</li>
-                </ul>
-                <div class="card-footer">
-                    <button class="card-btn" onclick="launchTool('pixverse')">
-                        <i class="fas fa-play"></i> Try PixVerse
+                <div class="download-section">
+                    <button class="btn" id="download-btn">
+                        <i class="fas fa-download"></i> Download Presentation
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="tools-section">
-            <div class="section-header">
-                <h2>Embed-Friendly AI Tools</h2>
-                <p>These alternatives provide excellent embedding capabilities and similar functionality</p>
-            </div>
-
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <div class="tool-image" style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
-                        <div class="tool-overlay">
-                            <h3>Vidful AI</h3>
-                            <p>AI Video Creation & Editing</p>
-                        </div>
-                    </div>
-                    <div class="tool-content">
-                        <p>Create professional videos from text with AI-powered editing tools.</p>
-                        <ul class="tool-features">
-                            <li>Text-to-video conversion</li>
-                            <li>Automated editing</li>
-                            <li>Rich media library</li>
-                            <li>Easy embedding</li>
-                        </ul>
-                        <button class="tool-btn" onclick="launchTool('vidful')">
-                            <i class="fas fa-external-link-alt"></i> Open Vidful AI
-                        </button>
-                    </div>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-image" style="background: linear-gradient(135deg, #ff416c, #ff4b2b);">
-                        <div class="tool-overlay">
-                            <h3>Presentations.AI</h3>
-                            <p>AI-Powered Slide Creation</p>
-                        </div>
-                    </div>
-                    <div class="tool-content">
-                        <p>Generate beautiful presentations from text with smart design tools.</p>
-                        <ul class="tool-features">
-                            <li>AI content generation</li>
-                            <li>Professional templates</li>
-                            <li>Real-time collaboration</li>
-                            <li>Seamless embedding</li>
-                        </ul>
-                        <button class="tool-btn" onclick="launchTool('presentations')">
-                            <i class="fas fa-external-link-alt"></i> Open Presentations.AI
-                        </button>
-                    </div>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-image" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
-                        <div class="tool-overlay">
-                            <h3>Slides GPT</h3>
-                            <p>AI Presentation Generator</p>
-                        </div>
-                    </div>
-                    <div class="tool-content">
-                        <p>Transform your ideas into stunning presentations in seconds.</p>
-                        <ul class="tool-features">
-                            <li>GPT-powered content</li>
-                            <li>Customizable designs</li>
-                            <li>Export to multiple formats</li>
-                            <li>Embeddable components</li>
-                        </ul>
-                        <button class="tool-btn" onclick="launchTool('slidesgpt')">
-                            <i class="fas fa-external-link-alt"></i> Open Slides GPT
-                        </button>
-                    </div>
-                </div>
+        <div class="save-notification" id="save-notification">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <h3>Presentation Saved!</h3>
+                <p>Check your "Downloads" folder for the file</p>
             </div>
         </div>
 
-        <div class="login-alternative">
-            <h3>Seamless Experience with PixVerse</h3>
-            <p>For the best experience with PixVerse, we recommend launching it in a new tab where you can log in and
-                access all features without limitations.</p>
-            <p>This approach ensures full functionality while maintaining a seamless workflow.</p>
-            <button class="btn" onclick="launchTool('pixverse')">
-                <i class="fas fa-rocket"></i> Launch PixVerse
-            </button>
-        </div>
+        <footer>
+            <p>Integrated SlidesAI.io Solution | Seamless Presentation Generation</p>
+            <p>© 2023 AI Presentation Tools. All rights reserved.</p>
+        </footer>
     </div>
 
-    <footer>
-        <p>Embedding Solutions for AI Tools | Seamless Integration Framework</p>
-        <p>© 2023 AI Integration Solutions. All rights reserved.</p>
-    </footer>
-
     <script>
-        // Tool launch functions
-        function launchTool(tool) {
-            let url;
-            switch (tool) {
-                case 'pixverse':
-                    url = 'https://app.pixverse.ai/home';
-                    break;
-                case 'vidful':
-                    url = 'https://vidful.ai/';
-                    break;
-                case 'presentations':
-                    url = 'https://www.presentations.ai/';
-                    break;
-                case 'slidesgpt':
-                    url = 'https://slidesgpt.com/';
-                    break;
-                default:
-                    url = 'https://app.pixverse.ai/home';
+        // DOM Elements
+        const imageUpload = document.getElementById('image-upload');
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+        const generateBtn = document.getElementById('generate-btn');
+        const generatingOverlay = document.getElementById('generating-overlay');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const slideSvg = document.getElementById('slide-svg');
+        const prevSlideBtn = document.getElementById('prev-slide');
+        const nextSlideBtn = document.getElementById('next-slide');
+        const currentSlideEl = document.getElementById('current-slide');
+        const totalSlidesEl = document.getElementById('total-slides');
+        const downloadBtn = document.getElementById('download-btn');
+        const saveNotification = document.getElementById('save-notification');
+
+        // State
+        let uploadedImages = [];
+        let currentSlideIndex = 0;
+        let generatedSlides = [];
+        let presentationData = null;
+
+        // Event Listeners
+        imageUpload.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        uploadedImages.push(event.target.result);
+                        updateImagePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        generateBtn.addEventListener('click', generatePresentation);
+        prevSlideBtn.addEventListener('click', showPrevSlide);
+        nextSlideBtn.addEventListener('click', showNextSlide);
+        downloadBtn.addEventListener('click', downloadPresentation);
+
+        // Functions
+        function updateImagePreview() {
+            imagePreview.innerHTML = '';
+            uploadedImages.forEach(imgSrc => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.classList.add('preview-image');
+                imagePreview.appendChild(img);
+            });
+        }
+
+        function generatePresentation() {
+            // Get form values
+            const title = document.getElementById('presentation-title').value;
+            const topic = document.getElementById('presentation-topic').value;
+            const slideCount = parseInt(document.getElementById('slide-count').value);
+            const style = document.getElementById('presentation-style').value;
+
+            // Validate input
+            if (!title.trim() || !topic.trim()) {
+                alert('Please enter a title and topic for your presentation');
+                return;
             }
 
-            // Open in new tab
-            window.open(url, '_blank');
+            // Show generating overlay
+            generatingOverlay.classList.remove('hidden');
+            previewPlaceholder.classList.add('hidden');
+            slideSvg.classList.add('hidden');
 
-            // Provide visual feedback
-            const btn = event.currentTarget;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+            // Generate presentation structure
+            presentationData = generatePresentationStructure(title, topic, slideCount, style);
+
+            // Simulate processing time
             setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-check"></i> Launched!';
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-rocket"></i> Launch PixVerse';
-                }, 2000);
-            }, 1000);
+                generatedSlides = presentationData.slides;
+
+                // Update UI
+                generatingOverlay.classList.add('hidden');
+                previewPlaceholder.classList.add('hidden');
+                slideSvg.classList.remove('hidden');
+
+                // Show first slide
+                currentSlideIndex = 0;
+                updateSlideDisplay();
+
+                // Update slide counter
+                totalSlidesEl.textContent = generatedSlides.length;
+            }, 1500);
         }
 
-        // Show solution details
-        function showDetails(type) {
-            let message;
-            if (type === 'problem') {
-                message = "The embedding issues stem from browser security policies (CORS), cookie restrictions in iframes, and third-party authentication requirements. These prevent seamless login and functionality within embedded content.";
-            } else {
-                message = "For implementation: 1) Use launch buttons for authentication-required tools, 2) Check for official embed codes/widgets, 3) Utilize APIs when available, 4) Consider alternative tools with better embed support.";
+        function generatePresentationStructure(title, topic, slideCount, style) {
+            // Generate slide content based on topic
+            const slides = [];
+
+            // Title slide
+            slides.push({
+                title: title,
+                content: [
+                    `Topic: ${topic}`,
+                    `Generated on: ${new Date().toLocaleDateString()}`,
+                    "Created with SlidesAI.io"
+                ],
+                type: "title",
+                style: style
+            });
+
+            // Content slides
+            const contentPoints = [
+                "Introduction to the topic",
+                "Key concepts and definitions",
+                "Current trends and developments",
+                "Benefits and advantages",
+                "Challenges and limitations",
+                "Case studies and examples",
+                "Implementation strategies",
+                "Future outlook and predictions",
+                "Recommendations and best practices",
+                "Conclusion and summary"
+            ];
+
+            for (let i = 1; i < slideCount; i++) {
+                const slideTitle = contentPoints[Math.min(i - 1, contentPoints.length - 1)];
+                const content = generateSlideContent(topic, slideTitle, i);
+
+                slides.push({
+                    title: slideTitle,
+                    content: content,
+                    type: i === slideCount - 1 ? "conclusion" : "content",
+                    style: style
+                });
             }
 
-            alert(message);
+            return {
+                title: title,
+                topic: topic,
+                slides: slides,
+                style: style,
+                generatedAt: new Date()
+            };
         }
+
+        function generateSlideContent(topic, slideTitle, slideIndex) {
+            const contentPoints = [];
+            const pointCount = 3 + Math.floor(Math.random() * 3); // 3-5 points
+
+            for (let i = 0; i < pointCount; i++) {
+                contentPoints.push(generateContentPoint(topic, slideTitle, slideIndex, i));
+            }
+
+            return contentPoints;
+        }
+
+        function generateContentPoint(topic, slideTitle, slideIndex, pointIndex) {
+            const verbs = ["Implement", "Develop", "Utilize", "Optimize", "Streamline", "Enhance", "Transform"];
+            const nouns = ["processes", "systems", "solutions", "strategies", "technologies", "approaches", "frameworks"];
+            const adjectives = ["AI-driven", "efficient", "scalable", "innovative", "robust", "adaptive", "intelligent"];
+
+            const verb = verbs[Math.floor(Math.random() * verbs.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+
+            return `${verb} ${adjective} ${noun} for ${topic.toLowerCase()} ${pointIndex % 2 === 0 ? 'improves outcomes' : 'reduces costs'}`;
+        }
+
+        function updateSlideDisplay() {
+            if (generatedSlides.length === 0) return;
+
+            const slide = generatedSlides[currentSlideIndex];
+            slideSvg.innerHTML = '';
+
+            // Create SVG slide background
+            const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            bg.setAttribute('width', '100%');
+            bg.setAttribute('height', '100%');
+            bg.setAttribute('fill', slide.style === 'creative' ? '#f0f8ff' :
+                slide.style === 'minimalist' ? '#ffffff' :
+                    slide.style === 'tech' ? '#e6f7ff' : '#ffffff');
+            slideSvg.appendChild(bg);
+
+            // Add title
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            title.setAttribute('x', '50');
+            title.setAttribute('y', '80');
+            title.setAttribute('font-size', '36');
+            title.setAttribute('font-weight', 'bold');
+            title.setAttribute('fill', slide.style === 'creative' ? '#6a5acd' :
+                slide.style === 'minimalist' ? '#333333' :
+                    slide.style === 'tech' ? '#0078d7' : '#2c3e50');
+            title.textContent = slide.title;
+            slideSvg.appendChild(title);
+
+            // Add content
+            slide.content.forEach((point, index) => {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', '70');
+                text.setAttribute('y', 150 + index * 40);
+                text.setAttribute('font-size', '24');
+                text.setAttribute('fill', '#333333');
+                text.textContent = `• ${point}`;
+                slideSvg.appendChild(text);
+            });
+
+            // Add footer
+            const footer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            footer.setAttribute('x', '700');
+            footer.setAttribute('y', '430');
+            footer.setAttribute('font-size', '16');
+            footer.setAttribute('fill', '#777777');
+            footer.textContent = `Slide ${currentSlideIndex + 1} of ${generatedSlides.length}`;
+            slideSvg.appendChild(footer);
+
+            currentSlideEl.textContent = currentSlideIndex + 1;
+        }
+
+        function showPrevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateSlideDisplay();
+            }
+        }
+
+        function showNextSlide() {
+            if (currentSlideIndex < generatedSlides.length - 1) {
+                currentSlideIndex++;
+                updateSlideDisplay();
+            }
+        }
+
+        function downloadPresentation() {
+            if (!presentationData || generatedSlides.length === 0) {
+                alert("Please generate a presentation first!");
+                return;
+            }
+
+            // Create a new presentation
+            const pptx = new PptxGenJS();
+            pptx.author = "SlidesAI.io";
+            pptx.title = presentationData.title;
+            pptx.company = "AI Presentation Tools";
+
+            // Add slides
+            presentationData.slides.forEach((slide, index) => {
+                const pptxSlide = pptx.addSlide();
+
+                // Title
+                pptxSlide.addText(slide.title, {
+                    x: 0.5,
+                    y: 0.5,
+                    w: "90%",
+                    h: 1.5,
+                    fontSize: 24,
+                    bold: true,
+                    color: "363636"
+                });
+
+                // Content
+                slide.content.forEach((point, i) => {
+                    pptxSlide.addText(point, {
+                        x: 1.0,
+                        y: 1.5 + (i * 0.5),
+                        w: "85%",
+                        h: 0.4,
+                        fontSize: 18,
+                        bullet: true
+                    });
+                });
+
+                // Footer
+                pptxSlide.addText(`Slide ${index + 1} of ${presentationData.slides.length}`, {
+                    x: 7.0,
+                    y: 6.5,
+                    w: 2.0,
+                    h: 0.4,
+                    fontSize: 12,
+                    color: "777777"
+                });
+            });
+
+            // Download the presentation
+            pptx.writeFile({ fileName: `${presentationData.title.replace(/[^a-z0-9]/gi, '_')}.pptx` })
+                .then(() => {
+                    // Show notification
+                    saveNotification.classList.add('show');
+                    setTimeout(() => saveNotification.classList.remove('show'), 5000);
+                })
+                .catch(err => {
+                    console.error("Error generating PPTX:", err);
+                    alert("Failed to generate presentation file. Please try again.");
+                });
+        }
+
+        // Initialize
+        totalSlidesEl.textContent = "0";
+        currentSlideEl.textContent = "0";
     </script>
 </body>
 
