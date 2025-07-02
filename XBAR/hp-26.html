@@ -871,6 +871,125 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ================== AI ASSISTANT FUNCTIONALITY ==================
+            const assistantBtn = document.querySelector('.assistant-btn');
+            const aiAssistant = document.querySelector('.ai-assistant');
+            const chatContainer = document.querySelector('.chat-container');
+            const closeChatBtn = document.querySelector('.close-chat');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendMessage');
+
+            // Toggle chat visibility
+            assistantBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                chatContainer.classList.toggle('active');
+
+                // Focus input when opening
+                if (chatContainer.classList.contains('active')) {
+                    setTimeout(() => {
+                        chatInput.focus();
+                    }, 300);
+                }
+            });
+
+            // Close chat
+            closeChatBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                chatContainer.classList.remove('active');
+            });
+
+            // Sample AI responses - enhanced version
+            const aiResponses = {
+                "hello": [
+                    "Hello! How can I help you with CrossBar technology today?",
+                    "Hi there! What would you like to know about our ReRAM solutions?"
+                ],
+                "reram": [
+                    "ReRAM (Resistive Random-Access Memory) is our revolutionary non-volatile memory technology that offers high density, low power consumption, and fast read/write speeds.",
+                    "Our ReRAM technology enables terabyte-scale storage with minimal energy consumption, making it ideal for AI, IoT, and secure computing applications."
+                ],
+                "cramium": [
+                    "Cramium is our product family of ReRAM-based memory solutions. We offer three main products: Cramium PHSM for security, Cramium HPM for performance, and Cramium HDM for high-density storage.",
+                    "The Cramium product line includes physically secure modules, high-performance memory for AI, and high-density storage solutions."
+                ],
+                "performance": [
+                    "Our ReRAM technology delivers 20ns read latency, 12μs write times, and 1M+ write cycles. That's 100× faster reads and 1,000× faster writes than traditional memory.",
+                    "CrossBar memory provides 5× less energy than eFlash and 20× less than NAND flash memory."
+                ],
+                "applications": [
+                    "CrossBar memory is ideal for AI accelerators, IoT devices, secure computing, enterprise storage, and edge computing applications.",
+                    "Our technology is perfect for applications requiring high performance, low power consumption, and enhanced security."
+                ],
+                "contact": [
+                    "You can contact us through our website at https://www.crossbar-inc.com/company/contact/ or email info@crossbar-inc.com",
+                    "For sales inquiries: sales@crossbar-inc.com. For technical support: support@crossbar-inc.com"
+                ],
+                "default": [
+                    "I'm the CrossBar assistant. I can help with information about our ReRAM technology, Cramium products, or company information.",
+                    "Could you clarify your question? I specialize in CrossBar's memory solutions and products."
+                ]
+            };
+
+            function addMessage(text, isUser = false) {
+                const message = document.createElement('div');
+                message.className = `message ${isUser ? 'user' : 'ai'}`;
+                message.textContent = text;
+                chatMessages.appendChild(message);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function getAIResponse(message) {
+                const lowerMsg = message.toLowerCase();
+
+                if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+                    return aiResponses.hello[Math.floor(Math.random() * aiResponses.hello.length)];
+                }
+                if (lowerMsg.includes('reram') || lowerMsg.includes('memory')) {
+                    return aiResponses.reram[Math.floor(Math.random() * aiResponses.reram.length)];
+                }
+                if (lowerMsg.includes('cramium') || lowerMsg.includes('security')) {
+                    return aiResponses.cramium[Math.floor(Math.random() * aiResponses.cramium.length)];
+                }
+                if (lowerMsg.includes('performance') || lowerMsg.includes('speed')) {
+                    return aiResponses.performance[Math.floor(Math.random() * aiResponses.performance.length)];
+                }
+                if (lowerMsg.includes('application') || lowerMsg.includes('use case')) {
+                    return aiResponses.applications[Math.floor(Math.random() * aiResponses.applications.length)];
+                }
+                if (lowerMsg.includes('contact') || lowerMsg.includes('email') || lowerMsg.includes('support')) {
+                    return aiResponses.contact[Math.floor(Math.random() * aiResponses.contact.length)];
+                }
+
+                return aiResponses.default[Math.floor(Math.random() * aiResponses.default.length)];
+            }
+
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                addMessage(message, true);
+                chatInput.value = '';
+
+                // Simulate AI thinking
+                setTimeout(() => {
+                    const response = getAIResponse(message);
+                    addMessage(response);
+                }, 800); // Reduced from 1000ms for better responsiveness
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // Close chat when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!chatContainer.contains(e.target) && !assistantBtn.contains(e.target)) {
+                    chatContainer.classList.remove('active');
+                }
+            });
+
             // ================== ANIMATION STATE MANAGEMENT ==================
             let animationsEnabled = true;
             const animationToggle = document.getElementById('animation-toggle');
@@ -1184,9 +1303,9 @@
                     item.className = 'search-result-item';
                     item.href = result.link;
                     item.innerHTML = `
-            <h4>${result.title}</h4>
-            <p>${result.content}</p>
-        `;
+                    <h4>${result.title}</h4>
+                    <p>${result.content}</p>
+                `;
                     item.addEventListener('click', () => {
                         searchContainer.classList.remove('active');
                     });
@@ -1334,6 +1453,9 @@
             window.addEventListener('beforeunload', () => {
                 ScrollTrigger.getAll().forEach(trigger => trigger.kill());
             });
+
+            // Initialize dropdowns
+            setupDropdowns();
         });
     </script>
 </body>
