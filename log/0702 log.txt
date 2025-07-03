@@ -1,0 +1,46 @@
+﻿1. Frontend Development
+* Design and build a responsive, intuitive UI for:
+   * Uploading documents, images, and videos
+   * Typing and submitting prompts
+   * Previewing and downloading AI-generated outputs (text, slides, images, videos)
+* Support multiple media types:
+   * Rich text editors for prompt input
+   * File upload components with drag-and-drop
+   * Media preview components (PDF, PPTX, MP4, etc.)
+2. Backend Infrastructure
+* Create secure APIs to:
+   * Accept user inputs and files
+   * Route requests to internal AI agents (via internal endpoints or message queues)
+   * Return generated content for preview/download
+* Handle file storage:
+   * Organize uploads by user/session
+   * Store generated outputs for retrieval
+* Implement versioning for documents and outputs
+3. Middleware / Proxy Layer
+* Avoid CORS issues by:
+   * Acting as a proxy between frontend and internal AI services
+   * Ensuring all AI calls are made server-side
+* Format prompts before sending to AI:
+   * Expand user input into structured prompts (e.g., for slide decks, videos, memos)
+   * Add metadata like media type, tone, or target audience
+4. Integration with Internal AI
+* Connect to internal AI endpoints (built by your coworkers):
+   * Text generation (Phase 1)
+   * Image generation (Phase 2)
+   * Video generation (Phase 3)
+* Support prompt templating:
+   * Dynamically adjust prompt structure based on media type and user intent
+5. Document Management
+* Build a document ingestion interface:
+   * Allow BD team to upload and tag documents (internal vs external)
+   * Store metadata (version, source, type)
+* Enable AI access to documents via:
+   * Embedding pipelines (if needed)
+   * Searchable indices or vector stores (if integrated)
+6. Admin & Feedback Tools
+* Create dashboards for:
+   * BD team to review and edit AI outputs
+   * Tracking prompt history and output versions
+* Implement feedback capture:
+   * Let users rate or comment on AI outputs
+   * Store feedback for model fine-tuning or audits
