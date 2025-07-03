@@ -1,0 +1,13 @@
+[
+  "test_cancellation.py::test_non_streaming_cancellation",
+  "test_cancellation.py::test_server_running",
+  "test_cancellation.py::test_streaming_cancellation",
+  "tests/test_main.py::test_basic_chat",
+  "tests/test_main.py::test_conversation_with_tool_use",
+  "tests/test_main.py::test_function_calling",
+  "tests/test_main.py::test_health_and_connection",
+  "tests/test_main.py::test_multimodal",
+  "tests/test_main.py::test_streaming_chat",
+  "tests/test_main.py::test_token_counting",
+  "tests/test_main.py::test_with_system_message"
+]
