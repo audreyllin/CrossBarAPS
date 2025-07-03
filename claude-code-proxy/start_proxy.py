@@ -8,7 +8,8 @@ from src.core.config import config
 from src.core.logging import logger
 
 # Add src to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
 
 def main():
     """Main entry point for the proxy server."""
@@ -18,21 +19,26 @@ def main():
             raise ValueError("CLAUDE_API_KEY is required")
         if not config.gemini_api_key:
             raise ValueError("GEMINI_API_KEY is required")
-        
+
+        # Get port from environment variable (Render requirement)
+        port = int(os.environ.get("PORT", config.port))
+        logger.info(f"Using port: {port}")
+
         # Start the server
         uvicorn.run(
             "src.main:app",
             host=config.host,
-            port=config.port,
+            port=port,  # Use dynamic port from environment
             log_level=config.log_level.lower(),
-            reload=False,  # Disable reload for stability
+            reload=False,
             server_header=False,
             timeout_keep_alive=30,
-            access_log=True
+            access_log=True,
         )
     except Exception as e:
         logger.critical(f"Failed to start server: {str(e)}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
