@@ -4,11 +4,22 @@
 import sys
 import os
 import uvicorn
+from fastapi import FastAPI, APIRouter, Response
 from src.core.config import config
 from src.core.logging import logger
 
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
+# Create FastAPI app
+app = FastAPI()
+router = APIRouter()
+
+
+# Add root health check endpoint
+@app.get("/")
+async def health_check():
+    return {"status": "ok", "message": "API Proxy Running"}
 
 
 def main():
@@ -24,11 +35,14 @@ def main():
         port = int(os.environ.get("PORT", config.port))
         logger.info(f"Using port: {port}")
 
+        # Register your API routers here
+        # app.include_router(api_router, prefix="/api")
+
         # Start the server
         uvicorn.run(
-            "src.main:app",
+            app,  # Use our FastAPI app instance
             host=config.host,
-            port=port,  # Use dynamic port from environment
+            port=port,
             log_level=config.log_level.lower(),
             reload=False,
             server_header=False,
