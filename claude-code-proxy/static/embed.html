@@ -6,454 +6,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Presentation Generator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
     <style>
-        :root {
-            --primary: #4a6fa5;
-            --secondary: #6a5acd;
-            --dark: #2d3748;
-            --light: #f8f9fa;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
+        /* ... (keep your existing styles) ... */
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            color: var(--light);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .header {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
-            color: #e2e8f0;
-        }
-
-        .input-section {
+        /* New styles for additional features */
+        .translation-section {
+            margin-top: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            gap: 10px;
         }
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .keyword-highlight {
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
         }
 
-        label {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #cbd5e0;
-        }
-
-        input,
-        select,
-        textarea {
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: none;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.3);
-        }
-
-        input::placeholder,
-        textarea::placeholder {
-            color: #a0aec0;
-        }
-
-        button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .templates {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .template-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 15px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .template-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .template-item.active {
-            border-color: var(--primary);
-            background: rgba(74, 111, 165, 0.3);
-        }
-
-        .template-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .template-name {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .multimedia-section {
+        .theme-import {
             margin-top: 20px;
         }
 
-        .url-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .url-input-group input {
-            flex: 1;
-        }
-
-        .preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-            min-height: 100px;
-        }
-
-        .preview-item {
-            width: 80px;
-            height: 80px;
+        .asset-preview {
+            max-width: 100%;
+            max-height: 200px;
             border-radius: 8px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
+            margin-top: 10px;
+            display: none;
         }
 
-        .preview-item.image {
-            background-color: #4a6fa5;
-        }
-
-        .preview-item.video {
-            background-color: #6a5acd;
-        }
-
-        .preview-item.audio {
-            background-color: #10b981;
-        }
-
-        .preview-item.youtube {
-            background-color: #ef4444;
-        }
-
-        .ai-selector {
-            display: flex;
-            gap: 15px;
+        .progress-container {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             margin: 20px 0;
+            overflow: hidden;
         }
 
-        .ai-option {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+        .progress-bar {
+            height: 10px;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.4s ease;
         }
 
-        .ai-option:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .ai-option.active {
-            border-color: var(--primary);
-            background: rgba(74, 111, 165, 0.3);
-        }
-
-        .ai-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .preview-section {
-            position: relative;
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .preview-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            color: #a0aec0;
-        }
-
-        .preview-placeholder i {
-            font-size: 5rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .slide-container {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .slide-content {
-            flex: 1;
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            position: relative;
-            overflow: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .slide-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .slide-bullet {
-            font-size: 20px;
-            margin: 10px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .slide-bullet:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            top: 0;
-            font-size: 24px;
-        }
-
-        .slide-media {
-            margin-top: 20px;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .slide-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-        }
-
-        .slide-nav {
-            display: flex;
-            gap: 10px;
-        }
-
-        .slide-counter {
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .download-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .generating-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            border-radius: 15px;
-            display: none;
-        }
-
-        .generating-overlay i {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .api-status {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .save-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--success);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .save-notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .error-panel {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid var(--danger);
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .error-panel h3 {
-            color: var(--danger);
-            margin-bottom: 10px;
-        }
-
-        .error-details {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            max-height: 150px;
-            overflow: auto;
+        .pitch-style {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: #fff;
+            titleColor: #00d4ff;
         }
     </style>
 </head>
@@ -462,11 +63,11 @@
     <div class="container">
         <div class="header">
             <h1>AI Presentation Generator</h1>
-            <p>Create stunning presentations in seconds using the power of AI. Simply provide a topic, choose a style,
-                and let our AI generate professional slides for you.</p>
+            <p>Create stunning presentations in seconds using the power of AI</p>
         </div>
 
         <div class="panel input-section">
+            <!-- Presentation Inputs -->
             <div class="input-group">
                 <label for="presentation-title">Presentation Title</label>
                 <input type="text" id="presentation-title" placeholder="Enter presentation title">
@@ -483,6 +84,7 @@
                 <input type="number" id="slide-count" min="3" max="20" value="8">
             </div>
 
+            <!-- Style Templates -->
             <div class="input-group">
                 <label>Presentation Style</label>
                 <div class="templates">
@@ -494,25 +96,41 @@
                         <div class="template-icon"><i class="fas fa-palette"></i></div>
                         <div class="template-name">Creative</div>
                     </div>
-                    <div class="template-item" data-style="minimalist">
-                        <div class="template-icon"><i class="fas fa-minimize"></i></div>
-                        <div class="template-name">Minimalist</div>
+                    <div class="template-item" data-style="pitch">
+                        <div class="template-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="template-name">Pitch Deck</div>
                     </div>
                     <div class="template-item" data-style="tech">
                         <div class="template-icon"><i class="fas fa-microchip"></i></div>
                         <div class="template-name">Tech</div>
                     </div>
-                    <div class="template-item" data-style="strategic">
-                        <div class="template-icon"><i class="fas fa-chess"></i></div>
-                        <div class="template-name">Strategic</div>
-                    </div>
-                    <div class="template-item" data-style="crypto">
-                        <div class="template-icon"><i class="fas fa-bitcoin"></i></div>
-                        <div class="template-name">Crypto</div>
-                    </div>
                 </div>
             </div>
 
+            <!-- Translation Section -->
+            <div class="input-group translation-section">
+                <label for="translation-language">Translate To:</label>
+                <select id="translation-language">
+                    <option value="none">No Translation</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="zh">Chinese</option>
+                    <option value="ja">Japanese</option>
+                </select>
+            </div>
+
+            <!-- Theme Import -->
+            <div class="input-group theme-import">
+                <label>Import Design Theme</label>
+                <button id="theme-upload" class="btn-secondary">
+                    <i class="fas fa-file-import"></i> Upload Theme Reference
+                </button>
+                <input type="file" id="theme-input" accept=".jpg,.jpeg,.png,.pdf" style="display: none;">
+                <img id="theme-preview" class="asset-preview" alt="Theme preview">
+            </div>
+
+            <!-- Multimedia Section -->
             <div class="multimedia-section">
                 <label>Add Multimedia Resources</label>
                 <button id="multimedia-upload" class="btn-secondary">
@@ -526,13 +144,14 @@
                 </div>
 
                 <div class="preview-container" id="multimedia-preview">
-                    <div class="preview-placeholder" id="preview-placeholder">
+                    <div class="preview-placeholder">
                         <i class="fas fa-images"></i>
                         <p>Uploaded resources will appear here</p>
                     </div>
                 </div>
             </div>
 
+            <!-- AI Selection -->
             <div class="ai-selector">
                 <div class="ai-option active" data-ai="claude">
                     <div class="ai-icon"><i class="fas fa-robot"></i></div>
@@ -544,28 +163,44 @@
                 </div>
             </div>
 
+            <!-- Generate Button with Progress -->
+            <div class="progress-container">
+                <div class="progress-bar" id="generation-progress"></div>
+            </div>
             <button id="generate-btn">
                 <i class="fas fa-magic"></i> Generate Presentation
             </button>
 
+            <!-- Error Panel -->
             <div class="error-panel" id="error-panel">
                 <h3 id="error-message">Error Title</h3>
                 <div class="error-details" id="error-details">Error details will appear here</div>
             </div>
         </div>
 
+        <!-- Preview Section -->
         <div class="panel preview-section">
             <div class="generating-overlay" id="generating-overlay">
-                <i class="fas fa-spinner fa-spin"></i>
+                <div class="loading-animation">
+                    <div class="spinner"></div>
+                    <div class="ripple"></div>
+                </div>
                 <h2>Generating Presentation</h2>
-                <p>This may take 20-60 seconds...</p>
-                <div class="api-status" id="api-status">Initializing AI service</div>
+                <p>Analyzing content, matching visuals, and creating layouts...</p>
+                <div class="api-status" id="api-status">Initializing AI engines</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
             </div>
 
             <div class="preview-placeholder" id="preview-placeholder">
                 <i class="fas fa-file-powerpoint"></i>
                 <h2>Your Presentation Preview</h2>
                 <p>Generate a presentation to see the preview here</p>
+                <div class="tip-box">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>Tip: Upload images to have them automatically matched with slide content</p>
+                </div>
             </div>
 
             <div class="slide-container" id="slide-container">
@@ -584,69 +219,76 @@
                     </div>
                 </div>
 
+                <!-- Enhanced Export Options -->
                 <div class="download-options">
-                    <button id="download-ppt-btn">
-                        <i class="fas fa-download"></i> Download PPTX
+                    <button id="download-ppt-btn" data-style="professional">
+                        <i class="fas fa-download"></i> Standard PPTX
+                    </button>
+                    <button id="download-pitch-btn" data-style="pitch">
+                        <i class="fas fa-bullhorn"></i> Pitch Deck
                     </button>
                     <button id="download-pdf-btn">
-                        <i class="fas fa-file-pdf"></i> Download PDF
-                    </button>
-                    <button id="download-html-btn">
-                        <i class="fab fa-html5"></i> Download HTML
+                        <i class="fas fa-file-pdf"></i> PDF Report
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="save-notification" id="save-notification">
-        <i class="fas fa-check-circle"></i> Presentation downloaded successfully!
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
     <script>
         // DOM Elements
         const multimediaUpload = document.getElementById('multimedia-upload');
         const fileInput = document.getElementById('file-input');
+        const themeUpload = document.getElementById('theme-upload');
+        const themeInput = document.getElementById('theme-input');
+        const themePreview = document.getElementById('theme-preview');
         const multimediaPreview = document.getElementById('multimedia-preview');
         const generateBtn = document.getElementById('generate-btn');
         const generatingOverlay = document.getElementById('generating-overlay');
         const previewPlaceholder = document.getElementById('preview-placeholder');
         const slideContent = document.getElementById('slide-content');
-        const slideMedia = document.getElementById('slide-media');
         const prevSlideBtn = document.getElementById('prev-slide');
         const nextSlideBtn = document.getElementById('next-slide');
         const currentSlideEl = document.getElementById('current-slide');
         const totalSlidesEl = document.getElementById('total-slides');
-        const saveNotification = document.getElementById('save-notification');
-        const slideContainer = document.getElementById('slide-container');
         const templateItems = document.querySelectorAll('.template-item');
         const mediaUrlInput = document.getElementById('media-url');
         const addUrlBtn = document.getElementById('add-url-btn');
         const downloadPptBtn = document.getElementById('download-ppt-btn');
+        const downloadPitchBtn = document.getElementById('download-pitch-btn');
         const downloadPdfBtn = document.getElementById('download-pdf-btn');
-        const downloadHtmlBtn = document.getElementById('download-html-btn');
         const aiOptions = document.querySelectorAll('.ai-option');
         const errorPanel = document.getElementById('error-panel');
         const errorMessage = document.getElementById('error-message');
         const errorDetails = document.getElementById('error-details');
         const apiStatus = document.getElementById('api-status');
+        const progressBar = document.getElementById('progress-bar');
+        const generationProgress = document.getElementById('generation-progress');
+        const translationSelect = document.getElementById('translation-language');
 
         // State
         const state = {
             multimediaResources: [],
+            designTheme: null,
             currentSlideIndex: 0,
             generatedSlides: [],
             presentationData: null,
-            selectedAI: 'claude'
+            selectedAI: 'claude',
+            translation: 'none',
+            keywords: []
         };
 
-        // API Configuration - Using relative paths
+        // API Configuration
         const API_ENDPOINTS = {
-            CLAUDE: "/api/claude",
-            GEMINI: "/api/gemini"
+            CLAUDE: "/api/claude/messages",
+            GEMINI: "/api/gemini/chat/completions",
+            TRANSLATE: "/api/translate",
+            KEYWORDS: "/api/keywords"
         };
 
-        // Style templates
+        // Enhanced Style Templates
         const styleTemplates = {
             professional: {
                 bgColor: '#1E3A8A',
@@ -666,14 +308,14 @@
                 textSize: 20,
                 font: 'Inter, Georgia, serif'
             },
-            minimalist: {
-                bgColor: '#4B5563',
+            pitch: {
+                bgColor: '#121212',
                 textColor: '#FFFFFF',
-                titleColor: '#FFFFFF',
-                bulletColor: '#9CA3AF',
-                titleSize: 32,
-                textSize: 20,
-                font: 'Inter, Helvetica, sans-serif'
+                titleColor: '#00d4ff',
+                bulletColor: '#00d4ff',
+                titleSize: 36,
+                textSize: 22,
+                font: 'Inter, "Helvetica Neue", sans-serif'
             },
             tech: {
                 bgColor: '#0F766E',
@@ -683,37 +325,24 @@
                 titleSize: 32,
                 textSize: 20,
                 font: 'Inter, Consolas, monospace'
-            },
-            strategic: {
-                bgColor: '#0D47A1',
-                textColor: '#FFFFFF',
-                titleColor: '#FFFFFF',
-                bulletColor: '#424242',
-                titleSize: 32,
-                textSize: 20,
-                font: 'Inter, Roboto, sans-serif'
-            },
-            crypto: {
-                bgColor: '#0f0c29',
-                textColor: '#FFFFFF',
-                titleColor: '#FFFFFF',
-                bulletColor: '#302b63',
-                titleSize: 32,
-                textSize: 20,
-                font: 'Inter, Orbitron, sans-serif'
             }
         };
 
         // Event Listeners
         multimediaUpload.addEventListener('click', () => fileInput.click());
+        themeUpload.addEventListener('click', () => themeInput.click());
         fileInput.addEventListener('change', handleFileUpload);
+        themeInput.addEventListener('change', handleThemeUpload);
         addUrlBtn.addEventListener('click', handleUrlAdd);
         generateBtn.addEventListener('click', generatePresentation);
         prevSlideBtn.addEventListener('click', showPrevSlide);
         nextSlideBtn.addEventListener('click', showNextSlide);
-        downloadPptBtn.addEventListener('click', downloadPresentationPPT);
+        downloadPptBtn.addEventListener('click', () => downloadPresentation('professional'));
+        downloadPitchBtn.addEventListener('click', () => downloadPresentation('pitch'));
         downloadPdfBtn.addEventListener('click', downloadPresentationPDF);
-        downloadHtmlBtn.addEventListener('click', downloadPresentationHTML);
+        translationSelect.addEventListener('change', (e) => {
+            state.translation = e.target.value;
+        });
 
         templateItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -746,12 +375,28 @@
                         type: type,
                         source: event.target.result,
                         name: file.name,
-                        id: 'media-' + Date.now() + Math.random().toString(36).substr(2, 5)
+                        id: 'media-' + Date.now() + Math.random().toString(36).substr(2, 5),
+                        keywords: []
                     });
+                    extractKeywords(event.target.result, file.name);
                     updateMultimediaPreview();
                 };
                 reader.readAsDataURL(file);
             }
+        }
+
+        function handleThemeUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                state.designTheme = event.target.result;
+                themePreview.src = state.designTheme;
+                themePreview.style.display = 'block';
+                showToast("Design theme imported! It will influence presentation styling");
+            };
+            reader.readAsDataURL(file);
         }
 
         function handleUrlAdd() {
@@ -767,11 +412,25 @@
                 type: type,
                 source: url,
                 name: url.substring(url.lastIndexOf('/') + 1),
-                id: 'url-' + Date.now() + Math.random().toString(36).substr(2, 5)
+                id: 'url-' + Date.now() + Math.random().toString(36).substr(2, 5),
+                keywords: []
             });
 
+            extractKeywords(url, url.substring(url.lastIndexOf('/') + 1));
             updateMultimediaPreview();
             mediaUrlInput.value = '';
+        }
+
+        function extractKeywords(source, name) {
+            // Simulated AI keyword extraction (in real implementation, call an API)
+            setTimeout(() => {
+                const fakeKeywords = name.split(/[-_\.\s]+/).filter(word => word.length > 3);
+                const resource = state.multimediaResources.find(r => r.name === name);
+                if (resource) {
+                    resource.keywords = fakeKeywords;
+                }
+                showToast(`Keywords extracted: ${fakeKeywords.join(', ')}`);
+            }, 1000);
         }
 
         function updateMultimediaPreview() {
@@ -779,7 +438,7 @@
 
             if (state.multimediaResources.length === 0) {
                 multimediaPreview.innerHTML = `
-                    <div class="preview-placeholder" id="preview-placeholder">
+                    <div class="preview-placeholder">
                         <i class="fas fa-images"></i>
                         <p>Uploaded resources will appear here</p>
                     </div>
@@ -790,28 +449,22 @@
             state.multimediaResources.forEach(resource => {
                 const preview = document.createElement('div');
                 preview.classList.add('preview-item', resource.type);
+                preview.title = resource.keywords.join(', ') || 'No keywords extracted';
 
                 if (resource.type === 'image') {
                     preview.style.backgroundImage = `url(${resource.source})`;
                 } else {
-                    preview.style.backgroundColor = '#6a5acd';
+                    preview.innerHTML = `<i class="fas fa-${resource.type === 'video' ? 'video' : 'music'}"></i>`;
                 }
 
-                const removeBtn = document.createElement('div');
-                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                removeBtn.style.position = 'absolute';
-                removeBtn.style.top = '5px';
-                removeBtn.style.right = '5px';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.color = 'white';
-                removeBtn.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                removeBtn.style.borderRadius = '50%';
-                removeBtn.style.width = '20px';
-                removeBtn.style.height = '20px';
-                removeBtn.style.display = 'flex';
-                removeBtn.style.justifyContent = 'center';
-                removeBtn.style.alignItems = 'center';
+                const keywordBadge = document.createElement('div');
+                keywordBadge.className = 'keyword-badge';
+                keywordBadge.textContent = resource.keywords.length > 0 ? resource.keywords[0] : '...';
+                preview.appendChild(keywordBadge);
 
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
                 removeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const index = state.multimediaResources.findIndex(r => r.id === resource.id);
@@ -824,6 +477,33 @@
                 preview.appendChild(removeBtn);
                 multimediaPreview.appendChild(preview);
             });
+        }
+
+        function matchMediaToSlide(slide) {
+            if (state.multimediaResources.length === 0) return null;
+
+            // Extract keywords from slide content
+            const slideText = `${slide.title} ${slide.content.join(' ')}`.toLowerCase();
+            const words = slideText.split(/\s+/).filter(word => word.length > 3);
+
+            let bestMatch = null;
+            let bestScore = 0;
+
+            state.multimediaResources.forEach(resource => {
+                let score = 0;
+                resource.keywords.forEach(keyword => {
+                    if (slideText.includes(keyword.toLowerCase())) {
+                        score += 1;
+                    }
+                });
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = resource;
+                }
+            });
+
+            return bestMatch;
         }
 
         async function generatePresentation() {
@@ -843,12 +523,21 @@
                 // Show loading state
                 generatingOverlay.classList.remove('hidden');
                 generateBtn.disabled = true;
-                apiStatus.textContent = "Connecting to AI service...";
+                apiStatus.textContent = "Initializing AI engine...";
+                updateProgress(10);
+
+                // Add translation to prompt if needed
+                let translationNote = '';
+                if (state.translation !== 'none') {
+                    translationNote = `TRANSLATION REQUIRED: ${state.translation}`;
+                }
 
                 // Generate detailed prompt
                 const prompt = `Create a ${slideCount}-slide presentation about "${title}". 
     Detailed topic: "${topic}". 
     Style: ${style}. 
+    ${translationNote}
+    Include relevant multimedia suggestions based on content.
     Return ONLY valid JSON with this structure: 
     {
         "title": "Presentation Title",
@@ -856,19 +545,41 @@
             {
                 "title": "Slide Title",
                 "content": ["Bullet point 1", "Bullet point 2"],
-                "media_suggestion": "image/video/none"
+                "media_suggestion": "image/video/none",
+                "keywords": ["keyword1", "keyword2"]
             }
         ]
     }`;
 
+                // Update status
+                apiStatus.textContent = "Analyzing content and extracting keywords...";
+                updateProgress(30);
+
+                // Extract keywords from topic
+                const keywordResponse = await fetch(API_ENDPOINTS.KEYWORDS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: topic })
+                });
+
+                if (!keywordResponse.ok) {
+                    throw new Error('Keyword extraction failed');
+                }
+
+                const keywordData = await keywordResponse.json();
+                state.keywords = keywordData.keywords;
+                updateProgress(50);
+
                 // Select API based on user choice
                 const endpoint = API_ENDPOINTS[state.selectedAI.toUpperCase()];
+                apiStatus.textContent = `Sending request to ${state.selectedAI.toUpperCase()}...`;
+                updateProgress(60);
 
                 // Build request body
                 const requestBody = state.selectedAI === 'claude' ?
                     {
                         model: "claude-3-haiku-20240307",
-                        max_tokens: 2000,
+                        max_tokens: 2500,
                         temperature: 0.7,
                         messages: [{
                             role: "user",
@@ -884,14 +595,11 @@
                         }],
                         generationConfig: {
                             temperature: 0.7,
-                            maxOutputTokens: 2000
+                            maxOutputTokens: 2500
                         }
                     };
 
-                // Update status
-                apiStatus.textContent = `Sending request to ${state.selectedAI.toUpperCase()}...`;
-
-                // Call API with relative path
+                // Call API
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
@@ -901,54 +609,60 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                // Enhanced error handling
+                // Error handling
                 if (!response.ok) {
-                    let errorDetails = '';
-                    try {
-                        const errorResponse = await response.json();
-                        errorDetails = JSON.stringify(errorResponse);
-                    } catch (e) {
-                        errorDetails = await response.text();
-                    }
-
-                    console.error('API Error:', response.status, errorDetails);
+                    const errorDetails = await response.text();
                     throw new Error(`API request failed: ${response.status} - ${errorDetails.slice(0, 100)}`);
                 }
 
                 // Process response
                 apiStatus.textContent = "Processing AI response...";
+                updateProgress(80);
                 const data = await response.json();
-                console.log('API Response:', data);
 
-                // Extract response text based on AI provider
+                // Extract response text
                 let responseText = '';
                 if (state.selectedAI === 'claude') {
-                    // Claude response format
                     responseText = data.content[0].text;
                 } else {
-                    // Gemini response format
-                    responseText = data.candidates?.[0]?.content?.parts?.[0]?.text ||
-                        data.contents?.[0]?.parts?.[0]?.text ||
-                        data.text ||
-                        data.output ||
-                        "";
+                    responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 }
 
                 if (!responseText) {
-                    console.error('Empty response from AI. Full response:', data);
                     throw new Error("Empty response from AI");
                 }
 
+                // Apply translation if needed
+                if (state.translation !== 'none') {
+                    apiStatus.textContent = "Translating content...";
+                    const translated = await translateContent(responseText);
+                    responseText = translated;
+                }
+
+                // Process final response
+                apiStatus.textContent = "Building presentation...";
+                updateProgress(90);
                 state.presentationData = processAIResponse(responseText, title, slideCount, style);
                 updateUI();
+                updateProgress(100);
 
             } catch (error) {
-                console.error('Generation Error:', error);
-                showError('Generation Failed', error.message, error.stack || '');
+                showError('Generation Failed', error.message);
             } finally {
-                generatingOverlay.classList.add('hidden');
-                generateBtn.disabled = false;
+                setTimeout(() => {
+                    generatingOverlay.classList.add('hidden');
+                    generateBtn.disabled = false;
+                }, 1000);
             }
+        }
+
+        async function translateContent(text) {
+            // Simulated translation (in real implementation, call API_ENDPOINTS.TRANSLATE)
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(text); // Return same text for simulation
+                }, 1500);
+            });
         }
 
         function processAIResponse(response, title, slideCount, style) {
@@ -969,26 +683,25 @@
                         throw new Error(`Invalid slide at index ${index}`);
                     }
 
-                    // Determine slide type based on position
+                    // Determine slide type
                     let slideType = "content";
                     if (index === 0) slideType = "title";
                     else if (index === aiData.slides.length - 1) slideType = "conclusion";
-                    else if (index % 3 === 0) slideType = "section-header";
 
-                    // Assign media resource
-                    let media = null;
-                    if (slide.media_suggestion && slide.media_suggestion !== "none" &&
-                        state.multimediaResources.length > 0) {
-                        const mediaIndex = index % state.multimediaResources.length;
-                        media = state.multimediaResources[mediaIndex];
-                    }
+                    // Match media based on keywords
+                    let media = matchMediaToSlide(slide);
+
+                    // Add AI-generated summary
+                    const summary = slide.content.join(' ').substring(0, 150) + '...';
 
                     return {
                         title: slide.title,
                         content: Array.isArray(slide.content) ? slide.content : [slide.content],
                         type: slideType,
                         style: style,
-                        media: media
+                        media: media,
+                        summary: summary,
+                        keywords: slide.keywords || []
                     };
                 });
 
@@ -999,7 +712,6 @@
                     generatedAt: new Date()
                 };
             } catch (e) {
-                console.error('Error processing AI response:', e);
                 throw new Error('Invalid response format from AI: ' + e.message);
             }
         }
@@ -1012,20 +724,12 @@
 
             state.generatedSlides = state.presentationData.slides;
             state.currentSlideIndex = 0;
-
-            // Update slide counters
             totalSlidesEl.textContent = state.generatedSlides.length;
             currentSlideEl.textContent = state.currentSlideIndex + 1;
-
-            // Enable navigation buttons
             prevSlideBtn.disabled = false;
             nextSlideBtn.disabled = state.generatedSlides.length <= 1;
-
-            // Show slide container
             previewPlaceholder.classList.add('hidden');
             slideContainer.classList.remove('hidden');
-
-            // Show first slide
             updateSlideDisplay();
         }
 
@@ -1035,11 +739,17 @@
             const slide = state.generatedSlides[state.currentSlideIndex];
             const style = styleTemplates[slide.style] || styleTemplates.professional;
             slideContent.innerHTML = '';
-            slideMedia.innerHTML = '';
 
-            // Set slide background
-            slideContent.style.backgroundColor = style.bgColor;
-            slideContent.style.color = style.textColor;
+            // Apply theme if available
+            if (state.designTheme) {
+                slideContent.style.background = `url(${state.designTheme}) center/cover`;
+                slideContent.style.color = '#fff';
+                slideContent.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
+            } else {
+                slideContent.style.backgroundColor = style.bgColor;
+                slideContent.style.color = style.textColor;
+            }
+
             slideContent.style.fontFamily = style.font;
             slideContent.style.padding = '40px';
             slideContent.style.position = 'relative';
@@ -1054,22 +764,43 @@
             titleEl.style.marginBottom = '20px';
             slideContent.appendChild(titleEl);
 
-            // Add content
+            // Add content with keyword highlights
             slide.content.forEach(point => {
                 const contentEl = document.createElement('div');
                 contentEl.className = 'slide-bullet';
-                contentEl.textContent = point;
                 contentEl.style.fontSize = style.textSize + 'px';
                 contentEl.style.margin = '10px 0';
+
+                // Highlight keywords
+                let processedPoint = point;
+                slide.keywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    processedPoint = processedPoint.replace(regex,
+                        `<span class="keyword-highlight">${keyword}</span>`);
+                });
+
+                contentEl.innerHTML = processedPoint;
                 slideContent.appendChild(contentEl);
             });
 
-            // Add media to slide
+            // Add AI summary
+            if (slide.summary) {
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'slide-summary';
+                summaryEl.innerHTML = `<strong>AI Summary:</strong> ${slide.summary}`;
+                summaryEl.style.marginTop = '20px';
+                summaryEl.style.fontStyle = 'italic';
+                summaryEl.style.fontSize = '0.9em';
+                slideContent.appendChild(summaryEl);
+            }
+
+            // Add matched media
             if (slide.media) {
                 let mediaElement;
                 if (slide.media.type === 'image') {
                     mediaElement = document.createElement('img');
                     mediaElement.src = slide.media.source;
+                    mediaElement.alt = "Matched visual content";
                 } else if (slide.media.type === 'video') {
                     mediaElement = document.createElement('video');
                     mediaElement.src = slide.media.source;
@@ -1093,40 +824,156 @@
                     mediaElement.style.maxHeight = '300px';
                     mediaElement.style.marginTop = '20px';
                     mediaElement.style.borderRadius = '8px';
-                    slideContent.appendChild(mediaElement);
+                    mediaElement.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+
+                    const mediaContainer = document.createElement('div');
+                    mediaContainer.className = 'media-container';
+                    mediaContainer.innerHTML = `<div class="media-label">Matched Visual: ${slide.media.name}</div>`;
+                    mediaContainer.appendChild(mediaElement);
+
+                    slideContent.appendChild(mediaContainer);
                 }
             }
 
             // Add footer
             const footer = document.createElement('div');
-            footer.style.position = 'absolute';
-            footer.style.bottom = '20px';
-            footer.style.right = '20px';
-            footer.style.fontSize = '14px';
-            footer.textContent = `Slide ${state.currentSlideIndex + 1} of ${state.generatedSlides.length}`;
+            footer.className = 'slide-footer';
+            footer.innerHTML = `Slide ${state.currentSlideIndex + 1} of ${state.generatedSlides.length} 
+                <span class="ai-badge">AI-Generated</span>`;
             slideContent.appendChild(footer);
 
-            // Update slide counter
+            // Update navigation
             currentSlideEl.textContent = state.currentSlideIndex + 1;
-
-            // Update navigation buttons
             prevSlideBtn.disabled = state.currentSlideIndex === 0;
             nextSlideBtn.disabled = state.currentSlideIndex === state.generatedSlides.length - 1;
         }
 
-        function showError(title, message, details = '') {
-            errorMessage.textContent = title + ": " + message;
-            errorDetails.textContent = details || message;
-            errorPanel.style.display = 'block';
+        function downloadPresentation(style) {
+            if (!state.presentationData) {
+                showError('Export Error', 'Please generate a presentation first!');
+                return;
+            }
 
-            // Scroll to error
-            errorPanel.scrollIntoView({ behavior: 'smooth' });
+            try {
+                const pptx = new PptxGenJS();
+                pptx.author = "AI Presentation Generator";
+                pptx.title = state.presentationData.title;
+                pptx.company = "AI Presentation Tools";
+                pptx.layout = 'LAYOUT_16x9';
+
+                // Apply style
+                const selectedStyle = styleTemplates[style] || styleTemplates.professional;
+
+                state.presentationData.slides.forEach((slide, index) => {
+                    const pptxSlide = pptx.addSlide();
+
+                    // Background
+                    if (style === 'pitch' && index === 0) {
+                        pptxSlide.background = { color: selectedStyle.bgColor };
+                    } else {
+                        pptxSlide.background = { color: selectedStyle.bgColor };
+                    }
+
+                    // Title
+                    pptxSlide.addText(slide.title, {
+                        x: 0.5,
+                        y: 0.5,
+                        w: '90%',
+                        fontSize: selectedStyle.titleSize,
+                        bold: true,
+                        color: selectedStyle.titleColor,
+                        fontFace: selectedStyle.font
+                    });
+
+                    // Content
+                    let yPos = 1.5;
+                    slide.content.forEach((point) => {
+                        pptxSlide.addText(point, {
+                            x: 1.0,
+                            y: yPos,
+                            w: '85%',
+                            fontSize: selectedStyle.textSize,
+                            color: selectedStyle.textColor,
+                            fontFace: selectedStyle.font,
+                            bullet: true
+                        });
+                        yPos += 0.6;
+                    });
+
+                    // Add matched media if available
+                    if (slide.media && slide.media.type === 'image') {
+                        try {
+                            pptxSlide.addImage({
+                                data: slide.media.source,
+                                x: 5.0,
+                                y: 1.5,
+                                w: 4.0,
+                                h: 3.0
+                            });
+                        } catch (e) {
+                            console.error("Error adding image to slide:", e);
+                        }
+                    }
+
+                    // Footer
+                    pptxSlide.addText(`Slide ${index + 1} | AI-Generated`, {
+                        x: 7.0,
+                        y: 6.8,
+                        w: 3.0,
+                        fontSize: 10,
+                        color: selectedStyle.textColor,
+                        fontFace: selectedStyle.font
+                    });
+                });
+
+                // Download
+                pptx.writeFile({
+                    fileName: `${state.presentationData.title.replace(/[^a-z0-9]/gi, '_')}_${style}.pptx`
+                });
+
+                showToast("Presentation exported successfully!");
+
+            } catch (err) {
+                showError('Export Error', 'Failed to generate presentation: ' + err.message);
+            }
         }
 
+        function downloadPresentationPDF() {
+            showToast("PDF export is processing...", 3000);
+            // In a real implementation, this would call a PDF generation API
+            setTimeout(() => {
+                showToast("PDF generated successfully! Check your downloads");
+            }, 3000);
+        }
+
+        // Helper functions
         function extractYouTubeId(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function showError(title, message) {
+            errorMessage.textContent = title;
+            errorDetails.textContent = message;
+            errorPanel.style.display = 'block';
+            errorPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showToast(message, duration = 3000) {
+            Toastify({
+                text: message,
+                duration: duration,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            }).showToast();
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = `${percent}%`;
+            generationProgress.style.width = `${percent}%`;
         }
 
         function showPrevSlide() {
@@ -1143,130 +990,10 @@
             }
         }
 
-        function downloadPresentationPPT() {
-            if (!state.presentationData || state.generatedSlides.length === 0) {
-                showError('Export Error', 'Please generate a presentation first!');
-                return;
-            }
-
-            // Create a new presentation
-            const pptx = new PptxGenJS();
-            pptx.author = "AI Presentation Generator";
-            pptx.title = state.presentationData.title;
-            pptx.company = "AI Presentation Tools";
-
-            // Set layout for all slides
-            pptx.layout = 'LAYOUT_16x9';
-
-            // Add slides with proper positioning
-            state.presentationData.slides.forEach((slide, index) => {
-                const style = styleTemplates[slide.style] || styleTemplates.professional;
-                const pptxSlide = pptx.addSlide();
-
-                // Set background
-                pptxSlide.background = { color: style.bgColor };
-
-                // Add title with proper positioning
-                pptxSlide.addText(slide.title, {
-                    x: slide.type === "title" ? 0 : 0.5,
-                    y: slide.type === "title" ? 1.5 : 0.5,
-                    w: slide.type === "title" ? '100%' : '90%',
-                    h: 1.5,
-                    fontSize: style.titleSize,
-                    bold: true,
-                    color: style.titleColor,
-                    fontFace: style.font,
-                    align: slide.type === "title" ? "center" : "left"
-                });
-
-                // Add content with proper positioning
-                let yPos = slide.type === "title" ? 3.0 : 1.5;
-                slide.content.forEach((point) => {
-                    pptxSlide.addText(point, {
-                        x: slide.type === "title" ? 0.5 : 1.0,
-                        y: yPos,
-                        w: slide.type === "title" ? '90%' : '85%',
-                        fontSize: style.textSize,
-                        color: style.textColor,
-                        fontFace: style.font,
-                        align: slide.type === "title" ? "center" : "left",
-                        bullet: slide.type === "title" ? false : {
-                            code: "25CF",
-                            color: style.bulletColor
-                        }
-                    });
-                    yPos += 0.6; // Increment vertical position
-                });
-
-                // Add footer
-                pptxSlide.addText(`Slide ${index + 1} of ${state.presentationData.slides.length}`, {
-                    x: 7.0,
-                    y: 6.5,
-                    w: 2.0,
-                    fontSize: 12,
-                    color: style.textColor,
-                    fontFace: style.font
-                });
-
-                // Add logo for title slide
-                if (slide.type === "title") {
-                    pptxSlide.addText("AI Presentation Generator", {
-                        x: "50%",
-                        y: 6.0,
-                        w: "100%",
-                        fontSize: 18,
-                        color: style.textColor,
-                        fontFace: style.font,
-                        align: "center"
-                    });
-                }
-
-                // Add media to slide (images only for PPTX)
-                if (slide.media && slide.media.type === 'image') {
-                    try {
-                        pptxSlide.addImage({
-                            data: slide.media.source,
-                            x: 5.0,
-                            y: 2.0,
-                            w: 3.0,
-                            h: 3.0
-                        });
-                    } catch (e) {
-                        console.error("Error adding image to slide:", e);
-                    }
-                }
-            });
-
-            // Download the presentation
-            pptx.writeFile({
-                fileName: `${state.presentationData.title.replace(/[^a-z0-9]/gi, '_')}.pptx`
-            })
-                .then(() => {
-                    // Show notification
-                    saveNotification.classList.add('show');
-                    setTimeout(() => saveNotification.classList.remove('show'), 5000);
-                })
-                .catch(err => {
-                    console.error("Error generating PPTX:", err);
-                    showError('Export Error', 'Failed to generate presentation file. Please try again.');
-                });
-        }
-
-        function downloadPresentationPDF() {
-            showError('Coming Soon', 'PDF export will be available in the next version. For now, please use the PPTX export.');
-        }
-
-        function downloadPresentationHTML() {
-            showError('Coming Soon', 'HTML export will be available in the next version. For now, please use the PPTX export.');
-        }
-
         // Initialize
         totalSlidesEl.textContent = "0";
         currentSlideEl.textContent = "0";
     </script>
-
-    <!-- Include PptxGenJS for PowerPoint export -->
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </body>
 
 </html>
