@@ -1,0 +1,113 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.4, pytest-8.4.1, pluggy-1.6.0
+rootdir: H:\Audrey\CROSSBAR\claude-code-proxy
+configfile: pyproject.toml
+plugins: anyio-4.9.0, langsmith-0.3.45, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 11 items
+
+test_cancellation.py FFF                                                 [ 27%]
+tests\test_main.py FFFFFFFF                                              [100%]
+
+================================== FAILURES ===================================
+_______________________ test_non_streaming_cancellation _______________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________________________ test_streaming_cancellation _________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____________________________ test_server_running _____________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_basic_chat _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____________________________ test_streaming_chat _____________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+____________________________ test_function_calling ____________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+__________________________ test_with_system_message ___________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_multimodal _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________ test_conversation_with_tool_use _______________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____________________________ test_token_counting _____________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________________________ test_health_and_connection __________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+=========================== short test summary info ===========================
+FAILED test_cancellation.py::test_non_streaming_cancellation - Failed: async ...
+FAILED test_cancellation.py::test_streaming_cancellation - Failed: async def ...
+FAILED test_cancellation.py::test_server_running - Failed: async def function...
+FAILED tests/test_main.py::test_basic_chat - Failed: async def functions are ...
+FAILED tests/test_main.py::test_streaming_chat - Failed: async def functions ...
+FAILED tests/test_main.py::test_function_calling - Failed: async def function...
+FAILED tests/test_main.py::test_with_system_message - Failed: async def funct...
+FAILED tests/test_main.py::test_multimodal - Failed: async def functions are ...
+FAILED tests/test_main.py::test_conversation_with_tool_use - Failed: async de...
+FAILED tests/test_main.py::test_token_counting - Failed: async def functions ...
+FAILED tests/test_main.py::test_health_and_connection - Failed: async def fun...
+============================= 11 failed in 0.60s ==============================
