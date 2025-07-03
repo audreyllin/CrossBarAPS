@@ -4,7 +4,7 @@ CrossBar new web design
 
 1: A: https://audreyllin.github.io/CrossBarAPS/XBAR/embed.html
 
-1: B: https://crossbaraps.onrender.com/(https://crossbaraps.onrender.com/)
+1: B: https://crossbaraps.onrender.com
 
 2. https://audreyllin.github.io/CrossBarAPS/XBAR/hp-26.html
 
