@@ -1,0 +1,57 @@
+﻿AI Portal Interface (frontend + backend) Server (PRIORITY)
+* Ensure it functions through Render. 
+* Periodically (by file numbers), let the AI sort the files by content (reorganize by keywords and then it is easy for fast-search, read through all PDF/PPT/doc and be able to summarize and deliver the contents in paragraphs for business presentation or a pitch deck, be fast and accurate). 
+* Embed the script/kaggle codes into the interface, after trying on local vscode or found/requested through subscription of api keys that could connect to their server. 
+* Add fancy “please wait” interactions and animations. 
+* Ask and request ChoCho to have someone open up Crossbar media channels (TikTok, YouTube, RedNote, Instagram). 
+* The portal interface would look like this:
+
+
+The AI Portal Interface 
+	“Text Extension” 
+
+
+(The base form, all other generation methods would have this base logic)
+	“Media Transformation”
+	(paragraphs/downloadable docs or txt files)
+
+
+Retrieve context and show the full length of the contents, which could be concise and shortened by a follow-up request. Could abstract and generate bullet points or keywords instead of paragraphs. Have translation methods.
+
+
+It’s very important to contain all essential information and write it out in a natural flow, with subtitles for paragraphs. It could be shortened later by request. Make sure all contents are covered, though with different weights. Have “smart” functions (by working on enhancing the databse) to explain certain terminology, concepts, and big ideas, and also be able to compare with other competitors products (which could be found in the linked https://cramiumlabs.sharepoint.com/sites/Operation and Crossbar naming table, Cranium mpc key features and roadmap, Cranium mpc sdk feature list v2, PHSM series introduction202506, Daric chip debrief, Open-source docv07 as well as internal general user uploaded contents).  
+	Static (PowerPoint/PDF/Poster)
+
+
+Stylized. Could mimic the styles based on reference slides if imported. Adopt Crossbar templates and other fancier “pitch deck” PowerPoint styles. Could modify styles based on requests and selections. (eg. color changes, font sizes). Be able to embed in videos and pictures according to the keywords attached to the description of images and videos.
+
+
+Some useful tools are Presentations AI, Slides GPT.
+https://www.presentations.ai/
+https://slidesgpt.com/). Could also try "JotForm", "Slidesgo", "Slidesvarnival", "Gamma", "Presentation GPT"
+	Stream (Video/Reels and other formats/length options for different platforms).
+
+
+We should brainstorm to construct a base/template style for the video first (the same thinking for other AI tool sections as well, rethink about the base styles). Should be of different lengths, opt to be longer or shorter, add music/subtitles/audio, smooth transition from image to videos, or keyword descriptions with images. Also, there would be add-in AI-generated images/cartoons/… that match with the general theme or keywords.
+
+
+Some useful tools are 
+Vidful AI, PixVerse
+https://vidful.ai/
+https://app.pixverse.ai/home). Could also try "CapCut", "Revid AI", "LTX Studio", "RunComfy", "Vidnoz", "Runway"
+	
+
+Web Design
+* Enlarge the header fonts and social icons
+* The animation state switch button should be a Font Awesome icon instead, but hovering would show words of “play all animations” or “stop all animations.”
+* For view widths between or around 1024px to 1440px, make sure the “hero__content” is shown completely. Responsive. 
+* Smaller the fonts for the “hero__content” title to be either 2vw, 4vw, 6vw, or in units of em that would be between 8vw and h2. 
+* Enlarge the fonts for the explanation parts (p) and use the full name for PHSM. 
+* Switch the button color for “Cramium Overview” and “Explore Technology”, and apply hovering effects. Make the secondary button have more obvious effects (contrast and hover) but not as prominent as the primary button, though it could be like hovering the secondary button would have the primary button’s default effect, and the primary button should have even fancier hovering effects. 
+* Enlarge the fonts for the explanation parts (p) in other sections.
+* Put “ReRam In Action” before “Revolutionary Memory Technology.”
+* Make sure all links and functionalities work (tabs, videos). Test!!
+* Change “Develop” to “Development.” Search and change all parts (header, section, footer, buttons, sites, sitemaps), but beware of the parts that are in explanations and paragraphs instead of being about the “subpage.” Change the title shown on the subpage as well if needed.
+* “News” and “Company” should be switched in order in all parts (header, section, footer, buttons, sites, sitemaps).
+* Apple site map + job search + AI assistant chatbot on the home page, and maybe the AI assistant should be applied to all pages. 
+* AI assistant interface should be large as to be able to cover the animations of crypto wallet and cranium product when clicked (before zoomed). The AI assistant interface should be able to expand to the whole page and be able to be closed. The AI assistant interface should always be static; don’t apply animation effects when toggling to “play all animations.” AI assistant icon should be more intuitive (maybe a robot and a conversation bubble or brain lightened up)
