@@ -1,0 +1,49 @@
+﻿🚨 High-Priority Backend & Server Tasks
+* Ensure server deployment and stability on Render
+   * Continuously monitor performance and connectivity.
+   * Handle any failures or crashes proactively.
+* Implement AI-driven file ingestion pipeline
+   * Auto-sort PDF/PPT/DOC files using keyword analysis.
+   * Enable summarization capabilities for slide decks and business presentations.
+   * Output should be accurate, fast, and follow presentation conventions (title + subtitles + body).
+* Support script/Kaggle code embedding
+   * Test Kaggle or API-sourced scripts locally (e.g., via VS Code).
+   * Once verified, embed into the platform with proper security and access control.
+🧠 Frontend Development (AI Portal Interface)
+“Text Extension” & “Media Transformation” Modules
+* Create the base logic UI to:
+   * Display full retrieved content, with options to shorten or summarize.
+   * Convert into bullet points or keyword extracts.
+   * Integrate translation tools.
+   * Add terminology explanations and competitor comparisons from the SharePoint-linked resources.
+Enhanced Interaction Design
+* Add loading animations and friendly UI prompts like “Please wait…” to improve user flow.
+* Embed rich content like AI-generated summaries, keyword highlights, and file previews.
+“Static” Output: PPT, PDF, Posters
+* Build UI to upload/import design references and apply them as presentation themes.
+* Enable exporting to stylized formats, mimicking pitch-deck styles.
+* Allow image/video embedding based on keyword-matched assets.
+Stream (Video/Reels)
+* Brainstorm + define core templates for video generation workflows.
+* Integrate with tools like PixVerse or CapCut, and allow:
+   * Content selection by keyword/theme.
+   * Flexible durations.
+   * Music, subtitles, transitions, and AI-generated visual content.
+🎨 UI/UX and Web Design Customization
+* Refactor header/footer components:
+   * Reorder "News" and "Company"
+   * Fix "Develop" → "Development" globally but carefully
+* Make hero section fully visible/responsive at 1024–1440px widths.
+* Rework font sizes using vw or em for titles and paragraphs.
+* Improve button styles, hover effects, and accessibility contrast.
+* Adjust layout for intuitive navigation and better mobile responsiveness.
+🧑‍💻 AI Assistant Integration
+* Build a persistent assistant overlay that:
+   * Can expand to full-screen or collapse neatly.
+   * Is static during animations.
+   * Uses a more intuitive icon (suggested: robot head + speech bubble or glowing brain).
+* Ensure assistant is embedded across all pages for a cohesive experience.
+✅ Cross-Team Collaboration
+* Coordinate with ChoCho to:
+   * Set up Crossbar's media channels (TikTok, YouTube, etc.).
+* Identify and ingest internal files + competitor docs into backend DB for comparative analysis modules.
