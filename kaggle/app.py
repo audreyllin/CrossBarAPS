@@ -4,10 +4,8 @@ import os
 
 app = Flask(__name__)
 
-# Secure API key handling
-KAGGLE_API_KEY = (
-    "kaggle_kernel_api_key_isha21700"  # Still hardcoded but not exposed in validation
-)
+# Secure API key handling - consider using environment variables for production
+KAGGLE_API_KEY = "kaggle_kernel_api_key_isha21700"
 KAGGLE_USERNAME = "isha21700"
 
 
@@ -37,16 +35,23 @@ def execute_kaggle_command():
         return jsonify({"error": "No command provided"}), 400
 
     try:
-        # Set Kaggle credentials
-        os.environ["KAGGLE_USERNAME"] = KAGGLE_USERNAME
-        os.environ["KAGGLE_KEY"] = KAGGLE_API_KEY  # Use our constant, not user input
+        # Create a copy of environment variables
+        env = os.environ.copy()
+        env["KAGGLE_USERNAME"] = KAGGLE_USERNAME
+        env["KAGGLE_KEY"] = KAGGLE_API_KEY
+
+        # Build command list
+        cmd_list = command.split()
+        if parameters:
+            cmd_list += parameters.split()
 
         # Execute Kaggle command
         process = subprocess.Popen(
-            command.split() + (parameters.split() if parameters else []),
+            cmd_list,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            env=env,
         )
 
         output = []
@@ -73,4 +78,4 @@ def execute_kaggle_command():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
