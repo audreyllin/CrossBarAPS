@@ -192,6 +192,17 @@ async def handle_claude(request: Request):
             logger.error("Claude API key is not configured")
             raise HTTPException(status_code=500, detail="Claude API key not configured")
 
+        # Extract client's API key from header
+        client_api_key = request.headers.get("x-api-key")
+        if not client_api_key:
+            logger.error("No API key provided in request header")
+            raise HTTPException(status_code=401, detail="Missing API key in header")
+
+        # Verify client's API key matches server's configuration
+        if client_api_key != config.claude_api_key:
+            logger.error("Invalid API key provided")
+            raise HTTPException(status_code=401, detail="Invalid API key")
+
         data = await request.json()
         validated_data = await validate_claude_request(data)
 
@@ -247,6 +258,17 @@ async def handle_gemini(request: Request):
             logger.error("Gemini API key is not configured")
             raise HTTPException(status_code=500, detail="Gemini API key not configured")
 
+        # Extract client's API key from header
+        client_api_key = request.headers.get("x-api-key")
+        if not client_api_key:
+            logger.error("No API key provided in request header")
+            raise HTTPException(status_code=401, detail="Missing API key in header")
+
+        # Verify client's API key matches server's configuration
+        if client_api_key != config.gemini_api_key:
+            logger.error("Invalid API key provided")
+            raise HTTPException(status_code=401, detail="Invalid API key")
+
         data = await request.json()
         validated_data = await validate_gemini_request(data)
         stream = data.get("stream", False)
@@ -267,20 +289,14 @@ async def handle_gemini(request: Request):
         requested_model = data.get("model", "gemini-1.0-pro")
         model = model_map.get(requested_model, requested_model)
 
-        # Auto-detect API version based on model
-        api_version = "v1"
-        if "1.5" in model or "ultra" in model:
-            api_version = "v1beta"
-
         params = {"key": config.gemini_api_key}
         if stream:
             params["alt"] = "sse"
 
         async with httpx.AsyncClient(timeout=config.timeout) as client:
             endpoint = "streamGenerateContent" if stream else "generateContent"
-            # Use correct API version based on model
-            base_url = config.gemini_base_url.replace("/v1", f"/{api_version}")
-            url = f"{base_url}/models/{model}:{endpoint}"
+            # Use the base URL directly from config (already includes version)
+            url = f"{config.gemini_base_url}/models/{model}:{endpoint}"
             logger.debug(f"Gemini API URL: {url}")
 
             response = await client.post(url, params=params, json=validated_data)
