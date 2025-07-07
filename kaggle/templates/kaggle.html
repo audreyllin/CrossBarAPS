@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaggle API Interface | Cinematic Experience</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-dark-secondary: #1a1a1a;
+            --text-light: #ffffff;
+            --text-accent: #ff7b33;
+            --text-accent-secondary: #ff9d5c;
+            --glass-bg: rgba(25, 20, 15, 0.8);
+            --glass-border: rgba(255, 123, 51, 0.2);
+            --accent-primary: #ff7b33;
+            --accent-secondary: #ff9d5c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-dark-secondary));
+            color: var(--text-light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--text-light), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            max-width: 800px;
+            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 123, 51, 0.4);
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* API Input Section */
+        .api-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .api-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .api-info h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        .api-info p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .input-group input,
+        .input-group textarea {
+            background: rgba(15, 12, 10, 0.7);
+            border: 1px solid rgba(255, 123, 51, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(255, 123, 51, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--text-light);
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            min-height: 100vh;
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .results-header h2 {
+            font-size: 2.5rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .result-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 123, 51, 0.4);
+        }
+
+        .result-card h3 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-card h3 i {
+            color: var(--accent-secondary);
+        }
+
+        .result-card p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .kernel-output {
+            background: rgba(10, 8, 6, 0.5);
+            border: 1px solid rgba(255, 123, 51, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            color: var(--accent-secondary);
+            white-space: pre-wrap;
+        }
+
+        .output-line {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-dark-secondary);
+            padding: 3rem 0;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .social-links a {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Animations */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Scroll animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Background elements */
+        .bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .api-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .kernel-output {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Elements -->
+    <div class="bg-elements" id="bg-canvas"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">Kaggle<span style="color: var(--accent-secondary);">API</span></div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#api">API</a>
+            <a href="#results">Results</a>
+            <a href="#docs">Documentation</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Kaggle API Interface</h1>
+            <p>Access the world's largest data science community through a beautifully designed, cinematic interface</p>
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">Get
+                Started</button>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section class="api-section" id="api">
+        <div class="container">
+            <div class="api-container">
+                <div class="api-info animate-on-scroll">
+                    <h2>Kaggle API Integration</h2>
+                    <p>Interact with Kaggle datasets, kernels, and competitions directly through our intuitive
+                        interface.</p>
+                    <p>Your API key is pre-filled below - just execute the kernel command to see results:</p>
+                    <div class="feature-list">
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Real-time data
+                            fetching</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Secure API handling
+                        </p>
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Beautiful
+                            visualizations</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel animate-on-scroll">
+                    <div class="input-container">
+                        <div class="input-group">
+                            <label for="api-key">Kaggle API Key</label>
+                            <input type="password" id="api-key" value="{{ api_key }}" readonly>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="kernel-command">Kernel Command</label>
+                            <input type="text" id="kernel-command"
+                                value="kaggle kernels pull {{ username }}/isha-mistralai-test">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="parameters">Parameters (Optional)</label>
+                            <textarea id="parameters" rows="3" placeholder="Enter any additional parameters"></textarea>
+                        </div>
+
+                        <button class="submit-btn">Execute Kernel <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" id="results">
+        <div class="container">
+            <div class="results-header animate-on-scroll">
+                <h2>Analysis Results</h2>
+                <p>Visualized insights from your Kaggle kernel execution</p>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-chart-line"></i> Accuracy Metrics</h3>
+                    <p>Model achieved 94.2% accuracy on test data with minimal overfitting.</p>
+                    <div class="progress-bar"
+                        style="height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 1rem;">
+                        <div style="height: 100%; width: 94.2%; background: var(--accent-primary); border-radius: 5px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-star"></i> Feature Importance</h3>
+                    <p>Top 3 features account for 78% of predictive power.</p>
+                    <div class="chart"
+                        style="height: 150px; display: flex; align-items: flex-end; gap: 10px; margin-top: 1rem;">
+                        <div
+                            style="width: 30%; height: 50%; background: var(--accent-primary); border-radius: 5px 5px 0 0;">
+                        </div>
+                        <div
+                            style="width: 30%; height: 85%; background: var(--accent-secondary); border-radius: 5px 5px 0 0;">
+                        </div>
+                        <div
+                            style="width: 30%; height: 70%; background: rgba(255, 123, 51, 0.7); border-radius: 5px 5px 0 0;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-balance-scale"></i> Data Distribution</h3>
+                    <p>Balanced dataset with 52% positive cases and 48% negative cases.</p>
+                    <div class="chart" style="display: flex; margin-top: 1rem;">
+                        <div
+                            style="width: 52%; height: 20px; background: var(--accent-primary); border-radius: 10px 0 0 10px;">
+                        </div>
+                        <div
+                            style="width: 48%; height: 20px; background: var(--accent-secondary); border-radius: 0 10px 10px 0;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-bolt"></i> Training Time</h3>
+                    <p>Model trained in 24 minutes with GPU acceleration.</p>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem;">
+                        <i class="fas fa-bolt" style="color: var(--accent-secondary); font-size: 2rem;"></i>
+                        <div>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: var(--accent-secondary);">24m</p>
+                            <p>Training time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card animate-on-scroll" style="grid-column: span 2;">
+                    <h3><i class="fas fa-terminal"></i> Kernel Output</h3>
+                    <p>Results from your Kaggle kernel execution:</p>
+                    <div class="kernel-output" id="kernel-output">
+                        // Kernel output will appear here after execution
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">Kaggle<span style="color: var(--accent-secondary);">API</span></div>
+                <p>Cinematic interface for Kaggle API interactions</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-kaggle"></i></a>
+                </div>
+                <p>© 2024 KaggleAPI Interface. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Background animation with Three.js
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set up Three.js scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('bg-canvas').appendChild(renderer.domElement);
+
+            // Create floating geometric elements with chocolate-orange theme
+            const geometries = [
+                new THREE.TetrahedronGeometry(10, 0),
+                new THREE.OctahedronGeometry(7, 0),
+                new THREE.DodecahedronGeometry(5, 0),
+                new THREE.IcosahedronGeometry(8, 0)
+            ];
+
+            const material = new THREE.MeshBasicMaterial({
+                color: 0xff7b33,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.1
+            });
+
+            const objects = [];
+            const numObjects = 15;
+
+            for (let i = 0; i < numObjects; i++) {
+                const geo = geometries[Math.floor(Math.random() * geometries.length)];
+                const mesh = new THREE.Mesh(geo, material.clone());
+
+                // Set random position
+                mesh.position.x = Math.random() * 100 - 50;
+                mesh.position.y = Math.random() * 100 - 50;
+                mesh.position.z = Math.random() * 100 - 50;
+
+                // Set random rotation
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+
+                // Set random color in chocolate-orange palette
+                const colors = [0xff7b33, 0xff9d5c, 0xd2691e];
+                mesh.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
+
+                // Set random size
+                const scale = 0.2 + Math.random() * 0.8;
+                mesh.scale.set(scale, scale, scale);
+
+                scene.add(mesh);
+                objects.push(mesh);
+            }
+
+            camera.position.z = 30;
+
+            // Animation function
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Rotate objects
+                objects.forEach(obj => {
+                    obj.rotation.x += 0.005;
+                    obj.rotation.y += 0.005;
+
+                    // Gentle floating movement
+                    obj.position.y += Math.sin(Date.now() * 0.001 + obj.position.x) * 0.01;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', function () {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.animate-on-scroll').forEach(element => {
+                observer.observe(element);
+            });
+
+            // Form submission with kernel output
+            document.querySelector('.submit-btn').addEventListener('click', async function () {
+                const apiKey = document.getElementById('api-key').value;
+                const kernelCommand = document.getElementById('kernel-command').value;
+                const parameters = document.getElementById('parameters').value;
+
+                // Show loading state
+                this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
+                const kernelOutput = document.getElementById('kernel-output');
+                kernelOutput.innerHTML = "> Connecting to Kaggle API...";
+
+                try {
+                    // Extract kernel details from command
+                    const kernelParts = kernelCommand.split(' ');
+                    const kernelRef = kernelParts[kernelParts.length - 1];
+                    const [username, kernelSlug] = kernelRef.split('/');
+
+                    // Call backend to execute Kaggle command
+                    const response = await fetch('/api/kaggle/execute', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            command: kernelCommand,
+                            parameters: parameters,
+                            kernel: kernelRef
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API request failed: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Display kernel output
+                    kernelOutput.innerHTML = '';
+                    data.output.split('\n').forEach(line => {
+                        const lineElement = document.createElement('div');
+                        lineElement.className = 'output-line';
+                        lineElement.textContent = line;
+                        kernelOutput.appendChild(lineElement);
+                    });
+
+                    // Update metrics from response if available
+                    if (data.metrics) {
+                        document.querySelector('.progress-bar > div').style.width = `${data.metrics.accuracy}%`;
+                        document.querySelector('.result-card:nth-child(1) p').textContent =
+                            `Model achieved ${data.metrics.accuracy}% accuracy on test data`;
+                    }
+
+                    // Show success message
+                    showNotification('Kernel executed successfully! Results updated.', 'success');
+
+                } catch (error) {
+                    console.error('Error executing kernel:', error);
+                    kernelOutput.innerHTML = `> Error: ${error.message}\n> Please check your API key and command syntax`;
+                    showNotification(`Error: ${error.message}`, 'error');
+                } finally {
+                    this.innerHTML = 'Execute Kernel <i class="fas fa-arrow-right"></i>';
+
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.padding = '15px 25px';
+                notification.style.background = type === 'success'
+                    ? 'rgba(40, 167, 69, 0.9)'
+                    : 'rgba(220, 53, 69, 0.9)';
+                notification.style.color = 'white';
+                notification.style.borderRadius = '10px';
+                notification.style.zIndex = '1000';
+                notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+                notification.style.animation = 'fadeIn 0.5s ease-out';
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'fadeOut 0.5s ease-out';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 3000);
+            }
+
+            // Add CSS for fade animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translateY(0); }
+                    to { opacity: 0; transform: translateY(20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+
+</html>
