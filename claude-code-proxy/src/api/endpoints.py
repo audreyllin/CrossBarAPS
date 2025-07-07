@@ -183,7 +183,8 @@ async def generate_gemini_stream(response: httpx.Response):
             yield chunk
 
 
-@router.post("/v1/messages")
+# CORRECTED ENDPOINT PATHS
+@router.post("/claude/messages")
 async def handle_claude(request: Request):
     """Proxy requests to Claude API"""
     try:
@@ -233,7 +234,8 @@ async def handle_claude(request: Request):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/v1/chat/completions")
+# CORRECTED ENDPOINT PATH
+@router.post("/gemini/chat/completions")
 async def handle_gemini(request: Request):
     """Proxy requests to Gemini API"""
     try:
@@ -351,9 +353,9 @@ async def root():
         "message": "Claude & Gemini API Proxy",
         "status": "running",
         "endpoints": {
-            "claude": "/v1/messages",
-            "gemini": "/v1/chat/completions",
-            "health": "/health",
+            "claude": "/claude/messages",
+            "gemini": "/gemini/chat/completions",
             "keywords": "/keywords (POST)",
+            "health": "/health",
         },
     }
