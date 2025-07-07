@@ -1132,32 +1132,32 @@
 
                 // Generate detailed prompt with terminology and competitor analysis
                 const prompt = `Create a ${slideCount}-slide presentation about "${title}". 
-    Detailed topic: "${topic}". 
-    Style: ${style}. 
-    ${translationNote}
-    Include relevant multimedia suggestions based on content.
-    Add terminology explanations for key concepts.
-    Include competitor comparisons where applicable.
-    Return ONLY valid JSON with this structure: 
-    {
-        "title": "Presentation Title",
-        "slides": [
-            {
-                "title": "Slide Title",
-                "content": ["Bullet point 1", "Bullet point 2"],
-                "media_suggestion": "image/video/none",
-                "keywords": ["keyword1", "keyword2"],
-                "terminology": [{"term": "Term", "definition": "Definition"}],
-                "competitors": [{"name": "Competitor", "comparison": "Comparison"}]
-            }
-        ]
-    }`;
+Detailed topic: "${topic}". 
+Style: ${style}. 
+${translationNote}
+Include relevant multimedia suggestions based on content.
+Add terminology explanations for key concepts.
+Include competitor comparisons where applicable.
+Return ONLY valid JSON with this structure: 
+{
+    "title": "Presentation Title",
+    "slides": [
+        {
+            "title": "Slide Title",
+            "content": ["Bullet point 1", "Bullet point 2"],
+            "media_suggestion": "image/video/none",
+            "keywords": ["keyword1", "keyword2"],
+            "terminology": [{"term": "Term", "definition": "Definition"}],
+            "competitors": [{"name": "Competitor", "comparison": "Comparison"}]
+        }
+    ]
+}`;
 
                 // Update status
                 apiStatus.textContent = "Analyzing content and extracting keywords...";
                 updateProgress(30);
 
-                // Extract keywords from topic
+                // Extract keywords from topic - send as JSON
                 const keywordResponse = await fetch(API_ENDPOINTS.KEYWORDS, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
