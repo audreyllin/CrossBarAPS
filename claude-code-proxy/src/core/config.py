@@ -26,12 +26,12 @@ class Config(BaseSettings):
     max_tokens_limit: int = 4096
     timeout: int = 60
 
-    # Pydantic configuration
+    # Pydantic configuration - ADD extra='ignore'
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        env_prefix="",  # No prefix for env variables
+        extra="ignore",  # Crucial: ignore undefined environment variables
     )
 
 
