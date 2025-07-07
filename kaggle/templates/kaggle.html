@@ -442,6 +442,8 @@
                         </p>
                         <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Beautiful
                             visualizations</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Natural language
+                            question answering</p>
                     </div>
                 </div>
 
@@ -454,13 +456,17 @@
 
                         <div class="input-group">
                             <label for="kernel-command">Kernel Command</label>
-                            <input type="text" id="kernel-command"
-                                value="kaggle kernels pull {{ username }}/isha-mistralai-test">
+                            <input type="text" id="kernel-command" value="{{ default_command }} {{ default_kernel }}">
                         </div>
 
                         <div class="input-group">
-                            <label for="parameters">Parameters (Optional)</label>
-                            <textarea id="parameters" rows="3" placeholder="Enter any additional parameters"></textarea>
+                            <label for="parameters">Additional Parameters (CLI flags only)</label>
+                            <textarea id="parameters" rows="2">{{ default_params }}</textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="question">Your Question</label>
+                            <input type="text" id="question" placeholder="Ask about the company...">
                         </div>
 
                         <button class="submit-btn">Execute Kernel <i class="fas fa-arrow-right"></i></button>
@@ -480,60 +486,24 @@
 
             <div class="results-grid">
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-chart-line"></i> Accuracy Metrics</h3>
-                    <p>Model achieved 94.2% accuracy on test data with minimal overfitting.</p>
-                    <div class="progress-bar"
-                        style="height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 1rem;">
-                        <div style="height: 100%; width: 94.2%; background: var(--accent-primary); border-radius: 5px;">
-                        </div>
+                    <h3><i class="fas fa-comments"></i> Question Answer</h3>
+                    <p>Natural language response to your query:</p>
+                    <div class="kernel-output" id="kernel-answer">
+                        // Answer will appear here after execution
                     </div>
                 </div>
 
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-star"></i> Feature Importance</h3>
-                    <p>Top 3 features account for 78% of predictive power.</p>
-                    <div class="chart"
-                        style="height: 150px; display: flex; align-items: flex-end; gap: 10px; margin-top: 1rem;">
-                        <div
-                            style="width: 30%; height: 50%; background: var(--accent-primary); border-radius: 5px 5px 0 0;">
-                        </div>
-                        <div
-                            style="width: 30%; height: 85%; background: var(--accent-secondary); border-radius: 5px 5px 0 0;">
-                        </div>
-                        <div
-                            style="width: 30%; height: 70%; background: rgba(255, 123, 51, 0.7); border-radius: 5px 5px 0 0;">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-balance-scale"></i> Data Distribution</h3>
-                    <p>Balanced dataset with 52% positive cases and 48% negative cases.</p>
-                    <div class="chart" style="display: flex; margin-top: 1rem;">
-                        <div
-                            style="width: 52%; height: 20px; background: var(--accent-primary); border-radius: 10px 0 0 10px;">
-                        </div>
-                        <div
-                            style="width: 48%; height: 20px; background: var(--accent-secondary); border-radius: 0 10px 10px 0;">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-bolt"></i> Training Time</h3>
-                    <p>Model trained in 24 minutes with GPU acceleration.</p>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem;">
-                        <i class="fas fa-bolt" style="color: var(--accent-secondary); font-size: 2rem;"></i>
-                        <div>
-                            <p style="font-size: 1.5rem; font-weight: bold; color: var(--accent-secondary);">24m</p>
-                            <p>Training time</p>
-                        </div>
+                    <h3><i class="fas fa-star"></i> Key Insights</h3>
+                    <p>Summary of important findings:</p>
+                    <div class="kernel-output" id="kernel-insights">
+                        // Insights will appear here
                     </div>
                 </div>
 
                 <div class="result-card animate-on-scroll" style="grid-column: span 2;">
                     <h3><i class="fas fa-terminal"></i> Kernel Output</h3>
-                    <p>Results from your Kaggle kernel execution:</p>
+                    <p>Full results from your Kaggle kernel execution:</p>
                     <div class="kernel-output" id="kernel-output">
                         // Kernel output will appear here after execution
                     </div>
@@ -657,11 +627,14 @@
                 const apiKey = document.getElementById('api-key').value;
                 const kernelCommand = document.getElementById('kernel-command').value;
                 const parameters = document.getElementById('parameters').value;
+                const question = document.getElementById('question').value;
 
                 // Show loading state
                 this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
                 const kernelOutput = document.getElementById('kernel-output');
+                const kernelAnswer = document.getElementById('kernel-answer');
                 kernelOutput.innerHTML = "> Connecting to Kaggle API...";
+                kernelAnswer.innerHTML = "> Processing your question...";
 
                 try {
                     // Extract kernel details from command
@@ -679,7 +652,8 @@
                         body: JSON.stringify({
                             command: kernelCommand,
                             parameters: parameters,
-                            kernel: kernelRef
+                            kernel: kernelRef,
+                            question: question
                         })
                     });
 
@@ -691,19 +665,17 @@
 
                     // Display kernel output
                     kernelOutput.innerHTML = '';
-                    data.output.split('\n').forEach(line => {
-                        const lineElement = document.createElement('div');
-                        lineElement.className = 'output-line';
-                        lineElement.textContent = line;
-                        kernelOutput.appendChild(lineElement);
-                    });
-
-                    // Update metrics from response if available
-                    if (data.metrics) {
-                        document.querySelector('.progress-bar > div').style.width = `${data.metrics.accuracy}%`;
-                        document.querySelector('.result-card:nth-child(1) p').textContent =
-                            `Model achieved ${data.metrics.accuracy}% accuracy on test data`;
+                    if (data.output) {
+                        data.output.split('\n').forEach(line => {
+                            const lineElement = document.createElement('div');
+                            lineElement.className = 'output-line';
+                            lineElement.textContent = line;
+                            kernelOutput.appendChild(lineElement);
+                        });
                     }
+
+                    // Display answer
+                    kernelAnswer.innerHTML = data.answer || "No answer found";
 
                     // Show success message
                     showNotification('Kernel executed successfully! Results updated.', 'success');
@@ -711,6 +683,7 @@
                 } catch (error) {
                     console.error('Error executing kernel:', error);
                     kernelOutput.innerHTML = `> Error: ${error.message}\n> Please check your API key and command syntax`;
+                    kernelAnswer.innerHTML = "> Error processing question";
                     showNotification(`Error: ${error.message}`, 'error');
                 } finally {
                     this.innerHTML = 'Execute Kernel <i class="fas fa-arrow-right"></i>';
