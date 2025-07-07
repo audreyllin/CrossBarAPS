@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Response
+from fastapi import FastAPI, APIRouter, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -24,18 +24,19 @@ async def health_check():
 
 app = FastAPI(title="Claude & Gemini API Proxy", version="1.0.0")
 
-# Configure CORS
+# Enhanced CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # Include routers
 app.include_router(health_router)
-app.include_router(api_router, prefix="/api")
+app.include_router(api_router, prefix="/api")  # Ensures /api prefix for all API routes
 
 # Get the base directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,3 +75,10 @@ async def startup_event():
     logger.info(f"Request Timeout: {config.timeout}s")
     logger.info(f"Server: {config.host}:{config.port}")
     logger.info(f"Log Level: {config.log_level}")
+
+    # Log all registered routes
+    logger.info("Registered routes:")
+    for route in app.routes:
+        path = getattr(route, "path", "N/A")
+        methods = getattr(route, "methods", ["N/A"])
+        logger.info(f"{path} - {methods}")
