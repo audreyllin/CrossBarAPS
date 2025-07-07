@@ -4,20 +4,14 @@
 import sys
 import os
 import uvicorn
-from fastapi import FastAPI
 from src.core.config import config
 from src.core.logging import logger
 
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
-# Create FastAPI app
-app = FastAPI()
-
-# Import and include health check router
-from src.api.healthz import router as health_router
-
-app.include_router(health_router)
+# Import the app from main.py
+from src.main import app
 
 
 def main():
@@ -35,7 +29,7 @@ def main():
 
         # Start the server
         uvicorn.run(
-            app,  # Use our FastAPI app instance
+            app,  # Use the imported app from main.py
             host=config.host,
             port=port,
             log_level=config.log_level.lower(),
