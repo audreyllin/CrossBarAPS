@@ -183,11 +183,15 @@ async def generate_gemini_stream(response: httpx.Response):
             yield chunk
 
 
-# CORRECTED ENDPOINT PATHS
 @router.post("/claude/messages")
 async def handle_claude(request: Request):
     """Proxy requests to Claude API"""
     try:
+        # Verify API key is configured
+        if not config.claude_api_key:
+            logger.error("Claude API key is not configured")
+            raise HTTPException(status_code=500, detail="Claude API key not configured")
+
         data = await request.json()
         validated_data = await validate_claude_request(data)
 
@@ -234,11 +238,15 @@ async def handle_claude(request: Request):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-# CORRECTED ENDPOINT PATH
 @router.post("/gemini/chat/completions")
 async def handle_gemini(request: Request):
     """Proxy requests to Gemini API"""
     try:
+        # Verify API key is configured
+        if not config.gemini_api_key:
+            logger.error("Gemini API key is not configured")
+            raise HTTPException(status_code=500, detail="Gemini API key not configured")
+
         data = await request.json()
         validated_data = await validate_gemini_request(data)
         stream = data.get("stream", False)
@@ -272,11 +280,10 @@ async def handle_gemini(request: Request):
             endpoint = "streamGenerateContent" if stream else "generateContent"
             # Use correct API version based on model
             base_url = config.gemini_base_url.replace("/v1", f"/{api_version}")
-            response = await client.post(
-                f"{base_url}/models/{model}:{endpoint}",
-                params=params,
-                json=validated_data,
-            )
+            url = f"{base_url}/models/{model}:{endpoint}"
+            logger.debug(f"Gemini API URL: {url}")
+
+            response = await client.post(url, params=params, json=validated_data)
 
             if response.status_code >= 400:
                 try:
