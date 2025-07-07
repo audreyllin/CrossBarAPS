@@ -1,6 +1,8 @@
 import httpx
 import json
+import re
 from datetime import datetime
+from collections import Counter
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from src.core.config import config
@@ -9,19 +11,126 @@ from typing import Dict, List
 
 router = APIRouter()
 
+# Define common stop words for keyword extraction
+STOP_WORDS = {
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "in",
+    "on",
+    "at",
+    "to",
+    "of",
+    "for",
+    "with",
+    "as",
+    "by",
+    "about",
+    "is",
+    "are",
+    "be",
+    "this",
+    "that",
+    "it",
+    "was",
+    "were",
+    "will",
+    "would",
+    "could",
+    "should",
+    "you",
+    "he",
+    "she",
+    "they",
+    "we",
+    "i",
+    "me",
+    "him",
+    "her",
+    "us",
+    "them",
+    "my",
+    "your",
+    "his",
+    "its",
+    "our",
+    "their",
+    "mine",
+    "yours",
+    "hers",
+    "ours",
+    "theirs",
+    "this",
+    "that",
+    "these",
+    "those",
+    "am",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "having",
+    "do",
+    "does",
+    "did",
+    "doing",
+    "will",
+    "would",
+    "shall",
+    "should",
+    "may",
+    "might",
+    "must",
+    "can",
+    "could",
+    "cannot",
+    "couldnt",
+    "dont",
+    "doesnt",
+    "didnt",
+    "wont",
+    "wouldnt",
+    "shouldnt",
+    "cant",
+    "mustnt",
+    "let",
+    "thats",
+    "whos",
+    "whats",
+    "heres",
+    "theres",
+    "whens",
+    "wheres",
+    "whys",
+    "hows",
+}
+
 
 async def verify_api_key(request: Request):
+    """Verify API keys are configured"""
     if not config.claude_api_key or not config.gemini_api_key:
         raise HTTPException(status_code=500, detail="API keys not configured on server")
 
 
 async def validate_claude_request(data: dict) -> Dict:
+    """Validate Claude API request structure"""
     if not isinstance(data.get("messages"), list):
         raise HTTPException(status_code=400, detail="Messages must be a list")
 
     validated_messages = []
     for i, msg in enumerate(data["messages"]):
-        if not isinstance(msg.get("role"), str) or msg["role"] not in ["user", "assistant"]:
+        if not isinstance(msg.get("role"), str) or msg["role"] not in [
+            "user",
+            "assistant",
+        ]:
             raise HTTPException(status_code=400, detail=f"Message {i} has invalid role")
 
         if isinstance(msg.get("content"), str):
@@ -31,7 +140,9 @@ async def validate_claude_request(data: dict) -> Dict:
         elif isinstance(msg.get("content"), list):
             validated_messages.append(msg)
         else:
-            raise HTTPException(status_code=400, detail=f"Message {i} has invalid content type")
+            raise HTTPException(
+                status_code=400, detail=f"Message {i} has invalid content type"
+            )
 
     return {
         "model": data.get("model", config.small_model),
@@ -43,6 +154,7 @@ async def validate_claude_request(data: dict) -> Dict:
 
 
 async def validate_gemini_request(data: dict) -> Dict:
+    """Validate Gemini API request structure"""
     if not data.get("contents"):
         raise HTTPException(status_code=400, detail="Contents array required")
 
@@ -50,18 +162,22 @@ async def validate_gemini_request(data: dict) -> Dict:
         "contents": data["contents"],
         "generationConfig": {
             "temperature": max(0, min(1, data.get("temperature", 0.7))),
-            "maxOutputTokens": min(data.get("max_tokens", 1000), config.max_tokens_limit),
+            "maxOutputTokens": min(
+                data.get("max_tokens", 1000), config.max_tokens_limit
+            ),
         },
     }
 
 
 async def generate_claude_stream(response: httpx.Response):
+    """Stream Claude API response"""
     async for chunk in response.aiter_bytes():
         if chunk:
             yield chunk
 
 
 async def generate_gemini_stream(response: httpx.Response):
+    """Stream Gemini API response"""
     async for chunk in response.aiter_bytes():
         if chunk:
             yield chunk
@@ -69,6 +185,7 @@ async def generate_gemini_stream(response: httpx.Response):
 
 @router.post("/v1/messages")
 async def handle_claude(request: Request):
+    """Proxy requests to Claude API"""
     try:
         data = await request.json()
         validated_data = await validate_claude_request(data)
@@ -77,12 +194,16 @@ async def handle_claude(request: Request):
             "x-api-key": config.claude_api_key,
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
-            "Accept": "text/event-stream" if validated_data["stream"] else "application/json",
+            "Accept": (
+                "text/event-stream" if validated_data["stream"] else "application/json"
+            ),
         }
 
         async with httpx.AsyncClient(timeout=config.timeout) as client:
             response = await client.post(
-                f"{config.claude_base_url}/messages", headers=headers, json=validated_data
+                f"{config.claude_base_url}/messages",
+                headers=headers,
+                json=validated_data,
             )
 
             if response.status_code >= 400:
@@ -114,6 +235,7 @@ async def handle_claude(request: Request):
 
 @router.post("/v1/chat/completions")
 async def handle_gemini(request: Request):
+    """Proxy requests to Gemini API"""
     try:
         data = await request.json()
         validated_data = await validate_gemini_request(data)
@@ -149,7 +271,9 @@ async def handle_gemini(request: Request):
             # Use correct API version based on model
             base_url = config.gemini_base_url.replace("/v1", f"/{api_version}")
             response = await client.post(
-                f"{base_url}/models/{model}:{endpoint}", params=params, json=validated_data
+                f"{base_url}/models/{model}:{endpoint}",
+                params=params,
+                json=validated_data,
             )
 
             if response.status_code >= 400:
@@ -180,8 +304,38 @@ async def handle_gemini(request: Request):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.post("/keywords")
+async def extract_keywords(request: Request):
+    """Extract keywords from text"""
+    try:
+        data = await request.json()
+        text = data.get("text", "")
+        logger.info(f"Received keyword extraction request for text: {text[:50]}...")
+
+        if not text:
+            return {"keywords": []}
+
+        # Simple keyword extraction
+        words = re.findall(r"\b\w+\b", text.lower())
+        filtered_words = [
+            word for word in words if word not in STOP_WORDS and len(word) > 2
+        ]
+
+        # Get top 10 keywords by frequency
+        counter = Counter(filtered_words)
+        keywords = [word for word, _ in counter.most_common(10)]
+
+        logger.info(f"Extracted keywords: {keywords}")
+        return {"keywords": keywords}
+
+    except Exception as e:
+        logger.error(f"Keyword extraction error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Keyword extraction failed")
+
+
 @router.get("/health")
 async def health_check():
+    """Service health check"""
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
@@ -192,6 +346,7 @@ async def health_check():
 
 @router.get("/")
 async def root():
+    """Root endpoint with service information"""
     return {
         "message": "Claude & Gemini API Proxy",
         "status": "running",
@@ -199,5 +354,6 @@ async def root():
             "claude": "/v1/messages",
             "gemini": "/v1/chat/completions",
             "health": "/health",
+            "keywords": "/keywords (POST)",
         },
     }
