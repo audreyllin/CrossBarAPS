@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings  # Updated import
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Load environment variables from .env file
 load_dotenv()
@@ -8,28 +8,31 @@ load_dotenv()
 
 class Config(BaseSettings):
     # Server configuration
-    host: str = os.getenv("HOST", "0.0.0.0")
-    port: int = int(os.getenv("PORT", 10000))
-    log_level: str = os.getenv("LOG_LEVEL", "info").lower()
+    host: str = "0.0.0.0"
+    port: int = 10000
+    log_level: str = "info"
 
     # Claude configuration
-    claude_api_key: str = os.getenv("CLAUDE_API_KEY", "")
-    claude_base_url: str = os.getenv("CLAUDE_BASE_URL", "https://api.anthropic.com/v1")
-    big_model: str = os.getenv("CLAUDE_BIG_MODEL", "claude-3-opus-20240229")
-    small_model: str = os.getenv("CLAUDE_SMALL_MODEL", "claude-3-haiku-20240307")
+    claude_api_key: str = ""
+    claude_base_url: str = "https://api.anthropic.com/v1"
+    big_model: str = "claude-3-opus-20240229"
+    small_model: str = "claude-3-haiku-20240307"
 
-    # Gemini configuration
-    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
-    gemini_base_url: str = os.getenv(
-        "GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1"
-    )
+    # Gemini configuration - updated to v1beta
+    gemini_api_key: str = ""
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
 
     # General configuration
-    max_tokens_limit: int = int(os.getenv("MAX_TOKENS_LIMIT", "4096"))
-    timeout: int = int(os.getenv("TIMEOUT", "60"))
+    max_tokens_limit: int = 4096
+    timeout: int = 60
 
-    class Config:
-        case_sensitive = False
+    # Pydantic configuration
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        env_prefix="",  # No prefix for env variables
+    )
 
 
 # Create config instance
