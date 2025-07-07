@@ -12,7 +12,7 @@ KAGGLE_USERNAME = "isha21700"
 @app.route("/")
 def index():
     return render_template(
-        "index.html", api_key=KAGGLE_API_KEY, username=KAGGLE_USERNAME
+        "kaggle.html", api_key=KAGGLE_API_KEY, username=KAGGLE_USERNAME
     )
 
 
