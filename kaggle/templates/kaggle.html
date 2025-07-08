@@ -449,6 +449,9 @@
 
                 <div class="glass-panel animate-on-scroll">
                     <div class="input-container">
+                        <!-- Hidden session ID field -->
+                        <input type="hidden" id="session-id" value="{{ session_id }}">
+                        
                         <div class="input-group">
                             <label for="api-key">Kaggle API Key</label>
                             <input type="password" id="api-key" value="{{ api_key }}" readonly>
@@ -653,6 +656,9 @@
                 const kernelReference = document.getElementById('kernel-reference').value;
                 const parameters = document.getElementById('parameters').value;
                 const question = document.getElementById('question').value;
+                
+                // Get session ID from hidden input
+                const sessionId = document.getElementById('session-id').value;
 
                 // Show loading state
                 this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
@@ -676,7 +682,8 @@
                             command: kernelCommand,
                             parameters: parameters,
                             kernel: kernelReference,  // Send kernel reference separately
-                            question: question
+                            question: question,
+                            session_id: sessionId  // Include session ID in request
                         })
                     });
 
