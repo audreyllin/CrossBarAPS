@@ -9,11 +9,12 @@ import re
 import uuid
 import logging
 import traceback
+from kaggle.api.kaggle_api_extended import KaggleApi
 
 app = Flask(__name__)
 
 # Hardcoded Kaggle credentials
-KAGGLE_API_KEY = "kaggle_kernel_api_key_isha21700"
+KAGGLE_API_KEY = "3a73335499bf468b54cf6e46fdf24adb"
 KAGGLE_USERNAME = "isha21700"
 
 # Configure logging
@@ -148,6 +149,22 @@ def execute_kaggle_command():
                 env=env,
                 timeout=300,
             )
+
+            # Step: Pull result.json via Kaggle API
+            try:
+                api = KaggleApi()
+                api.authenticate()
+
+                kernel_slug = kernel_ref.split("/")[-1]
+                download_path = os.path.join(os.getcwd(), "output")
+                os.makedirs(download_path, exist_ok=True)
+
+                logger.info(
+                    f"🔽 Downloading kernel output for: {kernel_slug} into {download_path}"
+                )
+                api.kernels_output(kernel_slug=kernel_ref, path=download_path)
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to download output via Kaggle API: {str(e)}")
 
             # Capture command output
             cmd_output = result.stdout
