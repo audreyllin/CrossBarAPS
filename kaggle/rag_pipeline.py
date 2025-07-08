@@ -1,4 +1,3 @@
-# rag_pipeline.py
 import os
 import re
 import json
@@ -12,17 +11,15 @@ from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-# 1. Setup
+# Setup
 nltk.download("punkt")
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.1"
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
-unified_documents = []
-unified_embeddings = []
+unified_documents, unified_embeddings = [], []
 unified_index = None
-RELEVANCE_THRESHOLD = 0.325
 
 
-# 2. Model loading
+# Load model
 def load_model_and_tokenizer():
     print("🚀 Loading model...")
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -55,43 +52,39 @@ def load_model_and_tokenizer():
 model, tokenizer = load_model_and_tokenizer()
 
 
-# 3. Load and parse raw text file into DataFrame
+# Load database
 def load_database(path="dataset/Crossbar_Database.txt"):
     with open(path, "r", encoding="utf-8") as f:
         raw_text = f.read()
-
     qas = re.findall(r"Q:\s*(.*?)\nA:\s*(.*?)(?=\nQ:|\Z)", raw_text, re.DOTALL)
-    data = [{"question": q.strip(), "answer": a.strip()} for q, a in qas]
-    return pd.DataFrame(data)
+    return pd.DataFrame([{"question": q.strip(), "answer": a.strip()} for q, a in qas])
 
 
-# 4. Chunk and embed database
+# Embed
 def chunk_and_embed(df):
-    chunks, meta = [], []
     for _, row in df.iterrows():
-        q, a = str(row.get("question", "")).strip(), str(row.get("answer", "")).strip()
-        if not q or not a:
-            continue
+        q, a = row["question"].strip(), row["answer"].strip()
         text = f"Q: {q}\nA: {a}"
         sentences = sent_tokenize(text)
         buffer = []
         for sent in sentences:
             buffer.append(sent)
             if len(" ".join(buffer).split()) > 500:
-                chunks.append(" ".join(buffer))
-                meta.append({"question": q[:100]})
+                unified_documents.append(
+                    {"text": " ".join(buffer), "metadata": {"question": q[:100]}}
+                )
                 buffer = []
         if buffer:
-            chunks.append(" ".join(buffer))
-            meta.append({"question": q[:100]})
-    embs = embedder.encode(chunks, convert_to_numpy=True)
-    embs = normalize(embs, axis=1)
-    for t, m, e in zip(chunks, meta, embs):
-        unified_documents.append({"text": t, "metadata": m})
-        unified_embeddings.append(e)
+            unified_documents.append(
+                {"text": " ".join(buffer), "metadata": {"question": q[:100]}}
+            )
+    embs = embedder.encode(
+        [d["text"] for d in unified_documents], convert_to_numpy=True
+    )
+    unified_embeddings.extend(normalize(embs, axis=1))
 
 
-# 5. Build FAISS index
+# Index
 def build_index():
     global unified_index
     dim = unified_embeddings[0].shape[0]
@@ -100,53 +93,51 @@ def build_index():
     unified_index = index
 
 
-# 6. Handle user query
+# Query
 def ask_question(question, top_k=3):
     q_embed = embedder.encode([question], convert_to_numpy=True)
     q_embed = normalize(q_embed, axis=1)
     D, I = unified_index.search(q_embed, top_k * 2)
-    relevant = []
-    seen = set()
+    seen, relevant = set(), []
     for idx in I[0]:
-        doc = unified_documents[idx]
-        text = doc["text"]
+        text = unified_documents[idx]["text"]
         if text not in seen:
             seen.add(text)
             relevant.append(text)
         if len(relevant) == top_k:
             break
     context = "\n".join(relevant)
-    prompt = (
-        f"You are a helpful assistant. Use only the context below to answer.\n"
-        f"Context:\n{context}\n\n"
-        f"User: {question}\nAssistant:"
-    )
+    prompt = f"You are a helpful assistant. Use only the context below to answer.\nContext:\n{context}\n\nUser: {question}\nAssistant:"
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    outputs = model.generate(
+    output = model.generate(
         **inputs,
         max_new_tokens=300,
         temperature=0.7,
         pad_token_id=tokenizer.eos_token_id,
     )
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return answer.split("Assistant:")[-1].strip()
+    return (
+        tokenizer.decode(output[0], skip_special_tokens=True)
+        .split("Assistant:")[-1]
+        .strip()
+    )
 
 
-# 7. Save results
+# Save
 def save_response(user_input, answer):
     result = {
         "question": user_input,
         "answer": answer,
         "explanation": "Answer provided using contextual retrieval.",
     }
-    with open("answer.txt", "w", encoding="utf-8") as f:
+    os.makedirs("output", exist_ok=True)
+    with open("output/answer.txt", "w", encoding="utf-8") as f:
         f.write(answer)
-    with open("result.json", "w", encoding="utf-8") as f:
+    with open("output/result.json", "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
     print("✅ Saved answer.txt and result.json")
 
 
-# === ENTRY POINT ===
+# Run
 if __name__ == "__main__":
     print("📥 Loading raw database text...")
     df = load_database()

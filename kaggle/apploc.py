@@ -1,4 +1,3 @@
-# apploc.py
 from flask import Flask, render_template, request, jsonify
 import subprocess
 import json
@@ -24,35 +23,56 @@ def handle_question():
     print(f"💬 Received question: {question}")
 
     try:
-        # Run rag_pipeline.py with QUESTION environment variable
+        rag_path = os.path.join(os.path.dirname(__file__), "rag_pipeline.py")
         result = subprocess.run(
-            ["python", "rag_pipeline.py"],
+            ["python", rag_path],
             env={**os.environ, "QUESTION": question},
             capture_output=True,
             text=True,
             timeout=120,
         )
-        print("📦 Subprocess output captured.")
 
-        if not os.path.exists("result.json"):
-            return jsonify({"error": "No result.json generated"}), 500
+        result_path = os.path.join("output", "result.json")
+        print(f"📄 Looking for result.json at: {result_path}")
+        if not os.path.exists(result_path):
+            error_msg = "Missing result.json - Pipeline likely failed"
+            print(f"❌ {error_msg}")
+            return (
+                jsonify(
+                    {
+                        "error": error_msg,
+                        "output": result.stdout,
+                        "stderr": result.stderr,
+                    }
+                ),
+                500,
+            )
 
-        with open("result.json", "r", encoding="utf-8") as f:
+        with open(result_path, "r", encoding="utf-8") as f:
             response = json.load(f)
 
-        # Return structured output
         return jsonify(
             {
                 "question": question,
                 "answer": response.get("answer", ""),
                 "insights": response.get("explanation", ""),
                 "output": result.stdout,
+                "stderr": result.stderr,
             }
         )
 
     except Exception as e:
-        print("❌ Error:", e)
-        return jsonify({"error": str(e)}), 500
+        print(f"❌ Exception occurred: {e}")
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                    "output": result.stdout if "result" in locals() else "",
+                    "stderr": result.stderr if "result" in locals() else "",
+                }
+            ),
+            500,
+        )
 
 
 if __name__ == "__main__":
