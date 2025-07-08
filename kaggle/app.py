@@ -179,9 +179,42 @@ def execute_kaggle_command():
                     logger.error(f"Error reading log file: {str(e)}")
                     output_content += f"\n\nError reading log file: {str(e)}"
 
-            # 2. Try to parse JSON log format
+            # 2. Check for structured output files (NEW PRIORITY)
+            answer = ""
+            insights = ""
+            notebook_suggestion = ""
+            result_json_path = os.path.join(output_dir, "result.json")
+            answer_txt_path = os.path.join(output_dir, "answer.txt")
+
+            # First priority: result.json
+            if os.path.exists(result_json_path):
+                try:
+                    with open(result_json_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        answer = data.get("answer", "")
+                        insights = data.get("explanation", "")
+                        result_files.append("result.json")
+                        output_content += f"\n\n--- STRUCTURED RESULT (result.json) ---\nAnswer: {answer}\nExplanation: {insights}"
+                        logger.info("Extracted answer from result.json")
+                except Exception as e:
+                    logger.error(f"Error reading result.json: {str(e)}")
+                    output_content += f"\n\nError reading result.json: {str(e)}"
+
+            # Second priority: answer.txt
+            if not answer and os.path.exists(answer_txt_path):
+                try:
+                    with open(answer_txt_path, "r", encoding="utf-8") as f:
+                        answer = f.read().strip()
+                        result_files.append("answer.txt")
+                        output_content += f"\n\n--- ANSWER (answer.txt) ---\n{answer}"
+                        logger.info("Extracted answer from answer.txt")
+                except Exception as e:
+                    logger.error(f"Error reading answer.txt: {str(e)}")
+                    output_content += f"\n\nError reading answer.txt: {str(e)}"
+
+            # 3. Try to parse JSON log format (fallback)
             json_log = []
-            if log_content:
+            if not answer and log_content:
                 try:
                     # Try parsing as JSON array
                     json_log = json.loads(log_content)
@@ -202,127 +235,115 @@ def execute_kaggle_command():
                     except:
                         json_log = []
 
-            # 3. Extract meaningful content from log
+            # 4. Extract meaningful content from log (fallback)
             meaningful_output = ""
-            if json_log:
-                for entry in json_log:
-                    if isinstance(entry, dict) and "data" in entry:
-                        meaningful_output += entry["data"] + "\n"
-            elif log_content:
-                meaningful_output = log_content
-
-            # 4. Look for other output files
-            for file_path in glob.glob(os.path.join(output_dir, "*")):
-                if os.path.isfile(file_path) and file_path != log_path:
-                    filename = os.path.basename(file_path)
-                    try:
-                        with open(file_path, "r", encoding="utf-8") as f:
-                            content = f.read()
-                            result_files.append(filename)
-                            output_content += f"\n\n--- FILE: {filename} ---\n{content}"
-                            meaningful_output += f"\n\n--- {filename} ---\n{content}"
-
-                            # Set output_path if not already set
-                            if not output_path:
-                                output_path = file_path
-                    except Exception as e:
-                        output_content += f"\n\nError reading {filename}: {str(e)}"
-
-            # Combine all meaningful output
-            full_output = cmd_output + output_content
-            meaningful_output = meaningful_output.strip()
-
-        # Parse output
-        metrics = {}
-
-        # Extract answer and insights
-        answer = ""
-        insights = ""
-        notebook_suggestion = ""
-
-        if full_question and meaningful_output:
-            # Enhanced patterns for instructor/contact questions
-            answer_patterns = [
-                r"Answer:\s*(.*?)(?:\n\n|$)",
-                r"Response:\s*(.*?)(?:\n\n|$)",
-                r"Result:\s*(.*?)(?:\n\n|$)",
-                r"Summary:\s*(.*?)(?:\n\n|$)",
-                r"Final Answer:\s*(.*?)(?:\n\n|$)",
-                r"```answer\n(.*?)\n```",
-                r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)",
-                r"Course Instructor:\s*(.*?)\n",
-                r"Contact her at:\s*(.*?)(?:\n|$)",
-                r"Email:\s*(\S+@\S+\.\S+)",
-            ]
-
-            for pattern in answer_patterns:
-                match = re.search(pattern, meaningful_output, re.DOTALL | re.IGNORECASE)
-                if match:
-                    # Handle instructor + contact pattern separately
-                    if pattern == r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)":
-                        instructor = match.group(1).strip()
-                        contact = match.group(2).strip()
-                        answer = f"Instructor: {instructor}\nContact: {contact}"
-                    else:
-                        answer = match.group(1).strip()
-                    logger.info(f"Found answer using pattern: {pattern}")
-                    break
-
-            # If no pattern match, try to extract using NLP-like approach
             if not answer:
-                answer = extract_answer(meaningful_output, full_question)
+                if json_log:
+                    for entry in json_log:
+                        if isinstance(entry, dict) and "data" in entry:
+                            meaningful_output += entry["data"] + "\n"
+                elif log_content:
+                    meaningful_output = log_content
 
-            # Special handling for instructor/contact questions
-            if not answer and (
-                "instructor" in full_question.lower()
-                and "contact" in full_question.lower()
-            ):
-                instructor_match = re.search(
-                    r"(?i)(?:course\s+)?instructor\s*[:\-]\s*(.*?)(?:\n|$)",
-                    meaningful_output,
-                )
-                contact_match = re.search(
-                    r"(?i)contact\s*(?:her|information)?\s*[:\-]\s*(.*?)(?:\n|$)",
-                    meaningful_output,
-                )
-
-                if instructor_match and contact_match:
-                    answer = f"Instructor: {instructor_match.group(1).strip()}\nContact: {contact_match.group(1).strip()}"
-                elif instructor_match:
-                    answer = f"Instructor: {instructor_match.group(1).strip()}"
-                elif contact_match:
-                    answer = f"Contact: {contact_match.group(1).strip()}"
-
-            # Extract insights
-            insights = extract_insights(meaningful_output)
-
-            # If still no answer, provide suggestion
+            # 5. Look for other output files (fallback)
             if not answer:
-                notebook_suggestion = (
-                    "🔍 No answer found in kernel output. To fix this:\n"
-                    "1. Add this code to the END of your Kaggle notebook:\n"
-                    "```python\n"
-                    "import os\n"
-                    "import json\n\n"
-                    "# Get question from environment\n"
-                    "question = os.getenv('QUESTION', '')\n\n"
-                    "# Create structured answer\n"
-                    "if 'instructor' in question.lower() and 'contact' in question.lower():\n"
-                    '    answer = "Instructor: Dr. Jane Smith\\nContact: jane.smith@university.edu"\n'
-                    "else:\n"
-                    '    answer = "Your generated answer here"\n\n'
-                    "# Save results\n"
-                    "with open('answer.txt', 'w') as f:\n"
-                    "    f.write(answer)\n\n"
-                    "print(f'Answer saved for: {question}')\n"
-                    "```\n"
-                    "2. Commit and rerun your notebook\n"
-                    "3. Try your question again"
-                )
+                for file_path in glob.glob(os.path.join(output_dir, "*")):
+                    if os.path.isfile(file_path) and file_path != log_path:
+                        filename = os.path.basename(file_path)
+                        # Skip files we already processed
+                        if filename in ["result.json", "answer.txt"]:
+                            continue
+                        try:
+                            with open(file_path, "r", encoding="utf-8") as f:
+                                content = f.read()
+                                result_files.append(filename)
+                                output_content += f"\n\n--- FILE: {filename} ---\n{content}"
+                                meaningful_output += f"\n\n--- {filename} ---\n{content}"
 
-        # Fallback for company questions
-        if not answer and "company" in full_question.lower():
-            answer = "Crossbar Inc. is a technology company based in Santa Clara, California, specializing in Resistive RAM (ReRAM), a type of non-volatile memory that offers high performance, energy efficiency, and scalability."
+                                # Set output_path if not already set
+                                if not output_path:
+                                    output_path = file_path
+                        except Exception as e:
+                            output_content += f"\n\nError reading {filename}: {str(e)}"
+
+            # 6. Final extraction from logs if no structured answer found
+            if not answer and full_question and meaningful_output:
+                # Enhanced patterns for instructor/contact questions
+                answer_patterns = [
+                    r"Answer:\s*(.*?)(?:\n\n|$)",
+                    r"Response:\s*(.*?)(?:\n\n|$)",
+                    r"Result:\s*(.*?)(?:\n\n|$)",
+                    r"Summary:\s*(.*?)(?:\n\n|$)",
+                    r"Final Answer:\s*(.*?)(?:\n\n|$)",
+                    r"```answer\n(.*?)\n```",
+                    r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)",
+                    r"Course Instructor:\s*(.*?)\n",
+                    r"Contact her at:\s*(.*?)(?:\n|$)",
+                    r"Email:\s*(\S+@\S+\.\S+)",
+                ]
+
+                for pattern in answer_patterns:
+                    match = re.search(pattern, meaningful_output, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        # Handle instructor + contact pattern separately
+                        if pattern == r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)":
+                            instructor = match.group(1).strip()
+                            contact = match.group(2).strip()
+                            answer = f"Instructor: {instructor}\nContact: {contact}"
+                        else:
+                            answer = match.group(1).strip()
+                        logger.info(f"Found answer using pattern: {pattern}")
+                        break
+
+                # If no pattern match, try to extract using NLP-like approach
+                if not answer:
+                    answer = extract_answer(meaningful_output, full_question)
+
+                # Special handling for instructor/contact questions
+                if not answer and (
+                    "instructor" in full_question.lower()
+                    and "contact" in full_question.lower()
+                ):
+                    instructor_match = re.search(
+                        r"(?i)(?:course\s+)?instructor\s*[:\-]\s*(.*?)(?:\n|$)",
+                        meaningful_output,
+                    )
+                    contact_match = re.search(
+                        r"(?i)contact\s*(?:her|information)?\s*[:\-]\s*(.*?)(?:\n|$)",
+                        meaningful_output,
+                    )
+
+                    if instructor_match and contact_match:
+                        answer = f"Instructor: {instructor_match.group(1).strip()}\nContact: {contact_match.group(1).strip()}"
+                    elif instructor_match:
+                        answer = f"Instructor: {instructor_match.group(1).strip()}"
+                    elif contact_match:
+                        answer = f"Contact: {contact_match.group(1).strip()}"
+
+                # Extract insights if not already set
+                if not insights:
+                    insights = extract_insights(meaningful_output)
+
+                # If still no answer, provide suggestion
+                if not answer:
+                    notebook_suggestion = (
+                        "🔍 No answer found in kernel output. To fix this:\n"
+                        "1. Ensure your notebook writes structured output:\n"
+                        "```python\n"
+                        "with open('result.json', 'w') as f:\n"
+                        "    json.dump({\n"
+                        "        'question': user_input,\n"
+                        "        'answer': answer,\n"
+                        "        'explanation': explanation\n"
+                        "    }, f)\n"
+                        "```\n"
+                        "2. Commit and rerun your notebook\n"
+                        "3. Try your question again"
+                    )
+
+            # Fallback for company questions
+            if not answer and "company" in full_question.lower():
+                answer = "Crossbar Inc. is a technology company based in Santa Clara, California, specializing in Resistive RAM (ReRAM), a type of non-volatile memory that offers high performance, energy efficiency, and scalability."
 
         # Update session context for follow-up questions
         if session_id:
@@ -348,9 +369,9 @@ def execute_kaggle_command():
 
         # Prepare response
         response_data = {
-            "output": full_output,
-            "output_path": output_path,  # Added output_path
-            "metrics": metrics,
+            "output": output_content,
+            "output_path": output_path,
+            "metrics": {},
             "answer": answer if answer else "No answer found in kernel output",
             "insights": insights,
             "files": result_files,
@@ -366,7 +387,7 @@ def execute_kaggle_command():
         logger.info(
             f"Response JSON: {json.dumps({k: v for k, v in response_data.items() if k != 'output'}, indent=2)}"
         )
-        logger.info(f"Output content length: {len(full_output)} characters")
+        logger.info(f"Output content length: {len(output_content)} characters")
 
         return jsonify(response_data)
 
