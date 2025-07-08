@@ -1,153 +1,156 @@
 import os
 import re
-import json
-import torch
 import nltk
 import faiss
 import numpy as np
-import pandas as pd
+import logging
 from sklearn.preprocessing import normalize
 from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+import nltk
 
-# Setup
-nltk.download("punkt")
-MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.1"
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
-unified_documents, unified_embeddings = [], []
-unified_index = None
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt")
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Load model
-def load_model_and_tokenizer():
-    print("🚀 Loading model...")
-    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    quant_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch_dtype,
-    )
-    try:
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
-            device_map="auto",
-            torch_dtype=torch_dtype,
-            quantization_config=quant_config,
-            trust_remote_code=True,
-        )
-    except:
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
-            device_map="cpu",
-            torch_dtype=torch.float32,
-            trust_remote_code=True,
-        )
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    tokenizer.pad_token = tokenizer.pad_token or tokenizer.eos_token
-    return model, tokenizer
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", quiet=True)
 
 
-model, tokenizer = load_model_and_tokenizer()
+class RagProcessor:
+    def __init__(self, data_path="dataset/Crossbar_Database.txt"):
+        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
+        self.documents = []
+        self.embeddings = None
+        self.index = None
+        self.data_path = data_path
+        self.load_database()
+        self.process_documents()
+        self.build_index()
 
+    def load_database(self):
+        try:
+            if not os.path.exists(self.data_path):
+                raise FileNotFoundError(f"Database file not found: {self.data_path}")
 
-# Load database
-def load_database(path="dataset/Crossbar_Database.txt"):
-    with open(path, "r", encoding="utf-8") as f:
-        raw_text = f.read()
-    qas = re.findall(r"Q:\s*(.*?)\nA:\s*(.*?)(?=\nQ:|\Z)", raw_text, re.DOTALL)
-    return pd.DataFrame([{"question": q.strip(), "answer": a.strip()} for q, a in qas])
+            with open(self.data_path, "r", encoding="utf-8") as f:
+                raw_text = f.read()
 
+            # Improved regex to handle different QA formats
+            qa_pattern = r"Q:\s*(.*?)\s*\nA:\s*(.*?)(?=(?:\n\s*Q:)|(?:\n*\s*$)|\Z)"
+            qas = re.findall(qa_pattern, raw_text, re.DOTALL)
 
-# Embed
-def chunk_and_embed(df):
-    for _, row in df.iterrows():
-        q, a = row["question"].strip(), row["answer"].strip()
-        text = f"Q: {q}\nA: {a}"
-        sentences = sent_tokenize(text)
-        buffer = []
-        for sent in sentences:
-            buffer.append(sent)
-            if len(" ".join(buffer).split()) > 500:
-                unified_documents.append(
-                    {"text": " ".join(buffer), "metadata": {"question": q[:100]}}
-                )
-                buffer = []
-        if buffer:
-            unified_documents.append(
-                {"text": " ".join(buffer), "metadata": {"question": q[:100]}}
+            if not qas:
+                raise ValueError("No valid Q&A pairs found in the database")
+
+            self.qa_pairs = [
+                {"question": q.strip(), "answer": a.strip()} for q, a in qas
+            ]
+            logger.info(f"Loaded {len(self.qa_pairs)} Q&A pairs from database")
+
+        except Exception as e:
+            logger.error(f"Database loading failed: {e}")
+            # Fallback to default knowledge
+            self.qa_pairs = [
+                {
+                    "question": "What is Crossbar?",
+                    "answer": "Crossbar is a technology company specializing in ReRAM memory solutions.",
+                },
+                {
+                    "question": "What does Crossbar do?",
+                    "answer": "Crossbar develops resistive random-access memory (ReRAM) technology for next-generation storage and computing applications.",
+                },
+            ]
+
+    def process_documents(self, max_chunk_size=500):
+        try:
+            if not hasattr(self, "qa_pairs") or not self.qa_pairs:
+                raise ValueError("No Q&A pairs available for processing")
+
+            for pair in self.qa_pairs:
+                q, a = pair["question"], pair["answer"]
+                text = f"Q: {q}\nA: {a}"
+                sentences = sent_tokenize(text)
+
+                chunk = []
+                current_length = 0
+
+                for sent in sentences:
+                    sent_words = sent.split()
+                    if current_length + len(sent_words) > max_chunk_size and chunk:
+                        self.documents.append(" ".join(chunk))
+                        chunk = []
+                        current_length = 0
+
+                    chunk.append(sent)
+                    current_length += len(sent_words)
+
+                if chunk:
+                    self.documents.append(" ".join(chunk))
+
+            logger.info(f"Processed {len(self.documents)} document chunks")
+
+            # Generate embeddings
+            if self.documents:
+                embs = self.embedder.encode(self.documents, convert_to_numpy=True)
+                self.embeddings = normalize(embs, axis=1)
+                logger.info("Document embeddings generated")
+            else:
+                raise ValueError("No documents available for embedding")
+
+        except Exception as e:
+            logger.error(f"Document processing failed: {e}")
+            # Fallback to default document
+            self.documents = [
+                "Q: What is Crossbar?\nA: Crossbar is a technology company specializing in ReRAM memory solutions."
+            ]
+            embs = self.embedder.encode(self.documents, convert_to_numpy=True)
+            self.embeddings = normalize(embs, axis=1)
+
+    def build_index(self):
+        try:
+            if self.embeddings is None or len(self.embeddings) == 0:
+                raise ValueError("No embeddings available for indexing")
+
+            dim = self.embeddings.shape[1]
+            self.index = faiss.IndexFlatIP(dim)
+            self.index.add(self.embeddings)
+            logger.info(f"FAISS index built with {self.index.ntotal} vectors")
+        except Exception as e:
+            logger.error(f"Index building failed: {e}")
+            self.index = None
+
+    def retrieve_context(self, question, top_k=3):
+        if not self.index or self.index.ntotal == 0:
+            logger.warning("FAISS index not available or empty")
+            return []
+
+        try:
+            # Embed the question
+            q_embed = self.embedder.encode([question], convert_to_numpy=True)
+            q_embed = normalize(q_embed, axis=1)
+
+            # Search the index
+            distances, indices = self.index.search(q_embed, top_k)
+
+            # Retrieve top documents
+            results = []
+            for i in indices[0]:
+                if i < len(self.documents):
+                    results.append(self.documents[i])
+
+            logger.info(
+                f"Retrieved {len(results)} context documents for question: {question}"
             )
-    embs = embedder.encode(
-        [d["text"] for d in unified_documents], convert_to_numpy=True
-    )
-    unified_embeddings.extend(normalize(embs, axis=1))
+            return results
 
-
-# Index
-def build_index():
-    global unified_index
-    dim = unified_embeddings[0].shape[0]
-    index = faiss.IndexFlatIP(dim)
-    index.add(np.vstack(unified_embeddings))
-    unified_index = index
-
-
-# Query
-def ask_question(question, top_k=3):
-    q_embed = embedder.encode([question], convert_to_numpy=True)
-    q_embed = normalize(q_embed, axis=1)
-    D, I = unified_index.search(q_embed, top_k * 2)
-    seen, relevant = set(), []
-    for idx in I[0]:
-        text = unified_documents[idx]["text"]
-        if text not in seen:
-            seen.add(text)
-            relevant.append(text)
-        if len(relevant) == top_k:
-            break
-    context = "\n".join(relevant)
-    prompt = f"You are a helpful assistant. Use only the context below to answer.\nContext:\n{context}\n\nUser: {question}\nAssistant:"
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    output = model.generate(
-        **inputs,
-        max_new_tokens=300,
-        temperature=0.7,
-        pad_token_id=tokenizer.eos_token_id,
-    )
-    return (
-        tokenizer.decode(output[0], skip_special_tokens=True)
-        .split("Assistant:")[-1]
-        .strip()
-    )
-
-
-# Save
-def save_response(user_input, answer):
-    result = {
-        "question": user_input,
-        "answer": answer,
-        "explanation": "Answer provided using contextual retrieval.",
-    }
-    os.makedirs("output", exist_ok=True)
-    with open("output/answer.txt", "w", encoding="utf-8") as f:
-        f.write(answer)
-    with open("output/result.json", "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2)
-    print("✅ Saved answer.txt and result.json")
-
-
-# Run
-if __name__ == "__main__":
-    print("📥 Loading raw database text...")
-    df = load_database()
-    print(f"✅ Loaded {len(df)} Q&A pairs")
-    print("🔗 Chunking & embedding...")
-    chunk_and_embed(df)
-    print("🔍 Building FAISS index...")
-    build_index()
-    question = os.getenv("QUESTION", "What is Crossbar?")
-    print(f"💬 User: {question}")
-    answer = ask_question(question)
-    print(f"🤖 Answer: {answer}")
-    save_response(question, answer)
+        except Exception as e:
+            logger.error(f"Context retrieval failed: {e}")
+            return []
