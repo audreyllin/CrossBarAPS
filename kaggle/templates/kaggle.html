@@ -454,9 +454,16 @@
                             <input type="password" id="api-key" value="{{ api_key }}" readonly>
                         </div>
 
+                        <!-- Base command only -->
                         <div class="input-group">
                             <label for="kernel-command">Kernel Command</label>
-                            <input type="text" id="kernel-command" value="{{ default_command }} {{ default_kernel }}">
+                            <input type="text" id="kernel-command" value="{{ default_command }}" readonly>
+                        </div>
+
+                        <!-- Separate kernel reference input -->
+                        <div class="input-group">
+                            <label for="kernel-reference">Kernel Reference</label>
+                            <input type="text" id="kernel-reference" value="{{ default_kernel }}">
                         </div>
 
                         <div class="input-group">
@@ -626,6 +633,7 @@
             document.querySelector('.submit-btn').addEventListener('click', async function () {
                 const apiKey = document.getElementById('api-key').value;
                 const kernelCommand = document.getElementById('kernel-command').value;
+                const kernelReference = document.getElementById('kernel-reference').value;
                 const parameters = document.getElementById('parameters').value;
                 const question = document.getElementById('question').value;
 
@@ -637,11 +645,6 @@
                 kernelAnswer.innerHTML = "> Processing your question...";
 
                 try {
-                    // Extract kernel details from command
-                    const kernelParts = kernelCommand.split(' ');
-                    const kernelRef = kernelParts[kernelParts.length - 1];
-                    const [username, kernelSlug] = kernelRef.split('/');
-
                     // Call backend to execute Kaggle command
                     const response = await fetch('/api/kaggle/execute', {
                         method: 'POST',
@@ -652,7 +655,7 @@
                         body: JSON.stringify({
                             command: kernelCommand,
                             parameters: parameters,
-                            kernel: kernelRef,
+                            kernel: kernelReference,  // Send kernel reference separately
                             question: question
                         })
                     });
