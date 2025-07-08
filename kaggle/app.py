@@ -8,7 +8,7 @@ import glob
 import re
 import uuid
 import logging
-import traceback  # Added for better error logging
+import traceback
 
 app = Flask(__name__)
 
@@ -42,7 +42,7 @@ def index():
         default_command=default_command,
         default_kernel=default_kernel,
         default_params=default_params,
-        session_id=session_id,  # Pass session_id to template
+        session_id=session_id,
     )
 
 
@@ -82,7 +82,7 @@ def execute_kaggle_command():
     parameters = data.get("parameters", "")
     kernel_ref = data.get("kernel", "")
     question = data.get("question", "")
-    session_id = data.get("session_id", "")  # Get session_id from request
+    session_id = data.get("session_id", "")
     quit_session = data.get("quit", False)
 
     # Handle session quit
@@ -162,6 +162,7 @@ def execute_kaggle_command():
             output_content = cmd_output
             result_files = []
             log_content = ""
+            output_path = ""  # Initialize output_path
 
             # 1. Try to read the kernel log file
             if os.path.exists(log_path):
@@ -172,6 +173,7 @@ def execute_kaggle_command():
                         output_content += (
                             f"\n\n--- KERNEL LOG CONTENT ---\n{log_content}"
                         )
+                        output_path = log_path  # Set output_path
                         logger.info(f"Found kernel log: {log_path}")
                 except Exception as e:
                     logger.error(f"Error reading log file: {str(e)}")
@@ -219,6 +221,10 @@ def execute_kaggle_command():
                             result_files.append(filename)
                             output_content += f"\n\n--- FILE: {filename} ---\n{content}"
                             meaningful_output += f"\n\n--- {filename} ---\n{content}"
+
+                            # Set output_path if not already set
+                            if not output_path:
+                                output_path = file_path
                     except Exception as e:
                         output_content += f"\n\nError reading {filename}: {str(e)}"
 
@@ -343,16 +349,24 @@ def execute_kaggle_command():
         # Prepare response
         response_data = {
             "output": full_output,
+            "output_path": output_path,  # Added output_path
             "metrics": metrics,
             "answer": answer if answer else "No answer found in kernel output",
-            "insights": insights,  # Added insights field
+            "insights": insights,
             "files": result_files,
-            "session_id": session_id,  # Include session_id in response
+            "session_id": session_id,
+            "success": True,
         }
 
         # Add suggestion if needed
         if not answer:
             response_data["suggestion"] = notebook_suggestion
+
+        # Log response for debugging
+        logger.info(
+            f"Response JSON: {json.dumps({k: v for k, v in response_data.items() if k != 'output'}, indent=2)}"
+        )
+        logger.info(f"Output content length: {len(full_output)} characters")
 
         return jsonify(response_data)
 
@@ -363,8 +377,10 @@ def execute_kaggle_command():
                 {
                     "error": str(e),
                     "output": f"Error executing command: {str(e)}",
+                    "output_path": "",
                     "answer": "Error processing question",
                     "insights": "Error extracting insights",
+                    "success": False,
                 }
             ),
             500,
