@@ -8,6 +8,7 @@ import glob
 import re
 import uuid
 import logging
+import traceback  # Added for better error logging
 
 app = Flask(__name__)
 
@@ -43,6 +44,29 @@ def index():
         default_params=default_params,
         session_id=session_id,
     )
+
+
+def extract_insights(output):
+    """Extract key insights from kernel output"""
+    if not output:
+        return "No insights found"
+
+    # Look for common insight patterns
+    patterns = [
+        r"Key Insights:\s*\n(.*?)(?:\n\n|$)",
+        r"Summary:\s*\n(.*?)(?:\n\n|$)",
+        r"Conclusions:\s*\n(.*?)(?:\n\n|$)",
+        r"Insights:\s*\n(.*?)(?:\n\n|$)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, output, re.DOTALL | re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+    # Fallback: take the last 5 meaningful lines
+    lines = [line.strip() for line in output.split("\n") if len(line.strip()) > 40]
+    return "\n".join(lines[-5:]) if lines else "No insights found"
 
 
 @app.route("/api/kaggle/execute", methods=["POST"])
@@ -205,12 +229,13 @@ def execute_kaggle_command():
         # Parse output
         metrics = {}
 
-        # Extract answer from meaningful output
+        # Extract answer and insights
         answer = ""
+        insights = ""
         notebook_suggestion = ""
 
         if full_question and meaningful_output:
-            # NEW: Enhanced patterns for instructor/contact questions
+            # Enhanced patterns for instructor/contact questions
             answer_patterns = [
                 r"Answer:\s*(.*?)(?:\n\n|$)",
                 r"Response:\s*(.*?)(?:\n\n|$)",
@@ -241,7 +266,7 @@ def execute_kaggle_command():
             if not answer:
                 answer = extract_answer(meaningful_output, full_question)
 
-            # NEW: Special handling for instructor/contact questions
+            # Special handling for instructor/contact questions
             if not answer and (
                 "instructor" in full_question.lower()
                 and "contact" in full_question.lower()
@@ -261,6 +286,9 @@ def execute_kaggle_command():
                     answer = f"Instructor: {instructor_match.group(1).strip()}"
                 elif contact_match:
                     answer = f"Contact: {contact_match.group(1).strip()}"
+
+            # Extract insights
+            insights = extract_insights(meaningful_output)
 
             # If still no answer, provide suggestion
             if not answer:
@@ -317,6 +345,7 @@ def execute_kaggle_command():
             "output": full_output,
             "metrics": metrics,
             "answer": answer if answer else "No answer found in kernel output",
+            "insights": insights,  # Added insights field
             "files": result_files,
             "session_id": session_id,
         }
@@ -328,9 +357,16 @@ def execute_kaggle_command():
         return jsonify(response_data)
 
     except Exception as e:
-        logger.exception("Error executing Kaggle command")
+        logger.error(f"Error: {str(e)}\n{traceback.format_exc()}")
         return (
-            jsonify({"error": str(e), "output": f"Error executing command: {str(e)}"}),
+            jsonify(
+                {
+                    "error": str(e),
+                    "output": f"Error executing command: {str(e)}",
+                    "answer": "Error processing question",
+                    "insights": "Error extracting insights",
+                }
+            ),
             500,
         )
 
