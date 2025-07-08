@@ -650,13 +650,9 @@
 
                     const data = await response.json();
 
-                    // Update UI with response
-                    document.getElementById('kernel-answer').innerHTML =
-                        `<div class="output-line">${data.answer || "No answer found"}</div>`;
-
-                    document.getElementById('kernel-insights').innerHTML =
-                        `<div class="output-line">${data.insights || "No insights available"}</div>`;
-
+                    // Update UI with response using helper function
+                    setOutputContent('kernel-answer', data.answer || "No answer found");
+                    setOutputContent('kernel-insights', data.insights || "No insights available");
                     setOutputContent('kernel-output', data.output || "No output generated");
 
                     // Show success message
