@@ -42,7 +42,7 @@ def index():
         default_command=default_command,
         default_kernel=default_kernel,
         default_params=default_params,
-        session_id=session_id,
+        session_id=session_id,  # Pass session_id to template
     )
 
 
@@ -82,7 +82,7 @@ def execute_kaggle_command():
     parameters = data.get("parameters", "")
     kernel_ref = data.get("kernel", "")
     question = data.get("question", "")
-    session_id = data.get("session_id", "")
+    session_id = data.get("session_id", "")  # Get session_id from request
     quit_session = data.get("quit", False)
 
     # Handle session quit
@@ -347,7 +347,7 @@ def execute_kaggle_command():
             "answer": answer if answer else "No answer found in kernel output",
             "insights": insights,  # Added insights field
             "files": result_files,
-            "session_id": session_id,
+            "session_id": session_id,  # Include session_id in response
         }
 
         # Add suggestion if needed
