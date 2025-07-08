@@ -699,8 +699,8 @@
                     const output = data.output || "No kernel output.";
 
                     // Update all output sections with fallbacks
-                    setOutputContent('kernel-insights', insights);
-                    setOutputContent('kernel-answer', answer);
+                    document.getElementById('kernel-insights').innerHTML = `<div class="output-line">${insights}</div>`;
+                    document.getElementById('kernel-answer').innerHTML = `<div class="output-line">${answer}</div>`;
 
                     // Use output_path if available, otherwise fallback to output
                     if (outputPath) {
