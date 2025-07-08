@@ -116,7 +116,7 @@ def execute_kaggle_command():
                 )
 
             # Create unique output directory for this execution
-            output_dir = os.path.join(temp_dir, "output")
+            output_dir = os.path.join(os.getcwd(), "output")
             os.makedirs(output_dir, exist_ok=True)
 
             # Prepare environment with config directory
@@ -153,6 +153,9 @@ def execute_kaggle_command():
             cmd_output = result.stdout
             logger.info(f"Command output: {cmd_output}")
 
+            # DEBUG: List files in output directory
+            logger.info(f"Files in output_dir: {os.listdir(output_dir)}")
+
             # Determine expected log filename
             kernel_slug = kernel_ref.split("/")[-1] if kernel_ref else "kernel"
             log_filename = f"{kernel_slug}.log"
@@ -173,13 +176,13 @@ def execute_kaggle_command():
                         output_content += (
                             f"\n\n--- KERNEL LOG CONTENT ---\n{log_content}"
                         )
-                        output_path = log_path  # Set output_path
-                        logger.info(f"Found kernel log: {log_path}")
+                        output_path = log_path
+                        logger.info(f"✅ Found kernel log: {log_path}")
                 except Exception as e:
-                    logger.error(f"Error reading log file: {str(e)}")
+                    logger.error(f"❌ Error reading log file: {str(e)}")
                     output_content += f"\n\nError reading log file: {str(e)}"
 
-            # 2. Check for structured output files (NEW PRIORITY)
+            # ✅ 2. Check for structured output files (IMPROVED)
             answer = ""
             insights = ""
             notebook_suggestion = ""
@@ -191,25 +194,26 @@ def execute_kaggle_command():
                 try:
                     with open(result_json_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                        answer = data.get("answer", "")
-                        insights = data.get("explanation", "")
+                        answer = data.get("answer", "").strip()
+                        insights = data.get("explanation", "").strip()
                         result_files.append("result.json")
+                        logger.info("✅ Extracted answer from result.json")
                         output_content += f"\n\n--- STRUCTURED RESULT (result.json) ---\nAnswer: {answer}\nExplanation: {insights}"
-                        logger.info("Extracted answer from result.json")
                 except Exception as e:
-                    logger.error(f"Error reading result.json: {str(e)}")
-                    output_content += f"\n\nError reading result.json: {str(e)}"
+                    logger.error(f"❌ Error reading result.json: {str(e)}")
+                    answer = "⚠️ Error parsing result.json"
+                    insights = ""
 
-            # Second priority: answer.txt
+            # Second priority: answer.txt (fallback)
             if not answer and os.path.exists(answer_txt_path):
                 try:
                     with open(answer_txt_path, "r", encoding="utf-8") as f:
                         answer = f.read().strip()
                         result_files.append("answer.txt")
+                        logger.info("✅ Extracted answer from answer.txt")
                         output_content += f"\n\n--- ANSWER (answer.txt) ---\n{answer}"
-                        logger.info("Extracted answer from answer.txt")
                 except Exception as e:
-                    logger.error(f"Error reading answer.txt: {str(e)}")
+                    logger.error(f"❌ Error reading answer.txt: {str(e)}")
                     output_content += f"\n\nError reading answer.txt: {str(e)}"
 
             # 3. Try to parse JSON log format (fallback)
@@ -218,9 +222,7 @@ def execute_kaggle_command():
                 try:
                     # Try parsing as JSON array
                     json_log = json.loads(log_content)
-                    logger.info(
-                        f"Successfully parsed JSON log with {len(json_log)} entries"
-                    )
+                    logger.info(f"✅ Parsed JSON log with {len(json_log)} entries")
                 except json.JSONDecodeError:
                     try:
                         # Try parsing as JSON lines
@@ -230,10 +232,11 @@ def execute_kaggle_command():
                             if line.strip()
                         ]
                         logger.info(
-                            f"Successfully parsed JSON lines log with {len(json_log)} entries"
+                            f"✅ Parsed JSON lines with {len(json_log)} entries"
                         )
                     except:
                         json_log = []
+                        logger.warning("⚠️ Failed to parse log as JSON")
 
             # 4. Extract meaningful content from log (fallback)
             meaningful_output = ""
@@ -257,13 +260,16 @@ def execute_kaggle_command():
                             with open(file_path, "r", encoding="utf-8") as f:
                                 content = f.read()
                                 result_files.append(filename)
-                                output_content += f"\n\n--- FILE: {filename} ---\n{content}"
-                                meaningful_output += f"\n\n--- {filename} ---\n{content}"
-
-                                # Set output_path if not already set
+                                output_content += (
+                                    f"\n\n--- FILE: {filename} ---\n{content}"
+                                )
+                                meaningful_output += (
+                                    f"\n\n--- {filename} ---\n{content}"
+                                )
                                 if not output_path:
                                     output_path = file_path
                         except Exception as e:
+                            logger.warning(f"⚠️ Error reading {filename}: {str(e)}")
                             output_content += f"\n\nError reading {filename}: {str(e)}"
 
             # 6. Final extraction from logs if no structured answer found
@@ -283,7 +289,9 @@ def execute_kaggle_command():
                 ]
 
                 for pattern in answer_patterns:
-                    match = re.search(pattern, meaningful_output, re.DOTALL | re.IGNORECASE)
+                    match = re.search(
+                        pattern, meaningful_output, re.DOTALL | re.IGNORECASE
+                    )
                     if match:
                         # Handle instructor + contact pattern separately
                         if pattern == r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)":
@@ -292,7 +300,7 @@ def execute_kaggle_command():
                             answer = f"Instructor: {instructor}\nContact: {contact}"
                         else:
                             answer = match.group(1).strip()
-                        logger.info(f"Found answer using pattern: {pattern}")
+                        logger.info(f"🔍 Found answer using pattern: {pattern}")
                         break
 
                 # If no pattern match, try to extract using NLP-like approach
@@ -349,7 +357,6 @@ def execute_kaggle_command():
         if session_id:
             # Preserve important context
             if len(session_data[session_id]["history"]) > 5:
-                # Keep only last 5 exchanges
                 session_data[session_id]["history"] = session_data[session_id][
                     "history"
                 ][-5:]
@@ -392,7 +399,7 @@ def execute_kaggle_command():
         return jsonify(response_data)
 
     except Exception as e:
-        logger.error(f"Error: {str(e)}\n{traceback.format_exc()}")
+        logger.error(f"❌ Critical error: {str(e)}\n{traceback.format_exc()}")
         return (
             jsonify(
                 {
@@ -422,7 +429,6 @@ def extract_answer(output, question):
     for i, line in enumerate(lines):
         line_keywords = set(line.lower().split())
         if question_keywords & line_keywords:  # Any common keywords
-            # Capture this line and the next 5 lines
             candidate_lines.extend(lines[i : i + 6])
 
     if candidate_lines:
@@ -445,7 +451,7 @@ def extract_answer(output, question):
 
     # Return the first substantial block of text
     for block in blocks:
-        if len(block) > 50:  # More than 50 characters
+        if len(block) > 50:
             return block
 
     # Return the first 5 lines if nothing else
