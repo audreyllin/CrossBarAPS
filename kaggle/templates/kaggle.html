@@ -537,6 +537,23 @@
     </footer>
 
     <script>
+        // Helper function to set output content
+        function setOutputContent(elementId, content, fallback = "") {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+
+            if (content) {
+                content.split('\n').forEach(line => {
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'output-line';
+                    lineElement.textContent = line;
+                    element.appendChild(lineElement);
+                });
+            } else {
+                element.textContent = fallback;
+            }
+        }
+
         // Background animation with Three.js
         document.addEventListener('DOMContentLoaded', function () {
             // Set up Three.js scene
@@ -641,8 +658,11 @@
                 this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
                 const kernelOutput = document.getElementById('kernel-output');
                 const kernelAnswer = document.getElementById('kernel-answer');
-                kernelOutput.innerHTML = "> Connecting to Kaggle API...";
-                kernelAnswer.innerHTML = "> Processing your question...";
+                const kernelInsights = document.getElementById('kernel-insights');
+
+                setOutputContent('kernel-output', "> Connecting to Kaggle API...");
+                setOutputContent('kernel-answer', "> Processing your question...");
+                setOutputContent('kernel-insights', "> Analyzing results...");
 
                 try {
                     // Call backend to execute Kaggle command
@@ -666,27 +686,19 @@
 
                     const data = await response.json();
 
-                    // Display kernel output
-                    kernelOutput.innerHTML = '';
-                    if (data.output) {
-                        data.output.split('\n').forEach(line => {
-                            const lineElement = document.createElement('div');
-                            lineElement.className = 'output-line';
-                            lineElement.textContent = line;
-                            kernelOutput.appendChild(lineElement);
-                        });
-                    }
-
-                    // Display answer
-                    kernelAnswer.innerHTML = data.answer || "No answer found";
+                    // Update all output sections
+                    setOutputContent('kernel-output', data.output, "No kernel output");
+                    setOutputContent('kernel-answer', data.answer, "No answer found");
+                    setOutputContent('kernel-insights', data.insights, "No insights found");
 
                     // Show success message
                     showNotification('Kernel executed successfully! Results updated.', 'success');
 
                 } catch (error) {
                     console.error('Error executing kernel:', error);
-                    kernelOutput.innerHTML = `> Error: ${error.message}\n> Please check your API key and command syntax`;
-                    kernelAnswer.innerHTML = "> Error processing question";
+                    setOutputContent('kernel-output', `> Error: ${error.message}\n> Please check your API key and command syntax`);
+                    setOutputContent('kernel-answer', "> Error processing question");
+                    setOutputContent('kernel-insights', "> Error analyzing results");
                     showNotification(`Error: ${error.message}`, 'error');
                 } finally {
                     this.innerHTML = 'Execute Kernel <i class="fas fa-arrow-right"></i>';
