@@ -4,65 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Q&A Interface | Cinematic Experience</title>
+    <title>Company Q&A Interface | GPT-Powered</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
          :root {
-            --bg-dark: #0a0a0a;
-            --bg-dark-secondary: #1a1a1a;
-            --text-light: #ffffff;
-            --text-accent: #ff7b33;
-            --text-accent-secondary: #ff9d5c;
-            --glass-bg: rgba(25, 20, 15, 0.8);
-            --glass-border: rgba(255, 123, 51, 0.2);
-            --accent-primary: #ff7b33;
-            --accent-secondary: #ff9d5c;
+            --primary-dark: #0f0f0f;
+            --primary-light: #3e1f0e;
+            --accent-primary: #ff7f00;
+            /* orange */
+            --accent-secondary: #d2691e;
+            /* chocolate */
+            --text-primary: #ffffff;
+            --text-secondary: #f5deb3;
+            /* light wheat */
+            --glass-bg: rgba(30, 15, 10, 0.7);
+            --glass-border: rgba(255, 140, 0, 0.2);
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, var(--bg-dark), var(--bg-dark-secondary));
-            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: var(--text-primary);
+            min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
             line-height: 1.6;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        /* Navigation */
-        
-        nav {
+        .bg-elements {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            padding: 1.5rem 2rem;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            padding: 1.5rem 5%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             border-bottom: 1px solid var(--glass-border);
         }
         
         .logo {
             font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
         
         .nav-links {
@@ -71,14 +73,18 @@
         }
         
         .nav-links a {
-            color: var(--text-light);
             text-decoration: none;
+            color: var(--text-secondary);
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: color 0.3s;
             position: relative;
         }
         
-        .nav-links a:after {
+        .nav-links a:hover {
+            color: var(--accent-primary);
+        }
+        
+        .nav-links a::after {
             content: '';
             position: absolute;
             bottom: -5px;
@@ -86,82 +92,66 @@
             width: 0;
             height: 2px;
             background: var(--accent-primary);
-            transition: width 0.3s ease;
+            transition: width 0.3s;
         }
         
-        .nav-links a:hover {
-            color: var(--accent-primary);
-        }
-        
-        .nav-links a:hover:after {
+        .nav-links a:hover::after {
             width: 100%;
         }
-        /* Hero Section */
+        
+        section {
+            padding: 5rem 5%;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
         
         .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            padding-top: 5rem;
-            position: relative;
-            overflow: hidden;
+            padding-top: 8rem;
+            padding-bottom: 8rem;
         }
         
         .hero h1 {
-            font-size: 4rem;
+            font-size: 3.5rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, var(--text-light), var(--accent-secondary));
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: transparent;
+            line-height: 1.2;
         }
         
         .hero p {
-            font-size: 1.5rem;
-            max-width: 800px;
-            margin-bottom: 2.5rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            color: var(--text-secondary);
         }
         
         .cta-button {
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            color: var(--text-light);
+            background: linear-gradient(135deg, var(--accent-primary), #4361ee);
+            color: white;
             border: none;
             padding: 1rem 2.5rem;
             font-size: 1.1rem;
             font-weight: 600;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
         }
         
         .cta-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(255, 123, 51, 0.4);
+            box-shadow: 0 6px 20px rgba(76, 201, 240, 0.4);
         }
-        /* Glass Panel */
-        
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-        /* API Input Section */
         
         .api-section {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 5rem 0;
-            position: relative;
+            padding-top: 4rem;
+            padding-bottom: 4rem;
         }
         
         .api-container {
@@ -174,72 +164,84 @@
         .api-info h2 {
             font-size: 2.5rem;
             margin-bottom: 1.5rem;
-            color: var(--accent-primary);
         }
         
         .api-info p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             margin-bottom: 1.5rem;
+            font-size: 1.1rem;
         }
         
-        .input-container {
+        .feature-list p {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            margin-bottom: 1.8rem;
         }
         
         .input-group label {
-            font-weight: 600;
-            color: var(--accent-primary);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
         
-        .input-group input,
-        .input-group textarea {
-            background: rgba(15, 12, 10, 0.7);
-            border: 1px solid rgba(255, 123, 51, 0.2);
-            border-radius: 10px;
-            padding: 1rem;
-            color: var(--text-light);
+        .input-group input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
             font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s;
         }
         
-        .input-group input:focus,
-        .input-group textarea:focus {
+        .input-group input:focus {
             outline: none;
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(255, 123, 51, 0.3);
         }
         
         .submit-btn {
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            color: var(--text-light);
+            background: linear-gradient(135deg, var(--accent-secondary), #7209b7);
+            color: white;
             border: none;
-            padding: 1rem;
+            width: 100%;
+            padding: 1.2rem;
             font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 4px 15px rgba(247, 37, 133, 0.3);
         }
         
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.4);
+            box-shadow: 0 6px 20px rgba(247, 37, 133, 0.4);
         }
-        /* Results Section */
         
         .results-section {
-            min-height: 100vh;
-            padding: 5rem 0;
-            position: relative;
+            padding-top: 4rem;
+            padding-bottom: 8rem;
         }
         
         .results-header {
@@ -249,148 +251,142 @@
         
         .results-header h2 {
             font-size: 2.5rem;
-            color: var(--accent-primary);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .results-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
         }
         
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 2rem;
         }
         
         .result-card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .result-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 123, 51, 0.4);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .result-card h3 {
-            color: var(--accent-primary);
+            font-size: 1.5rem;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .result-card h3 i {
-            color: var(--accent-secondary);
+            gap: 0.8rem;
+            color: var(--accent-primary);
         }
         
         .result-card p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             margin-bottom: 1rem;
         }
         
-        .kernel-output {
-            background: rgba(10, 8, 6, 0.5);
-            border: 1px solid rgba(255, 123, 51, 0.2);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: 0.9rem;
-            max-height: 300px;
-            overflow-y: auto;
-            color: var(--accent-secondary);
-            white-space: pre-wrap;
+        .result-card:nth-child(3) {
+            grid-column: span 2;
         }
         
-        .output-line {
-            margin-bottom: 5px;
-            line-height: 1.4;
+        .kernel-output {
+            min-height: 150px;
+            background: rgba(20, 25, 45, 0.7);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            overflow: auto;
+            max-height: 300px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border: 1px solid rgba(76, 201, 240, 0.1);
         }
-        /* Footer */
         
         footer {
-            background: var(--bg-dark-secondary);
-            padding: 3rem 0;
             text-align: center;
+            padding: 2rem;
             border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        /* Notification styles */
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
         }
         
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
         }
         
-        .social-links {
-            display: flex;
-            gap: 1.5rem;
+        .notification.success {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
         }
         
-        .social-links a {
-            color: var(--text-light);
-            font-size: 1.5rem;
-            transition: color 0.3s ease;
+        .notification.error {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: white;
         }
-        
-        .social-links a:hover {
-            color: var(--accent-primary);
-        }
-        /* Animations */
-        
-        @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        /* Scroll animations */
+        /* Animation classes */
         
         .animate-on-scroll {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
         
         .animate-on-scroll.visible {
             opacity: 1;
             transform: translateY(0);
         }
-        /* Background elements */
+        /* Responsive design */
         
-        .bg-elements {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            overflow: hidden;
-        }
-        /* Responsive */
-        
-        @media (max-width: 992px) {
+        @media (max-width: 900px) {
             .api-container {
                 grid-template-columns: 1fr;
             }
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            .result-card:nth-child(3) {
+                grid-column: span 1;
+            }
+        }
+        
+        @media (max-width: 600px) {
             .hero h1 {
-                font-size: 3rem;
+                font-size: 2.5rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
             }
             .nav-links {
                 display: none;
             }
-            .kernel-output {
-                font-size: 0.8rem;
+            .api-info h2,
+            .results-header h2 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -407,7 +403,6 @@
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
             <a href="#results">Results</a>
-            <a href="#docs">Documentation</a>
         </div>
     </nav>
 
@@ -433,19 +428,24 @@
                         </p>
                         <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Comprehensive company knowledge</p>
                         <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Detailed insights and analysis</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Follow-up question support
-                        </p>
                     </div>
                 </div>
 
                 <div class="glass-panel animate-on-scroll">
                     <div class="input-container">
+                        <!-- GPT API Key Input -->
+                        <div class="input-group">
+                            <label for="api-key">OpenAI API Key</label>
+                            <input type="password" id="api-key" placeholder="Enter your OpenAI API key">
+                        </div>
+
                         <div class="input-group">
                             <label for="question">Your Question</label>
                             <input type="text" id="question" placeholder="Ask about the company...">
                         </div>
 
-                        <button class="submit-btn">Ask Question <i class="fas fa-arrow-right"></i></button>
+                        <button class="submit-btn" id="submit-btn">Ask Question <i
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </div>
@@ -456,8 +456,8 @@
     <section class="results-section" id="results">
         <div class="container">
             <div class="results-header animate-on-scroll">
-                <h2>🧠 Local RAG Analysis</h2>
-                <p>Answer generated from Crossbar knowledge base</p>
+                <h2><i class="fas fa-brain"></i> AI Analysis Results</h2>
+                <p>Answer generated from company knowledge base</p>
             </div>
 
             <div class="results-grid">
@@ -478,242 +478,232 @@
                 </div>
 
                 <div class="result-card animate-on-scroll" style="grid-column: span 2;">
-                    <h3><i class="fas fa-terminal"></i> System Output</h3>
-                    <p>Detailed processing information:</p>
-                    <div class="kernel-output" id="kernel-output">
-                        // System output will appear here after execution
+                    <h3><i class="fas fa-terminal"></i> System Context</h3>
+                    <p>Relevant context used for answering:</p>
+                    <div class="kernel-output" id="kernel-context">
+                        // Context will appear here
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="logo">Company<span style="color: var(--accent-secondary);">Q&A</span></div>
-                <p>AI-powered knowledge assistant</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-github"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
-                    <a href="#"><i class="fas fa-brain"></i></a>
-                </div>
-                <p>© 2024 Company Q&A Interface. All rights reserved.</p>
-            </div>
-        </div>
+        <p>© 2023 Company Q&A Interface | Powered by AI Technology</p>
     </footer>
 
-    <script>
-        // Helper function to set output content
-        function setOutputContent(elementId, content, fallback = "") {
-            const element = document.getElementById(elementId);
-            element.innerHTML = '';
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
 
-            if (content) {
-                content.split('\n').forEach(line => {
-                    const lineElement = document.createElement('div');
-                    lineElement.className = 'output-line';
-                    lineElement.textContent = line;
-                    element.appendChild(lineElement);
+    <script>
+        // Form submission with question
+        document.getElementById('submit-btn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('api-key').value;
+            const question = document.getElementById('question').value;
+            const submitBtn = this;
+
+            if (!apiKey) {
+                showNotification('Please enter your OpenAI API key', 'error');
+                return;
+            }
+
+            if (!question) {
+                showNotification('Please enter a question', 'error');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+
+            const kernelAnswer = document.getElementById('kernel-answer');
+            const kernelInsights = document.getElementById('kernel-insights');
+            const kernelContext = document.getElementById('kernel-context');
+
+            setOutputContent('kernel-answer', "> Processing your question...");
+            setOutputContent('kernel-insights', "> Generating insights...");
+            setOutputContent('kernel-context', "> Retrieving context...");
+
+            try {
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
                 });
-            } else {
-                element.textContent = fallback;
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update all output sections
+                setOutputContent('kernel-answer', data.answer || "No answer found");
+                setOutputContent('kernel-insights', data.insights || "No insights available");
+                setOutputContent('kernel-context', data.context ? data.context.join("\n\n") : "No context retrieved");
+
+                showNotification('Question answered successfully!', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                setOutputContent('kernel-answer', `> Error: ${error.message}`);
+                setOutputContent('kernel-insights', "> Error analyzing results");
+                setOutputContent('kernel-context', "> Error retrieving context");
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
+                submitBtn.disabled = false;
+
+                // Scroll to results
+                document.getElementById('results').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+
+        // Helper function to set output content
+        function setOutputContent(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = content;
+                // Add syntax highlighting for context
+                if (elementId === 'kernel-context') {
+                    element.innerHTML = highlightContext(content);
+                }
             }
         }
 
-        // Background animation with Three.js
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up Three.js scene
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({
-                alpha: true
-            });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('bg-canvas').appendChild(renderer.domElement);
+        // Helper function to show notifications
+        function showNotification(message, type) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            container.appendChild(notification);
 
-            // Create floating geometric elements with chocolate-orange theme
-            const geometries = [
-                new THREE.TetrahedronGeometry(10, 0),
-                new THREE.OctahedronGeometry(7, 0),
-                new THREE.DodecahedronGeometry(5, 0),
-                new THREE.IcosahedronGeometry(8, 0)
-            ];
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 10);
 
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xff7b33,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.1
-            });
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
 
-            const objects = [];
-            const numObjects = 15;
-
-            for (let i = 0; i < numObjects; i++) {
-                const geo = geometries[Math.floor(Math.random() * geometries.length)];
-                const mesh = new THREE.Mesh(geo, material.clone());
-
-                // Set random position
-                mesh.position.x = Math.random() * 100 - 50;
-                mesh.position.y = Math.random() * 100 - 50;
-                mesh.position.z = Math.random() * 100 - 50;
-
-                // Set random rotation
-                mesh.rotation.x = Math.random() * Math.PI;
-                mesh.rotation.y = Math.random() * Math.PI;
-
-                // Set random color in chocolate-orange palette
-                const colors = [0xff7b33, 0xff9d5c, 0xd2691e];
-                mesh.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
-
-                // Set random size
-                const scale = 0.2 + Math.random() * 0.8;
-                mesh.scale.set(scale, scale, scale);
-
-                scene.add(mesh);
-                objects.push(mesh);
-            }
-
-            camera.position.z = 30;
-
-            // Animation function
-            function animate() {
-                requestAnimationFrame(animate);
-
-                // Rotate objects
-                objects.forEach(obj => {
-                    obj.rotation.x += 0.005;
-                    obj.rotation.y += 0.005;
-
-                    // Gentle floating movement
-                    obj.position.y += Math.sin(Date.now() * 0.001 + obj.position.x) * 0.01;
-                });
-
-                renderer.render(scene, camera);
-            }
-
-            animate();
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            // Scroll animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
+        // Function to highlight context
+        function highlightContext(text) {
+            return text
+                .split('\n\n')
+                .map(segment => {
+                    if (segment.startsWith('Q:')) {
+                        return `<div style="color: #4cc9f0; margin-bottom: 8px; font-weight: 500;">${segment}</div>`;
+                    } else if (segment.startsWith('A:')) {
+                        return `<div style="color: #f72585; margin-bottom: 15px;">${segment}</div>`;
                     }
-                });
-            }, {
-                threshold: 0.1
-            });
+                    return `<div>${segment}</div>`;
+                })
+                .join('');
+        }
 
-            document.querySelectorAll('.animate-on-scroll').forEach(element => {
-                observer.observe(element);
-            });
-
-            // Form submission with question
-            document.querySelector('.submit-btn').addEventListener('click', async function() {
-                const question = document.getElementById('question').value;
-
-                // Show loading state
-                this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
-                const kernelOutput = document.getElementById('kernel-output');
-                const kernelAnswer = document.getElementById('kernel-answer');
-                const kernelInsights = document.getElementById('kernel-insights');
-
-                setOutputContent('kernel-output', "> Processing your question...");
-                setOutputContent('kernel-answer', "> Generating answer...");
-                setOutputContent('kernel-insights', "> Extracting insights...");
-
-                try {
-                    const response = await fetch('/api/ask', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            question: question
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API request failed: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    // Update UI with response using helper function
-                    setOutputContent('kernel-answer', data.answer || "No answer found");
-                    setOutputContent('kernel-insights', data.insights || "No insights available");
-                    setOutputContent('kernel-output', data.output || "No output generated");
-
-                    // Show success message
-                    showNotification('Question answered successfully!', 'success');
-
-                } catch (error) {
-                    console.error('Error:', error);
-                    setOutputContent('kernel-output', `> Error: ${error.message}`);
-                    setOutputContent('kernel-answer', "> Error processing question");
-                    setOutputContent('kernel-insights', "> Error analyzing results");
-                    showNotification(`Error: ${error.message}`, 'error');
-                } finally {
-                    this.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
-
-                    // Scroll to results
-                    document.getElementById('results').scrollIntoView({
-                        behavior: 'smooth'
-                    });
+        // Animation on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
                 }
             });
-
-            function showNotification(message, type) {
-                const notification = document.createElement('div');
-                notification.textContent = message;
-                notification.style.position = 'fixed';
-                notification.style.bottom = '20px';
-                notification.style.right = '20px';
-                notification.style.padding = '15px 25px';
-                notification.style.background = type === 'success' ?
-                    'rgba(40, 167, 69, 0.9)' :
-                    'rgba(220, 53, 69, 0.9)';
-                notification.style.color = 'white';
-                notification.style.borderRadius = '10px';
-                notification.style.zIndex = '1000';
-                notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-                notification.style.animation = 'fadeIn 0.5s ease-out';
-
-                document.body.appendChild(notification);
-
-                setTimeout(() => {
-                    notification.style.animation = 'fadeOut 0.5s ease-out';
-                    setTimeout(() => {
-                        document.body.removeChild(notification);
-                    }, 500);
-                }, 3000);
-            }
-
-            // Add CSS for fade animations
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes fadeOut {
-                    from { opacity: 1; transform: translateY(0); }
-                    to { opacity: 0; transform: translateY(20px); }
-                }
-            `;
-            document.head.appendChild(style);
+        }, {
+            threshold: 0.1
         });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Background animation
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        document.getElementById('bg-canvas').appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        // Particles animation
+        const particles = [];
+        const particleCount = 100;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = `rgba(76, 201, 240, ${Math.random() * 0.5})`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // Connect close particles
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(76, 201, 240, ${0.2 * (1 - distance / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        initParticles();
+        animateParticles();
     </script>
 </body>
 
