@@ -1,3 +1,13 @@
 Flask==3.0.0
 gunicorn==21.2.0
 kaggle==1.5.16
+torch>=2.0.0
+transformers>=4.36.0
+sentence-transformers
+faiss-cpu
+nltk
+scikit-learn
+numpy
+pandas
+accelerate
+bitsandbytes
