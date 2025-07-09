@@ -25,13 +25,92 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import heapq
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Get absolute path to templates directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(current_dir, "templates")
+DB_FILE = os.path.join(current_dir, "memory.db")
 
-app = Flask(__name__, template_folder=template_path)  # Explicit template path
+app = Flask(__name__, template_folder=template_path)
 logging.basicConfig(level=logging.INFO)
+
+
+# Database Helper Functions
+def get_db():
+    return sqlite3.connect(DB_FILE)
+
+
+def init_db():
+    with get_db() as db:
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_number TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+        """
+        )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS memories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                summary TEXT NOT NULL,
+                sources TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+        """
+        )
+        db.commit()
+
+
+def get_user_by_account(account_number):
+    with get_db() as db:
+        return db.execute(
+            "SELECT * FROM users WHERE account_number = ?", (account_number,)
+        ).fetchone()
+
+
+def create_user(account_number, password):
+    password_hash = generate_password_hash(password)
+    with get_db() as db:
+        db.execute(
+            "INSERT INTO users (account_number, password_hash) VALUES (?, ?)",
+            (account_number, password_hash),
+        )
+        db.commit()
+
+
+def validate_login(account_number, password):
+    user = get_user_by_account(account_number)
+    return user if user and check_password_hash(user[2], password) else None
+
+
+def store_memory(user_id, question, answer, summary, sources):
+    with get_db() as db:
+        db.execute(
+            "INSERT INTO memories (user_id, question, answer, summary, sources) VALUES (?, ?, ?, ?, ?)",
+            (user_id, question, answer, summary, sources),
+        )
+        db.commit()
+
+
+def get_user_memories(user_id):
+    with get_db() as db:
+        return db.execute(
+            "SELECT id, question, answer, summary, sources, created_at FROM memories WHERE user_id = ? ORDER BY created_at DESC",
+            (user_id,),
+        ).fetchall()
+
+
+# Initialize database
+init_db()
 
 # Download NLTK resources
 try:
@@ -86,73 +165,51 @@ def count_tokens(text):
 
 
 def trim_conversation_history(history, max_tokens=3000):
-    """Trim conversation history to stay within token limits"""
     total_tokens = 0
     trimmed_history = []
-
-    # Keep system message always
     if history and history[0]["role"] == "system":
         total_tokens += count_tokens(history[0]["content"])
         trimmed_history.append(history[0])
-
-    # Add messages from newest to oldest until token limit reached
     for msg in reversed(history[1:]):
         msg_tokens = count_tokens(msg["content"])
         if total_tokens + msg_tokens > max_tokens:
             break
         total_tokens += msg_tokens
-        trimmed_history.insert(1, msg)  # Insert after system message
-
+        trimmed_history.insert(1, msg)
     return trimmed_history
 
 
 def get_relevant_contexts(question, session_contexts):
-    """Find contexts most relevant to the current question"""
     relevant = []
     if not question or not session_contexts:
         return relevant
-
-    # Preprocess question
     q_lower = question.lower()
     q_keywords = set(q_lower.split())
-
     for ctx in session_contexts:
-        # Skip contexts without summaries
         if "summary" not in ctx:
             continue
-
-        # Create combined content string for matching
         content = (ctx.get("summary", "") + " " + ctx.get("content", "")).lower()
-
-        # Simple keyword matching
         if any(keyword in content for keyword in q_keywords):
             relevant.append(ctx)
-
     return relevant
 
 
 def build_context_summary(contexts, max_length=500):
-    """Create a concise summary of all relevant contexts"""
     if not contexts:
         return ""
-
     context_str = "Additional context provided by the user:\n"
     for i, ctx in enumerate(contexts, 1):
         source = (
             ctx.get("filename", "user input") if "filename" in ctx else "user input"
         )
         summary = ctx.get("summary", "No summary available")
-
-        # Truncate summary if needed
         if len(summary) > max_length:
             summary = summary[:max_length] + "..."
-
         context_str += f"{i}. From {source}: {summary}\n"
     return context_str
 
 
 def create_new_session():
-    """Create a new session with initial system prompt"""
     session_id = str(uuid.uuid4())
     session = {
         "history": [
@@ -178,30 +235,25 @@ def create_new_session():
 
 
 def save_session(session_id, session_data):
-    """Save session to persistent storage"""
     try:
         filepath = os.path.join(SESSION_STORE, f"{session_id}.json")
         with open(filepath, "w") as f:
-            # Convert datetime objects to strings
             for key in ["created_at", "last_accessed"]:
                 if key in session_data:
                     session_data[key] = datetime.fromtimestamp(
                         session_data[key]
                     ).isoformat()
-
             json.dump(session_data, f, indent=2)
     except Exception as e:
         logging.error(f"Error saving session {session_id}: {str(e)}")
 
 
 def load_session(session_id):
-    """Load session from persistent storage"""
     try:
         filepath = os.path.join(SESSION_STORE, f"{session_id}.json")
         if os.path.exists(filepath):
             with open(filepath, "r") as f:
                 session_data = json.load(f)
-                # Convert string timestamps back to floats
                 for key in ["created_at", "last_accessed"]:
                     if key in session_data:
                         session_data[key] = datetime.fromisoformat(
@@ -214,15 +266,12 @@ def load_session(session_id):
 
 
 def extract_text_from_file(filepath, filename):
-    """Extract text from supported file types"""
     text = ""
     ext = filename.split(".")[-1].lower()
-
     try:
         if ext == "txt":
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 text = f.read()
-
         elif ext == "pdf":
             with open(filepath, "rb") as f:
                 reader = PyPDF2.PdfReader(f)
@@ -230,35 +279,27 @@ def extract_text_from_file(filepath, filename):
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
-
         elif ext in ["doc", "docx"]:
             doc = Document(filepath)
             for para in doc.paragraphs:
                 text += para.text + "\n"
-
         elif ext in ["ppt", "pptx"]:
             text = f"PPT file detected: {filename}. Please upload as PDF for full text extraction."
-
         elif ext in ["jpg", "jpeg", "png"]:
             text = f"Image file detected: {filename}. OCR capability not implemented."
-
         elif ext == "mp4":
             text = f"Video file detected: {filename}. Video analysis not implemented."
-
     except Exception as e:
         logging.error(f"Text extraction error: {str(e)}")
         return f"Error processing file: {str(e)}"
-
     return text.strip()
 
 
 def chunk_text(text, max_tokens=1000):
-    """Split text into manageable chunks"""
     words = text.split()
     chunks = []
     current_chunk = []
     current_length = 0
-
     for word in words:
         word_tokens = count_tokens(word)
         if current_length + word_tokens > max_tokens and current_chunk:
@@ -267,33 +308,21 @@ def chunk_text(text, max_tokens=1000):
             current_length = 0
         current_chunk.append(word)
         current_length += word_tokens
-
     if current_chunk:
         chunks.append(" ".join(current_chunk))
-
     return chunks
 
 
 def extract_key_concepts(text, max_concepts=7):
-    """Extract key concepts from text using TF-IDF like approach"""
     try:
-        # Tokenize and remove stopwords
         stop_words = set(stopwords.words("english"))
         words = word_tokenize(text.lower())
         words = [word for word in words if word.isalnum() and word not in stop_words]
-
-        # Count word frequencies
         word_freq = Counter(words)
-
-        # Get most common words
         most_common = word_freq.most_common(max_concepts * 2)
-
-        # Filter out too short or too common words
         concepts = [word for word, freq in most_common if len(word) > 3 and freq > 1]
-
         return concepts[:max_concepts]
     except:
-        # Fallback to simple method if NLP fails
         words = text.lower().split()
         words = [word for word in words if word.isalnum() and len(word) > 4]
         word_freq = Counter(words)
@@ -301,19 +330,14 @@ def extract_key_concepts(text, max_concepts=7):
 
 
 def generate_memory_key(question, answer):
-    """Generate a unique key for storing memories"""
     content_hash = hashlib.sha256((question + answer).encode()).hexdigest()
     return f"memory_{content_hash[:16]}"
 
 
 def generate_summary_and_key_concepts(text, api_key, max_length=300):
-    """Generate summary and key concepts in one API call"""
     client = OpenAI(api_key=api_key)
-
-    # For very short texts, don't call API
     if len(text) < 100:
         return text, extract_key_concepts(text)
-
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -332,43 +356,30 @@ def generate_summary_and_key_concepts(text, api_key, max_length=300):
             max_tokens=300,
             temperature=0.2,
         )
-
         result = response.choices[0].message.content.strip()
-
-        # Parse response
         summary = ""
         concepts = []
-
-        # Try to find summary section
         summary_match = re.search(
             r"SUMMARY:\s*(.*?)(?=\nKEY CONCEPTS:|$)", result, re.DOTALL | re.IGNORECASE
         )
         if summary_match:
             summary = summary_match.group(1).strip()
-
-        # Try to find concepts section
         concepts_match = re.search(
             r"KEY CONCEPTS:\s*(.*)", result, re.DOTALL | re.IGNORECASE
         )
         if concepts_match:
             concepts_str = concepts_match.group(1).strip()
             concepts = [c.strip() for c in concepts_str.split(",") if c.strip()]
-
-        # If parsing failed, use fallback methods
         if not summary:
-            # Generate simple summary
             sentences = nltk.sent_tokenize(text)
             summary = " ".join(sentences[:3])[:max_length] + (
                 "..." if len(sentences) > 3 else ""
             )
-
         if not concepts:
             concepts = extract_key_concepts(text)
-
         return summary, concepts
     except Exception as e:
         logging.error(f"Summary generation failed: {str(e)}")
-        # Fallback to simple methods
         sentences = nltk.sent_tokenize(text)
         summary = " ".join(sentences[:3])[:max_length] + (
             "..." if len(sentences) > 3 else ""
@@ -382,9 +393,75 @@ def index():
     return render_template("kaggleloc.html")
 
 
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    user = validate_login(data["account"], data["password"])
+    if user:
+        return jsonify({"status": "success", "userId": user[0], "account": user[1]})
+    return jsonify({"status": "fail"}), 401
+
+
+@app.route("/api/memories", methods=["GET"])
+def get_memories():
+    user_id = request.args.get("userId")
+    if not user_id:
+        return jsonify({"error": "Missing user ID"}), 400
+    memories = get_user_memories(user_id)
+    return jsonify(
+        [
+            {
+                "id": row[0],
+                "question": row[1],
+                "answer": row[2],
+                "summary": row[3],
+                "sources": row[4],
+                "created_at": row[5],
+            }
+            for row in memories
+        ]
+    )
+
+
+@app.route("/api/memories/<int:memory_id>", methods=["PUT"])
+def update_memory(memory_id):
+    data = request.get_json()
+    new_answer = data.get("answer", "").strip()
+    new_summary = data.get("summary", "").strip()
+    new_sources = data.get("sources", "").strip()
+    if not new_answer:
+        return jsonify({"error": "Answer cannot be empty"}), 400
+    try:
+        with get_db() as db:
+            db.execute(
+                """
+                UPDATE memories
+                SET answer = ?, summary = ?, sources = ?
+                WHERE id = ?
+            """,
+                (new_answer, new_summary, new_sources, memory_id),
+            )
+            db.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memories/<int:memory_id>", methods=["DELETE"])
+def delete_memory(memory_id):
+    try:
+        with get_db() as db:
+            db.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
+            db.commit()
+        return jsonify({"status": "deleted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/ask", methods=["POST"])
 def handle_question():
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    account_number = request.headers.get("X-Account-Number", "")
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
 
@@ -395,34 +472,24 @@ def handle_question():
         return jsonify({"error": "Empty question"}), 400
 
     try:
-        # Get or create session
         with sessions_lock:
             if session_id:
-                # Try to load from memory first
                 session = sessions.get(session_id)
                 if not session:
-                    # Try to load from persistent storage
                     session = load_session(session_id)
                     if session:
                         sessions[session_id] = session
-
                 if not session:
-                    # Create new session
                     session_id, session = create_new_session()
                     sessions[session_id] = session
             else:
-                # Create new session
                 session_id, session = create_new_session()
                 sessions[session_id] = session
-
             session["last_accessed"] = time.time()
             save_session(session_id, session)
 
-        # Retrieve RAG context
         context_docs = rag_processor.retrieve_context(question)
         rag_context = "\n\n".join(context_docs)
-
-        # Check for known relationships first
         known_response = rag_processor.get_known_relationship(question)
         if known_response:
             return jsonify(
@@ -434,27 +501,18 @@ def handle_question():
                 }
             )
 
-        # Prepare messages for OpenAI
-        messages = session["history"][:]  # Copy session history
-
-        # Add persistent memories if relevant
+        messages = session["history"][:]
         memory_context = ""
         for memory_key, memory_content in session.get("persistent_memory", {}).items():
             if question.lower() in memory_content["question"].lower():
                 memory_context += f"\nPrevious discussion about this topic: {memory_content['summary']}"
-
         if memory_context:
             messages.append({"role": "system", "content": memory_context})
 
-        # Get relevant session contexts
         relevant_contexts = get_relevant_contexts(question, session.get("contexts", []))
         context_summary = build_context_summary(relevant_contexts)
-
-        # Add context summary as a single system message
         if context_summary:
             messages.append({"role": "system", "content": context_summary})
-
-        # Add RAG context as a system message
         if rag_context:
             messages.append(
                 {
@@ -462,41 +520,24 @@ def handle_question():
                     "content": f"Document context for this question:\n{rag_context}",
                 }
             )
-
-        # Add user's question
         messages.append({"role": "user", "content": question})
-
-        # Log messages for debugging
-        logging.info(f"Messages being sent to OpenAI: {json.dumps(messages, indent=2)}")
-        logging.info(
-            f"Total tokens: {sum(count_tokens(m['content']) for m in messages)}"
-        )
-
-        # Trim history to avoid exceeding token limits
         messages = trim_conversation_history(messages)
 
-        # Initialize OpenAI client
         client = OpenAI(api_key=api_key)
-
-        # Get answer
         chat = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=messages,
             max_tokens=500,
             temperature=0.3,
         )
-
         answer = chat.choices[0].message.content.strip()
-        logging.info(f"Received answer: {answer}")
 
-        # Generate insights
         insight_prompt = (
             "Based on the following question and answer, extract 3 key insights in bullet points:\n\n"
             f"Question: {question}\n\n"
             f"Answer:\n{answer}\n\n"
             "Key Insights:"
         )
-
         insight_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -509,17 +550,14 @@ def handle_question():
             max_tokens=300,
             temperature=0.2,
         )
-
         insights = insight_response.choices[0].message.content.strip()
 
-        # Generate memory summary
         memory_prompt = (
             "Create a concise summary of the following Q&A pair that captures the key information "
             "for long-term memory storage. Focus on factual information and core concepts:\n\n"
             f"Question: {question}\n\n"
             f"Answer:\n{answer}"
         )
-
         memory_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -534,7 +572,41 @@ def handle_question():
         )
         memory_summary = memory_response.choices[0].message.content.strip()
 
-        # Store in persistent memory
+        # Generate follow-up questions
+        follow_prompt = (
+            "Based on the following question and answer, suggest 3 follow-up questions that the user might ask:\n\n"
+            f"Question: {question}\n\n"
+            f"Answer:\n{answer}\n\n"
+            "Follow-up Questions:"
+        )
+        follow_response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that anticipates user needs.",
+                },
+                {"role": "user", "content": follow_prompt},
+            ],
+            max_tokens=200,
+            temperature=0.5,
+        )
+        follow_ups_text = follow_response.choices[0].message.content.strip()
+        follow_ups = []
+        for line in follow_ups_text.split("\n"):
+            if line.strip() and len(follow_ups) < 3:
+                # Remove any numbering
+                clean_line = re.sub(r"^\d+[\.\)]\s*", "", line.strip())
+                follow_ups.append(clean_line)
+
+        # Store in database if user is logged in
+        if account_number:
+            user = get_user_by_account(account_number)
+            if user:
+                store_memory(
+                    user[0], question, answer, memory_summary, "\n".join(context_docs)
+                )
+
         memory_key = generate_memory_key(question, answer)
         with sessions_lock:
             session = sessions[session_id]
@@ -547,13 +619,11 @@ def handle_question():
             session["last_accessed"] = time.time()
             save_session(session_id, session)
 
-        # Update session history
         with sessions_lock:
             session = sessions[session_id]
             session["history"].append({"role": "user", "content": question})
             session["history"].append({"role": "assistant", "content": answer})
-            # Keep only the last 10 exchanges
-            if len(session["history"]) > 21:  # 1 system + 10 Q/A pairs
+            if len(session["history"]) > 21:
                 session["history"] = session["history"][:1] + session["history"][-20:]
             session["last_accessed"] = time.time()
             save_session(session_id, session)
@@ -565,6 +635,8 @@ def handle_question():
                 "insights": insights,
                 "context": context_docs,
                 "sessionId": session_id,
+                "follow_ups": follow_ups,
+                "memory_summary": memory_summary,
             }
         )
 
@@ -592,22 +664,84 @@ def handle_question():
         )
 
 
+@app.route("/api/adjust_answer", methods=["POST"])
+def adjust_answer():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    data = request.get_json()
+    original_answer = data.get("answer", "")
+    adjustment_type = data.get("type", "shorten")  # 'shorten' or 'elaborate'
+    language = data.get("language", "English")
+
+    if not original_answer:
+        return jsonify({"error": "No answer provided"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+
+        if adjustment_type == "translate":
+            prompt = (
+                f"Translate the following text to {language}:\n\n" f"{original_answer}"
+            )
+        elif adjustment_type == "shorten":
+            prompt = (
+                "Please condense the following text while preserving key information:\n\n"
+                f"{original_answer}"
+            )
+        elif adjustment_type == "elaborate":
+            prompt = (
+                "Please elaborate on the following text, adding more details and explanations:\n\n"
+                f"{original_answer}"
+            )
+        elif adjustment_type == "reword":
+            prompt = (
+                "Please rephrase the following text to improve clarity while keeping the meaning unchanged:\n\n"
+                f"{original_answer}"
+            )
+        else:
+            return jsonify({"error": "Invalid adjustment type"}), 400
+
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful text transformation assistant.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1000,
+            temperature=0.5,
+        )
+        adjusted_answer = response.choices[0].message.content.strip()
+
+        return jsonify(
+            {
+                "adjusted_answer": adjusted_answer,
+                "adjustment_type": adjustment_type,
+                "language": language,
+            }
+        )
+
+    except Exception as e:
+        logging.error(f"Error adjusting answer: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/add_context", methods=["POST"])
 def add_context():
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
-
     session_id = request.form.get("sessionId", "")
     context_text = request.form.get("context", "").strip()
-
     if not session_id:
         return jsonify({"error": "Missing session ID"}), 400
     if not context_text:
         return jsonify({"error": "Empty context"}), 400
-
     try:
-        # Get or create session
         with sessions_lock:
             if session_id in sessions:
                 session = sessions[session_id]
@@ -616,13 +750,9 @@ def add_context():
                 if not session:
                     session_id, session = create_new_session()
                 sessions[session_id] = session
-
-            # Generate summary and key concepts
             summary, key_concepts = generate_summary_and_key_concepts(
                 context_text, api_key
             )
-
-            # Add context to session
             context_id = str(uuid.uuid4())
             session["contexts"].append(
                 {
@@ -634,18 +764,14 @@ def add_context():
                     "timestamp": time.time(),
                 }
             )
-
-            # Also add to history as a system message
             session["history"].append(
                 {
                     "role": "system",
                     "content": f"User provided additional context: {summary}",
                 }
             )
-
             session["last_accessed"] = time.time()
             save_session(session_id, session)
-
         return jsonify(
             {
                 "status": "success",
@@ -654,7 +780,6 @@ def add_context():
                 "key_concepts": key_concepts,
             }
         )
-
     except Exception as e:
         logging.exception("Error adding context")
         return jsonify({"error": str(e)}), 500
@@ -665,40 +790,27 @@ def upload_context():
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
-
     session_id = request.form.get("sessionId", "")
     if not session_id:
         return jsonify({"error": "Missing session ID"}), 400
-
-    # Check if the post request has the file part
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
-
     file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
-
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
-
-        # Extract and process file content
         extracted_text = extract_text_from_file(filepath, filename)
         summary = ""
         key_concepts = []
-
         if extracted_text:
-            # Generate summary and key concepts
             summary, key_concepts = generate_summary_and_key_concepts(
                 extracted_text, api_key
             )
-
-            # Chunk text for potential future use
             chunks = chunk_text(extracted_text)
-
             with sessions_lock:
-                # Get or create session
                 if session_id in sessions:
                     session = sessions[session_id]
                 else:
@@ -706,8 +818,6 @@ def upload_context():
                     if not session:
                         session_id, session = create_new_session()
                     sessions[session_id] = session
-
-                # Store document information
                 context_id = str(uuid.uuid4())
                 session["contexts"].append(
                     {
@@ -721,18 +831,14 @@ def upload_context():
                         "timestamp": time.time(),
                     }
                 )
-
-                # Add to history
                 session["history"].append(
                     {
                         "role": "system",
                         "content": f"User uploaded document: {filename}\nSummary: {summary}",
                     }
                 )
-
                 session["last_accessed"] = time.time()
                 save_session(session_id, session)
-
             return jsonify(
                 {
                     "status": "success",
@@ -752,7 +858,6 @@ def upload_context():
                 ),
                 400,
             )
-
     return jsonify({"error": "File type not allowed"}), 400
 
 
@@ -761,15 +866,12 @@ def clear_memory():
     data = request.get_json()
     session_id = data.get("sessionId", "")
     memory_key = data.get("memoryKey", "")
-
     if not session_id:
         return jsonify({"error": "Missing session ID"}), 400
-
     with sessions_lock:
         if session_id in sessions:
             session = sessions[session_id]
             if memory_key:
-                # Remove specific memory
                 if memory_key in session.get("persistent_memory", {}):
                     del session["persistent_memory"][memory_key]
                     save_session(session_id, session)
@@ -777,9 +879,7 @@ def clear_memory():
                 else:
                     return jsonify({"error": "Memory not found"}), 404
             else:
-                # Clear all non-core memories
                 session["persistent_memory"] = {}
-                # Keep only the initial system message
                 session["history"] = session["history"][:1]
                 session["contexts"] = []
                 save_session(session_id, session)
