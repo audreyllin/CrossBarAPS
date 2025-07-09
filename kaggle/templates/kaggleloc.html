@@ -193,6 +193,69 @@
             border-radius: 20px;
             padding: 2.5rem;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .context-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .context-btn {
+            background: rgba(255, 157, 92, 0.2);
+            border: 1px solid var(--orange-secondary);
+            color: var(--cream);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .context-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-size: 1.5rem;
+            cursor: pointer;
         }
         
         .input-group {
@@ -206,7 +269,8 @@
             color: var(--cream);
         }
         
-        .input-group input {
+        .input-group input,
+        .input-group textarea {
             width: 100%;
             padding: 1rem 1.2rem;
             background: rgba(30, 15, 10, 0.5);
@@ -215,12 +279,46 @@
             color: var(--white);
             font-size: 1rem;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
         }
         
-        .input-group input:focus {
+        .input-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus {
             outline: none;
             border-color: var(--orange-primary);
             box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.2);
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border: 1px dashed var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-label:hover {
+            border-color: var(--orange-primary);
         }
         
         .submit-btn {
@@ -307,10 +405,6 @@
             margin-bottom: 1rem;
         }
         
-        .result-card:nth-child(3) {
-            grid-column: span 2;
-        }
-        
         .kernel-output {
             min-height: 150px;
             background: rgba(20, 10, 5, 0.6);
@@ -385,9 +479,6 @@
             .results-grid {
                 grid-template-columns: 1fr;
             }
-            .result-card:nth-child(3) {
-                grid-column: span 1;
-            }
         }
         
         @media (max-width: 768px) {
@@ -437,7 +528,7 @@
 
     <!-- Navigation -->
     <nav>
-        <div class="logo">Company<span style="color: var(--accent-secondary);">Q&A</span></div>
+        <div class="logo">Company<span>Q&A</span></div>
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
@@ -463,14 +554,22 @@
                     <h2>Company Knowledge Base</h2>
                     <p>Ask any question about our company, products, or services and get detailed answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Instant AI-powered answers
-                        </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Comprehensive company knowledge</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Detailed insights and analysis</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports text/file context additions</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified knowledge</p>
                     </div>
                 </div>
 
                 <div class="glass-panel animate-on-scroll">
+                    <div class="context-actions">
+                        <button class="context-btn" id="add-text-context">
+                            <i class="fas fa-comment"></i> Add Text Context
+                        </button>
+                        <button class="context-btn" id="add-file-context">
+                            <i class="fas fa-file-upload"></i> Upload File
+                        </button>
+                    </div>
+
                     <div class="input-container">
                         <!-- GPT API Key Input -->
                         <div class="input-group">
@@ -523,10 +622,165 @@
         <p>© 2023 Company Q&A Interface | Powered by AI Technology</p>
     </footer>
 
+    <!-- Context Modals -->
+    <div class="modal" id="text-context-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Text Context</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="context-text">Enter additional context</label>
+                <textarea id="context-text" placeholder="Product A is a component used in Product B..."></textarea>
+            </div>
+            <button class="submit-btn" id="submit-text-context">Add Context</button>
+        </div>
+    </div>
+
+    <div class="modal" id="file-context-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload Context File</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="file-upload">
+                <input type="file" id="context-file" class="file-input" accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
+                <label for="context-file" class="file-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose a file or drag it here</span>
+                </label>
+                <div class="input-group">
+                    <label for="file-description">File Description (Optional)</label>
+                    <input type="text" id="file-description" placeholder="Describe what this file contains...">
+                </div>
+            </div>
+            <button class="submit-btn" id="submit-file-context">Upload File</button>
+        </div>
+    </div>
+
     <!-- Notification Container -->
     <div id="notification-container"></div>
 
     <script>
+        // Session management
+        let sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+            sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+            localStorage.setItem('sessionId', sessionId);
+        }
+
+        // DOM elements
+        const textContextModal = document.getElementById('text-context-modal');
+        const fileContextModal = document.getElementById('file-context-modal');
+        const closeButtons = document.querySelectorAll('.close-modal');
+
+        // Event listeners for modals
+        document.getElementById('add-text-context').addEventListener('click', () => {
+            textContextModal.style.display = 'flex';
+        });
+
+        document.getElementById('add-file-context').addEventListener('click', () => {
+            fileContextModal.style.display = 'flex';
+        });
+
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                textContextModal.style.display = 'none';
+                fileContextModal.style.display = 'none';
+            });
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === textContextModal) textContextModal.style.display = 'none';
+            if (e.target === fileContextModal) fileContextModal.style.display = 'none';
+        });
+
+        // Add text context
+        document.getElementById('submit-text-context').addEventListener('click', async() => {
+            const contextText = document.getElementById('context-text').value;
+            const apiKey = document.getElementById('api-key').value;
+
+            if (!contextText) {
+                showNotification('Please enter some context text', 'error');
+                return;
+            }
+
+            if (!apiKey) {
+                showNotification('Please enter your API key first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/add_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: new URLSearchParams({
+                        sessionId: sessionId,
+                        context: contextText
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification('Context added successfully!', 'success');
+                    textContextModal.style.display = 'none';
+                    document.getElementById('context-text').value = '';
+                } else {
+                    showNotification(`Error: ${data.error || 'Failed to add context'}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Upload file context
+        document.getElementById('submit-file-context').addEventListener('click', async() => {
+            const fileInput = document.getElementById('context-file');
+            const apiKey = document.getElementById('api-key').value;
+            const description = document.getElementById('file-description').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showNotification('Please select a file to upload', 'error');
+                return;
+            }
+
+            if (!apiKey) {
+                showNotification('Please enter your API key first', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('sessionId', sessionId);
+            if (description) formData.append('context', description);
+
+            try {
+                const response = await fetch('/api/upload_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification(`File "${data.filename}" uploaded successfully!`, 'success');
+                    fileContextModal.style.display = 'none';
+                    fileInput.value = '';
+                    document.getElementById('file-description').value = '';
+                } else {
+                    showNotification(`Error: ${data.error || 'Failed to upload file'}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
         // Form submission with question
         document.getElementById('submit-btn').addEventListener('click', async function() {
             const apiKey = document.getElementById('api-key').value;
@@ -547,13 +801,8 @@
             submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
 
-            const kernelAnswer = document.getElementById('kernel-answer');
-            const kernelInsights = document.getElementById('kernel-insights');
-            const kernelContext = document.getElementById('kernel-context');
-
             setOutputContent('kernel-answer', "> Processing your question...");
             setOutputContent('kernel-insights', "> Generating insights...");
-            setOutputContent('kernel-context', "> Retrieving context...");
 
             try {
                 const response = await fetch('/api/ask', {
@@ -563,28 +812,25 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        question: question
+                        question: question,
+                        sessionId: sessionId
                     })
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `API request failed: ${response.status}`);
-                }
-
                 const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || `API request failed: ${response.status}`);
+                }
 
                 // Update all output sections
                 setOutputContent('kernel-answer', data.answer || "No answer found");
                 setOutputContent('kernel-insights', data.insights || "No insights available");
-                setOutputContent('kernel-context', data.context ? data.context.join("\n\n") : "No context retrieved");
 
                 showNotification('Question answered successfully!', 'success');
             } catch (error) {
                 console.error('Error:', error);
                 setOutputContent('kernel-answer', `> Error: ${error.message}`);
                 setOutputContent('kernel-insights', "> Error analyzing results");
-                setOutputContent('kernel-context', "> Error retrieving context");
                 showNotification(`Error: ${error.message}`, 'error');
             } finally {
                 submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
@@ -603,10 +849,6 @@
             const element = document.getElementById(elementId);
             if (element) {
                 element.textContent = content;
-                // Add syntax highlighting for context
-                if (elementId === 'kernel-context') {
-                    element.innerHTML = highlightContext(content);
-                }
             }
         }
 
@@ -628,21 +870,6 @@
             }, 5000);
         }
 
-        // Function to highlight context
-        function highlightContext(text) {
-            return text
-                .split('\n\n')
-                .map(segment => {
-                    if (segment.startsWith('Q:')) {
-                        return `<div style="color: #4cc9f0; margin-bottom: 8px; font-weight: 500;">${segment}</div>`;
-                    } else if (segment.startsWith('A:')) {
-                        return `<div style="color: #f72585; margin-bottom: 15px;">${segment}</div>`;
-                    }
-                    return `<div>${segment}</div>`;
-                })
-                .join('');
-        }
-
         // Animation on scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -658,83 +885,155 @@
             observer.observe(el);
         });
 
-        // Background animation
+        // Neural Web Background Animation
         const canvas = document.createElement('canvas');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         document.getElementById('bg-canvas').appendChild(canvas);
         const ctx = canvas.getContext('2d');
 
-        // Particles animation
-        const particles = [];
-        const particleCount = 100;
+        const nodes = [];
+        const connections = [];
+        const nodeCount = 15;
+        const maxConnections = 3;
+        const maxDistance = 250;
+        const pulseSpeed = 0.02;
 
-        class Particle {
+        class Node {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-                this.color = `rgba(76, 201, 240, ${Math.random() * 0.5})`;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 4 + 3;
+                this.pulse = Math.random() * Math.PI * 2;
+                this.glow = Math.random() * 0.2 + 0.8;
             }
 
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
+                this.x += this.vx;
+                this.y += this.vy;
 
-                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
-                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                this.pulse += pulseSpeed;
+                if (this.pulse > Math.PI * 2) this.pulse -= Math.PI * 2;
+
+                this.glow = 0.8 + Math.sin(this.pulse) * 0.2;
             }
 
             draw() {
-                ctx.fillStyle = this.color;
+                // Draw glow effect
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.radius * 4
+                );
+                gradient.addColorStop(0, `rgba(255, 123, 51, ${this.glow * 0.6})`);
+                gradient.addColorStop(1, 'rgba(255, 123, 51, 0)');
+
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.radius * 4, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Draw the node
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff7b33';
                 ctx.fill();
             }
         }
 
-        function initParticles() {
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+        class Connection {
+            constructor(source, target) {
+                this.source = source;
+                this.target = target;
+                this.strength = 0.5 + Math.random() * 0.5;
+                this.pulse = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.pulse += pulseSpeed / 2;
+                if (this.pulse > Math.PI * 2) this.pulse -= Math.PI * 2;
+            }
+
+            draw() {
+                const dx = this.target.x - this.source.x;
+                const dy = this.target.y - this.source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > maxDistance) return;
+
+                const alpha = this.strength * (0.3 + Math.sin(this.pulse) * 0.1) * (1 - distance / maxDistance);
+
+                ctx.beginPath();
+                ctx.moveTo(this.source.x, this.source.y);
+                ctx.lineTo(this.target.x, this.target.y);
+                ctx.strokeStyle = `rgba(255, 123, 51, ${alpha})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
             }
         }
 
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Initialize neural network
+        function initNeuralNetwork() {
+            // Create nodes
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push(new Node());
+            }
 
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
+            // Create connections
+            for (let i = 0; i < nodes.length; i++) {
+                const source = nodes[i];
+                let connectionCount = 0;
 
-                // Connect close particles
-                for (let j = i; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
+                for (let j = 0; j < nodes.length; j++) {
+                    if (i === j) continue;
+
+                    const target = nodes[j];
+                    const dx = target.x - source.x;
+                    const dy = target.y - source.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    if (distance < 100) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(76, 201, 240, ${0.2 * (1 - distance / 100)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
+                    if (distance < maxDistance && connectionCount < maxConnections && Math.random() > 0.5) {
+                        connections.push(new Connection(source, target));
+                        connectionCount++;
                     }
                 }
             }
-
-            requestAnimationFrame(animateParticles);
         }
 
+        // Animation function
+        function animateNeuralNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw connections
+            ctx.globalCompositeOperation = 'lighter';
+            for (const connection of connections) {
+                connection.update();
+                connection.draw();
+            }
+
+            // Draw nodes
+            for (const node of nodes) {
+                node.update();
+                node.draw();
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+
+            requestAnimationFrame(animateNeuralNetwork);
+        }
+
+        // Window resize handler
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
 
-        initParticles();
-        animateParticles();
+        initNeuralNetwork();
+        animateNeuralNetwork();
     </script>
 </body>
 
