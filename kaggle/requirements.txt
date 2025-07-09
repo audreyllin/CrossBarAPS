@@ -13,4 +13,7 @@ accelerate
 bitsandbytes
 openai
 PyPDF2
+pdfplumber
 python-docx
+tiktoken
+werkzeug
