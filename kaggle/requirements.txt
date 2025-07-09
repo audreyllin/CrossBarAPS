@@ -12,3 +12,5 @@ pandas
 accelerate
 bitsandbytes
 openai
+PyPDF2
+python-docx
