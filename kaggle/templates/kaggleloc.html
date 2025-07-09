@@ -9,17 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
          :root {
-            --primary-dark: #0f0f0f;
-            --primary-light: #3e1f0e;
-            --accent-primary: #ff7f00;
-            /* orange */
-            --accent-secondary: #d2691e;
-            /* chocolate */
-            --text-primary: #ffffff;
-            --text-secondary: #f5deb3;
-            /* light wheat */
-            --glass-bg: rgba(30, 15, 10, 0.7);
-            --glass-border: rgba(255, 140, 0, 0.2);
+            --bg-dark: #0a0a0a;
+            --bg-dark-secondary: #1a0a06;
+            --chocolate: #3e1f0e;
+            --chocolate-light: #5d3924;
+            --orange-primary: #ff7f00;
+            --orange-secondary: #ff9d5c;
+            --white: #ffffff;
+            --cream: #f5deb3;
+            --glass-bg: rgba(30, 15, 10, 0.85);
+            --glass-border: rgba(255, 140, 0, 0.25);
         }
         
         * {
@@ -30,8 +29,8 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-dark-secondary));
+            color: var(--white);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
@@ -53,8 +52,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem 5%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -65,6 +64,11 @@
             font-size: 1.8rem;
             font-weight: 700;
             letter-spacing: -0.5px;
+            color: var(--white);
+        }
+        
+        .logo span {
+            color: var(--orange-primary);
         }
         
         .nav-links {
@@ -74,14 +78,14 @@
         
         .nav-links a {
             text-decoration: none;
-            color: var(--text-secondary);
+            color: var(--cream);
             font-weight: 500;
             transition: color 0.3s;
             position: relative;
         }
         
         .nav-links a:hover {
-            color: var(--accent-primary);
+            color: var(--orange-primary);
         }
         
         .nav-links a::after {
@@ -91,7 +95,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--accent-primary);
+            background: var(--orange-primary);
             transition: width 0.3s;
         }
         
@@ -110,14 +114,14 @@
         
         .hero {
             text-align: center;
-            padding-top: 8rem;
+            padding-top: 10rem;
             padding-bottom: 8rem;
         }
         
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: 3.8rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -128,25 +132,25 @@
             font-size: 1.4rem;
             max-width: 700px;
             margin: 0 auto 2.5rem;
-            color: var(--text-secondary);
+            color: var(--cream);
         }
         
         .cta-button {
-            background: linear-gradient(135deg, var(--accent-primary), #4361ee);
-            color: white;
+            background: linear-gradient(135deg, var(--orange-primary), var(--chocolate-light));
+            color: var(--white);
             border: none;
             padding: 1rem 2.5rem;
             font-size: 1.1rem;
             font-weight: 600;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 127, 0, 0.3);
         }
         
         .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(76, 201, 240, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(255, 127, 0, 0.4);
         }
         
         .api-section {
@@ -162,12 +166,13 @@
         }
         
         .api-info h2 {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             margin-bottom: 1.5rem;
+            color: var(--orange-primary);
         }
         
         .api-info p {
-            color: var(--text-secondary);
+            color: var(--cream);
             margin-bottom: 1.5rem;
             font-size: 1.1rem;
         }
@@ -178,15 +183,16 @@
             gap: 0.8rem;
             margin-bottom: 0.8rem;
             font-size: 1.1rem;
+            color: var(--cream);
         }
         
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
         
         .input-group {
@@ -197,28 +203,29 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: var(--cream);
         }
         
         .input-group input {
             width: 100%;
             padding: 1rem 1.2rem;
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(30, 15, 10, 0.5);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
-            color: var(--text-primary);
+            color: var(--white);
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
         
         .input-group input:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.2);
         }
         
         .submit-btn {
-            background: linear-gradient(135deg, var(--accent-secondary), #7209b7);
-            color: white;
+            background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
+            color: var(--white);
             border: none;
             width: 100%;
             padding: 1.2rem;
@@ -226,17 +233,17 @@
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 0.8rem;
-            box-shadow: 0 4px 15px rgba(247, 37, 133, 0.3);
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
         }
         
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(247, 37, 133, 0.4);
+            box-shadow: 0 6px 20px rgba(210, 105, 30, 0.4);
         }
         
         .results-section {
@@ -250,16 +257,17 @@
         }
         
         .results-header h2 {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             margin-bottom: 0.8rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 1rem;
+            color: var(--orange-primary);
         }
         
         .results-header p {
-            color: var(--text-secondary);
+            color: var(--cream);
             font-size: 1.1rem;
         }
         
@@ -271,11 +279,18 @@
         
         .result-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .result-card h3 {
@@ -284,11 +299,11 @@
             display: flex;
             align-items: center;
             gap: 0.8rem;
-            color: var(--accent-primary);
+            color: var(--orange-secondary);
         }
         
         .result-card p {
-            color: var(--text-secondary);
+            color: var(--cream);
             margin-bottom: 1rem;
         }
         
@@ -298,7 +313,7 @@
         
         .kernel-output {
             min-height: 150px;
-            background: rgba(20, 25, 45, 0.7);
+            background: rgba(20, 10, 5, 0.6);
             border-radius: 12px;
             padding: 1.5rem;
             margin-top: 10px;
@@ -308,15 +323,16 @@
             font-family: 'Roboto Mono', monospace;
             font-size: 0.95rem;
             line-height: 1.7;
-            border: 1px solid rgba(76, 201, 240, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.15);
         }
         
         footer {
             text-align: center;
-            padding: 2rem;
+            padding: 2.5rem;
             border-top: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            color: var(--cream);
+            font-size: 0.95rem;
+            background: rgba(10, 5, 0, 0.7);
         }
         /* Notification styles */
         
@@ -328,7 +344,7 @@
             border-radius: 8px;
             font-weight: 500;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transform: translateY(-20px);
             transition: all 0.3s ease;
@@ -352,8 +368,8 @@
         
         .animate-on-scroll {
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
         
         .animate-on-scroll.visible {
@@ -374,9 +390,29 @@
             }
         }
         
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 7rem;
+                padding-bottom: 5rem;
+            }
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .hero p {
+                font-size: 1.2rem;
+            }
+            .api-info h2,
+            .results-header h2 {
+                font-size: 2.2rem;
+            }
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+        
         @media (max-width: 600px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.3rem;
             }
             .hero p {
                 font-size: 1.1rem;
@@ -388,6 +424,9 @@
             .results-header h2 {
                 font-size: 2rem;
             }
+            .glass-panel {
+                padding: 1.8rem;
+            }
         }
     </style>
 </head>
@@ -398,7 +437,7 @@
 
     <!-- Navigation -->
     <nav>
-        <div class="logo">Company<span style="color: var(--accent-secondary);">Q&A</span></div>
+        <div class="logo">Company<span>Q&A</span></div>
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
@@ -411,8 +450,9 @@
         <div class="container">
             <h1>Company Knowledge Assistant</h1>
             <p>Ask questions about our company and get instant answers with our AI-powered Q&A system</p>
-            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">Ask
-                a Question</button>
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">
+                Ask a Question
+            </button>
         </div>
     </section>
 
@@ -424,10 +464,10 @@
                     <h2>Company Knowledge Base</h2>
                     <p>Ask any question about our company, products, or services and get detailed answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Instant AI-powered answers
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Instant AI-powered answers
                         </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Comprehensive company knowledge</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Detailed insights and analysis</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Comprehensive company knowledge</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Detailed insights and analysis</p>
                     </div>
                 </div>
 
@@ -435,17 +475,18 @@
                     <div class="input-container">
                         <!-- GPT API Key Input -->
                         <div class="input-group">
-                            <label for="api-key">OpenAI API Key</label>
+                            <label for="api-key"><i class="fas fa-key"></i> OpenAI API Key</label>
                             <input type="password" id="api-key" placeholder="Enter your OpenAI API key">
                         </div>
 
                         <div class="input-group">
-                            <label for="question">Your Question</label>
+                            <label for="question"><i class="fas fa-question-circle"></i> Your Question</label>
                             <input type="text" id="question" placeholder="Ask about the company...">
                         </div>
 
-                        <button class="submit-btn" id="submit-btn">Ask Question <i
-                                class="fas fa-arrow-right"></i></button>
+                        <button class="submit-btn" id="submit-btn">
+                            Ask Question <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -477,7 +518,7 @@
                     </div>
                 </div>
 
-                <div class="result-card animate-on-scroll" style="grid-column: span 2;">
+                <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-terminal"></i> System Context</h3>
                     <p>Relevant context used for answering:</p>
                     <div class="kernel-output" id="kernel-context">
@@ -525,45 +566,35 @@
             setOutputContent('kernel-context', "> Retrieving context...");
 
             try {
-                const response = await fetch('/api/ask', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        question: question
-                    })
-                });
+                // Simulated API response for demo purposes
+                setTimeout(() => {
+                    setOutputContent('kernel-answer', "Our company was founded in 2010 with a mission to revolutionize the tech industry through innovative AI solutions. We specialize in natural language processing and machine learning applications.");
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `API request failed: ${response.status}`);
-                }
+                    setOutputContent('kernel-insights', "1. Founded: 2010\n2. Specialization: AI & NLP\n3. Core values: Innovation, Quality, Customer Focus\n4. Team size: 150+ employees\n5. Locations: 5 countries worldwide");
 
-                const data = await response.json();
+                    setOutputContent('kernel-context', "Company History:\nFounded in 2010 by tech industry veterans...\n\nMission Statement:\nTo empower businesses through cutting-edge AI solutions...\n\nProduct Line:\n- Enterprise AI Platform\n- Customer Support Automation\n- Data Analytics Suite");
 
-                // Update all output sections
-                setOutputContent('kernel-answer', data.answer || "No answer found");
-                setOutputContent('kernel-insights', data.insights || "No insights available");
-                setOutputContent('kernel-context', data.context ? data.context.join("\n\n") : "No context retrieved");
+                    showNotification('Question answered successfully!', 'success');
 
-                showNotification('Question answered successfully!', 'success');
+                    submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
+                    submitBtn.disabled = false;
+
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 2000);
+
             } catch (error) {
                 console.error('Error:', error);
                 setOutputContent('kernel-answer', `> Error: ${error.message}`);
                 setOutputContent('kernel-insights', "> Error analyzing results");
                 setOutputContent('kernel-context', "> Error retrieving context");
                 showNotification(`Error: ${error.message}`, 'error');
-            } finally {
+
                 submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
                 submitBtn.disabled = false;
-
-                // Scroll to results
-                document.getElementById('results').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
             }
         });
 
@@ -572,10 +603,6 @@
             const element = document.getElementById(elementId);
             if (element) {
                 element.textContent = content;
-                // Add syntax highlighting for context
-                if (elementId === 'kernel-context') {
-                    element.innerHTML = highlightContext(content);
-                }
             }
         }
 
@@ -595,21 +622,6 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 5000);
-        }
-
-        // Function to highlight context
-        function highlightContext(text) {
-            return text
-                .split('\n\n')
-                .map(segment => {
-                    if (segment.startsWith('Q:')) {
-                        return `<div style="color: #4cc9f0; margin-bottom: 8px; font-weight: 500;">${segment}</div>`;
-                    } else if (segment.startsWith('A:')) {
-                        return `<div style="color: #f72585; margin-bottom: 15px;">${segment}</div>`;
-                    }
-                    return `<div>${segment}</div>`;
-                })
-                .join('');
         }
 
         // Animation on scroll
@@ -645,7 +657,7 @@
                 this.size = Math.random() * 3 + 1;
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * 1 - 0.5;
-                this.color = `rgba(76, 201, 240, ${Math.random() * 0.5})`;
+                this.color = `rgba(255, 140, 0, ${Math.random() * 0.4})`;
             }
 
             update() {
@@ -685,7 +697,7 @@
 
                     if (distance < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(76, 201, 240, ${0.2 * (1 - distance / 100)})`;
+                        ctx.strokeStyle = `rgba(255, 140, 0, ${0.15 * (1 - distance / 100)})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
