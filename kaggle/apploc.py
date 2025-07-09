@@ -87,6 +87,46 @@ def trim_conversation_history(history, max_tokens=3000):
     return trimmed_history
 
 
+def get_relevant_contexts(question, session_contexts):
+    """Find contexts most relevant to the current question"""
+    relevant = []
+    if not question or not session_contexts:
+        return relevant
+
+    # Preprocess question
+    q_lower = question.lower()
+    q_keywords = set(q_lower.split())
+
+    for ctx in session_contexts:
+        # Skip contexts without summaries
+        if "summary" not in ctx:
+            continue
+
+        # Create combined content string for matching
+        content = (ctx.get("summary", "") + " " + ctx.get("content", "")).lower()
+
+        # Simple keyword matching
+        if any(keyword in content for keyword in q_keywords):
+            relevant.append(ctx)
+
+    return relevant
+
+
+def build_context_summary(contexts):
+    """Create a concise summary of all relevant contexts"""
+    if not contexts:
+        return ""
+
+    context_str = "Additional context provided by the user:\n"
+    for i, ctx in enumerate(contexts, 1):
+        source = (
+            ctx.get("filename", "user input") if "filename" in ctx else "user input"
+        )
+        summary = ctx.get("summary", "No summary available")
+        context_str += f"{i}. From {source}: {summary}\n"
+    return context_str
+
+
 def create_new_session():
     """Create a new session with initial system prompt"""
     session_id = str(uuid.uuid4())
@@ -107,6 +147,7 @@ def create_new_session():
         "created_at": time.time(),
         "last_accessed": time.time(),
         "persistent_memory": {},
+        "context_embedding": None,  # Placeholder for future embedding-based matching
     }
     save_session(session_id, session)
     return session_id, session
@@ -285,6 +326,14 @@ def handle_question():
         if memory_context:
             messages.append({"role": "system", "content": memory_context})
 
+        # Get relevant session contexts
+        relevant_contexts = get_relevant_contexts(question, session.get("contexts", []))
+        context_summary = build_context_summary(relevant_contexts)
+
+        # Add context summary as a single system message
+        if context_summary:
+            messages.append({"role": "system", "content": context_summary})
+
         # Add RAG context as a system message
         if rag_context:
             messages.append(
@@ -294,18 +343,14 @@ def handle_question():
                 }
             )
 
-        # Add session contexts
-        for ctx in session.get("contexts", []):
-            if "summary" in ctx:
-                messages.append(
-                    {
-                        "role": "system",
-                        "content": f"Context from uploaded document '{ctx['filename']}': {ctx['summary']}",
-                    }
-                )
-
         # Add user's question
         messages.append({"role": "user", "content": question})
+
+        # Log messages for debugging
+        logging.info(f"Messages being sent to OpenAI: {json.dumps(messages, indent=2)}")
+        logging.info(
+            f"Total tokens: {sum(count_tokens(m['content']) for m in messages)}"
+        )
 
         # Trim history to avoid exceeding token limits
         messages = trim_conversation_history(messages)
@@ -322,6 +367,7 @@ def handle_question():
         )
 
         answer = chat.choices[0].message.content.strip()
+        logging.info(f"Received answer: {answer}")
 
         # Generate insights
         insight_prompt = (
@@ -451,11 +497,11 @@ def add_context():
                     session_id, session = create_new_session()
                 sessions[session_id] = session
 
-            # Generate summary for context
+            # Generate more focused summary for context
             client = OpenAI(api_key=api_key)
             summary_prompt = (
-                "Create a concise summary of the following text that captures the key information "
-                "for long-term memory storage. Focus on factual information and core concepts:\n\n"
+                "Create a concise summary (1-2 sentences) of the following text focusing on key facts "
+                "that would be relevant for answering future questions:\n\n"
                 f"{context_text}"
             )
 
@@ -464,14 +510,15 @@ def add_context():
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a knowledge distillation system.",
+                        "content": "You are a knowledge distillation system. Extract only the most important information.",
                     },
                     {"role": "user", "content": summary_prompt},
                 ],
-                max_tokens=200,
+                max_tokens=100,  # More concise summary
                 temperature=0.1,
             )
             summary = summary_response.choices[0].message.content.strip()
+            logging.info(f"Generated context summary: {summary}")
 
             # Add context to session
             context_id = str(uuid.uuid4())
@@ -489,7 +536,7 @@ def add_context():
             session["history"].append(
                 {
                     "role": "system",
-                    "content": f"Additional context provided by user: {summary}",
+                    "content": f"User provided additional context: {summary}",
                 }
             )
 
@@ -533,13 +580,13 @@ def upload_context():
         summary = ""
 
         if extracted_text:
-            # Generate summary for the document
+            # Generate more focused summary for the document
             try:
                 client = OpenAI(api_key=api_key)
                 summary_prompt = (
-                    "Create a concise summary of the following document that captures the key information "
-                    "for long-term memory storage. Focus on factual information and core concepts:\n\n"
-                    f"{extracted_text[:10000]}"  # Limit to first 10k characters
+                    "Create a concise summary (2-3 sentences) of the following document "
+                    "focusing on key information that would be relevant for answering questions:\n\n"
+                    f"{extracted_text[:5000]}"  # Use less text for summary
                 )
 
                 response = client.chat.completions.create(
@@ -547,14 +594,15 @@ def upload_context():
                     messages=[
                         {
                             "role": "system",
-                            "content": "You are a document summarization system.",
+                            "content": "You are a document summarization system. Extract only the most important information.",
                         },
                         {"role": "user", "content": summary_prompt},
                     ],
-                    max_tokens=300,
+                    max_tokens=150,  # More concise summary
                     temperature=0.2,
                 )
                 summary = response.choices[0].message.content.strip()
+                logging.info(f"Generated document summary: {summary}")
             except Exception as e:
                 logging.error(f"Summary generation failed: {str(e)}")
                 summary = "Document processed but summary failed"
