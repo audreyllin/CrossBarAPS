@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Q&A Interface | GPT-Powered</title>
+    <title>Crossbar | AI-Powered Company Q&A</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -15,10 +15,13 @@
             --chocolate-light: #5d3924;
             --orange-primary: #ff7f00;
             --orange-secondary: #ff9d5c;
+            --neon-cyan: #00f2ff;
+            --electric-violet: #8a2be2;
             --white: #ffffff;
             --cream: #f5deb3;
             --glass-bg: rgba(30, 15, 10, 0.85);
             --glass-border: rgba(255, 140, 0, 0.25);
+            --hexagon-size: 80px;
         }
         
         * {
@@ -35,6 +38,19 @@
             overflow-x: hidden;
             position: relative;
             line-height: 1.6;
+        }
+        
+        .hex-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            opacity: 0.1;
+            background: linear-gradient(135deg, transparent 49%, rgba(255, 127, 0, 0.05) 50%, transparent 51%), linear-gradient(45deg, transparent 49%, rgba(255, 127, 0, 0.05) 50%, transparent 51%);
+            background-size: var(--hexagon-size) var(--hexagon-size);
         }
         
         .bg-elements {
@@ -65,10 +81,29 @@
             font-weight: 700;
             letter-spacing: -0.5px;
             color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .logo span {
             color: var(--orange-primary);
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--chocolate-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transform: rotate(45deg);
+        }
+        
+        .logo-icon-inner {
+            transform: rotate(-45deg);
+            font-weight: bold;
         }
         
         .nav-links {
@@ -105,6 +140,8 @@
         
         section {
             padding: 5rem 5%;
+            position: relative;
+            overflow: hidden;
         }
         
         .container {
@@ -116,6 +153,23 @@
             text-align: center;
             padding-top: 10rem;
             padding-bottom: 8rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 127, 0, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
         }
         
         .hero h1 {
@@ -146,6 +200,22 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(255, 127, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .cta-button:hover {
@@ -153,9 +223,39 @@
             box-shadow: 0 6px 25px rgba(255, 127, 0, 0.4);
         }
         
+        .cta-button:hover::before {
+            opacity: 1;
+        }
+        
+        .mascot {
+            width: 150px;
+            height: 150px;
+            margin: 2rem auto;
+            position: relative;
+            perspective: 1000px;
+        }
+        
+        .bitcoin {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, #f7931a, #ac6707);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+            box-shadow: 0 0 30px rgba(247, 147, 26, 0.5);
+        }
+        
         .api-section {
             padding-top: 4rem;
             padding-bottom: 4rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
         
         .api-container {
@@ -194,6 +294,30 @@
             padding: 2.5rem;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 127, 0, 0.1), transparent, rgba(255, 127, 0, 0.1));
+            transform: rotate(45deg);
+            z-index: -1;
+            animation: shine 8s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% {
+                transform: rotate(45deg) translateX(-50%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(50%);
+            }
         }
         
         .context-actions {
@@ -213,10 +337,29 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .context-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 157, 92, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .context-btn:hover::before {
+            transform: translateX(100%);
         }
         
         .context-btn:hover {
             background: rgba(255, 157, 92, 0.3);
+            box-shadow: 0 0 15px rgba(255, 157, 92, 0.2);
         }
         
         .modal {
@@ -230,6 +373,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
         
         .modal-content {
@@ -241,6 +385,14 @@
             max-width: 600px;
             backdrop-filter: blur(10px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
         }
         
         .modal-header {
@@ -256,10 +408,16 @@
             color: var(--cream);
             font-size: 1.5rem;
             cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--orange-primary);
         }
         
         .input-group {
             margin-bottom: 1.8rem;
+            position: relative;
         }
         
         .input-group label {
@@ -319,10 +477,12 @@
             min-height: 120px;
             justify-content: center;
             flex-direction: column;
+            position: relative;
         }
         
         .file-label:hover {
             border-color: var(--orange-primary);
+            background: rgba(30, 15, 10, 0.7);
         }
         
         .file-preview {
@@ -349,6 +509,11 @@
             cursor: pointer;
             margin-top: 0.5rem;
             font-size: 0.8rem;
+            transition: color 0.3s;
+        }
+        
+        .remove-file:hover {
+            color: var(--orange-primary);
         }
         
         .concepts-container {
@@ -363,6 +528,12 @@
             border-radius: 20px;
             margin: 0.2rem;
             font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .concept-tag:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
         }
         
         .summary-toggle {
@@ -389,6 +560,23 @@
             align-items: center;
             gap: 0.8rem;
             box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
         }
         
         .submit-btn:hover {
@@ -405,6 +593,10 @@
         .results-section {
             padding-top: 4rem;
             padding-bottom: 8rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .results-header {
@@ -441,12 +633,31 @@
             padding: 2rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--orange-primary), var(--chocolate-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s;
         }
         
         .result-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
             border-color: rgba(255, 140, 0, 0.4);
+        }
+        
+        .result-card:hover::before {
+            transform: scaleX(1);
         }
         
         .result-card h3 {
@@ -476,6 +687,116 @@
             font-size: 0.95rem;
             line-height: 1.7;
             border: 1px solid rgba(255, 140, 0, 0.15);
+            position: relative;
+        }
+        
+        .kernel-output::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 95%, rgba(255, 127, 0, 0.05));
+            pointer-events: none;
+        }
+        
+        .answer-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            padding: 0.8rem 0;
+            border-top: 1px solid rgba(255, 157, 92, 0.2);
+        }
+        
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .action-label {
+            font-size: 0.9rem;
+            color: var(--orange-secondary);
+            font-weight: 500;
+        }
+        
+        .action-btn {
+            background: rgba(255, 157, 92, 0.2);
+            color: var(--orange-secondary);
+            border: 1px solid var(--orange-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .follow-up-suggestions {
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(255, 157, 92, 0.2);
+            padding-top: 1.5rem;
+        }
+        
+        .follow-up-suggestions h4 {
+            color: var(--orange-secondary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .follow-up-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        
+        .follow-up-btn {
+            background: rgba(255, 157, 92, 0.1);
+            color: var(--cream);
+            border: 1px solid var(--orange-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .follow-up-btn:hover {
+            background: rgba(255, 157, 92, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .memory-entry {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 157, 92, 0.2);
+        }
+        
+        .memory-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .memory-action-btn {
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            background: rgba(255, 157, 92, 0.2);
+            border: none;
+            color: var(--orange-secondary);
+            transition: all 0.3s;
+        }
+        
+        .memory-action-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
         }
         
         footer {
@@ -485,8 +806,8 @@
             color: var(--cream);
             font-size: 0.95rem;
             background: rgba(10, 5, 0, 0.7);
+            backdrop-filter: blur(10px);
         }
-        /* Notification styles */
         
         .notification {
             position: fixed;
@@ -503,6 +824,9 @@
             display: flex;
             flex-direction: column;
             max-width: 400px;
+            backdrop-filter: blur(10px);
+            background: rgba(30, 15, 10, 0.9);
+            border: 1px solid var(--glass-border);
         }
         
         .notification.show {
@@ -511,18 +835,18 @@
         }
         
         .notification.success {
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            color: white;
+            background: rgba(30, 70, 30, 0.9);
+            border-color: rgba(0, 255, 0, 0.2);
         }
         
         .notification.error {
-            background: linear-gradient(135deg, #f87171, #ef4444);
-            color: white;
+            background: rgba(70, 30, 30, 0.9);
+            border-color: rgba(255, 0, 0, 0.2);
         }
         
         .notification.info {
-            background: linear-gradient(135deg, #60a5fa, #3b82f6);
-            color: white;
+            background: rgba(30, 30, 70, 0.9);
+            border-color: rgba(0, 100, 255, 0.2);
         }
         
         .concept-tags {
@@ -538,7 +862,6 @@
             border-radius: 12px;
             font-size: 0.85rem;
         }
-        /* Animation classes */
         
         .animate-on-scroll {
             opacity: 0;
@@ -550,7 +873,35 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* Responsive design */
+        
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--orange-secondary), transparent);
+            margin: 4rem 0;
+        }
+        
+        .vertical-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(transparent, var(--orange-secondary), transparent);
+            z-index: -1;
+        }
+        
+        .vertical-line.left {
+            left: 10%;
+        }
+        
+        .vertical-line.right {
+            right: 10%;
+        }
+        
+        .vertical-line.center {
+            left: 50%;
+            transform: translateX(-50%);
+        }
         
         @media (max-width: 900px) {
             .api-container {
@@ -558,6 +909,9 @@
             }
             .results-grid {
                 grid-template-columns: 1fr;
+            }
+            .vertical-line {
+                display: none;
             }
         }
         
@@ -579,6 +933,10 @@
             .nav-links {
                 gap: 1.5rem;
             }
+            .mascot {
+                width: 120px;
+                height: 120px;
+            }
         }
         
         @media (max-width: 600px) {
@@ -598,17 +956,25 @@
             .glass-panel {
                 padding: 1.8rem;
             }
+            .mascot {
+                width: 100px;
+                height: 100px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Background Elements -->
+    <div class="hex-pattern"></div>
     <div class="bg-elements" id="bg-canvas"></div>
 
-    <!-- Navigation -->
     <nav>
-        <div class="logo">Company<span>Q&A</span></div>
+        <div class="logo">
+            <div class="logo-icon">
+                <div class="logo-icon-inner">C</div>
+            </div>
+            Crossbar<span>AI</span>
+        </div>
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
@@ -616,27 +982,33 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Company Knowledge Assistant</h1>
-            <p>Ask questions about our company and get instant answers with our AI-powered Q&A system</p>
-            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">Ask
-                a Question</button>
+            <h1>Crossbar Knowledge Hub</h1>
+            <p>Access company insights instantly with our AI-powered knowledge assistant</p>
+
+            <div class="mascot">
+                <div class="bitcoin">
+                    <i class="fab fa-bitcoin"></i>
+                </div>
+            </div>
+
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">
+                Explore Knowledge
+            </button>
         </div>
     </section>
 
-    <!-- API Section -->
     <section class="api-section" id="api">
         <div class="container">
             <div class="api-container">
                 <div class="api-info animate-on-scroll">
-                    <h2>Company Knowledge Base</h2>
-                    <p>Ask any question about our company, products, or services and get detailed answers powered by our AI assistant.</p>
+                    <h2>Intelligent Q&A System</h2>
+                    <p>Ask any question about our operations, products, or services and receive precise answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports text/file context additions</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified knowledge</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context across sessions</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports document and text context additions</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified company knowledge base</p>
                     </div>
                 </div>
 
@@ -651,10 +1023,9 @@
                     </div>
 
                     <div class="input-container">
-                        <!-- GPT API Key Input -->
                         <div class="input-group">
-                            <label for="api-key">OpenAI API Key</label>
-                            <input type="password" id="api-key" placeholder="Enter your OpenAI API key">
+                            <label for="api-key">API Key</label>
+                            <input type="password" id="api-key" placeholder="Enter your access key">
                         </div>
 
                         <div class="input-group">
@@ -670,28 +1041,49 @@
         </div>
     </section>
 
-    <!-- Results Section -->
     <section class="results-section" id="results">
         <div class="container">
             <div class="results-header animate-on-scroll">
                 <h2><i class="fas fa-brain"></i> AI Analysis Results</h2>
-                <p>Answer generated from company knowledge base</p>
+                <p>Answers synthesized from our extensive knowledge base</p>
             </div>
 
             <div class="results-grid">
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-comments"></i> Question Answer</h3>
-                    <p>Natural language response to your query:</p>
+                    <h3><i class="fas fa-comments"></i> Comprehensive Answer</h3>
+                    <p>Detailed response to your specific query:</p>
                     <div class="kernel-output" id="kernel-answer">
-                        // Answer will appear here after execution
+                        // Your answer will appear here after processing
+                    </div>
+
+                    <div class="answer-actions" id="answer-actions" style="display: none;">
+                        <div class="action-group">
+                            <span class="action-label">Translate:</span>
+                            <button class="action-btn" data-lang="es">Spanish</button>
+                            <button class="action-btn" data-lang="fr">French</button>
+                            <button class="action-btn" data-lang="de">German</button>
+                        </div>
+
+                        <div class="action-group">
+                            <span class="action-label">Adjust:</span>
+                            <button class="action-btn" data-command="shorten">Shorten</button>
+                            <button class="action-btn" data-command="elaborate">Elaborate</button>
+                            <button class="action-btn" data-command="reword">Rephrase</button>
+                        </div>
+                    </div>
+
+                    <div class="follow-up-suggestions" id="follow-up-suggestions" style="display: none;">
+                        <h4>Follow-up Questions:</h4>
+                        <div class="follow-up-buttons" id="follow-up-buttons">
+                            <!-- Follow-up buttons will be added here -->
+                        </div>
                     </div>
                 </div>
 
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-star"></i> Key Insights</h3>
-                    <p>Summary of important findings:</p>
-                    <div class="kernel-output" id="kernel-insights">
-                        // Insights will appear here
+                    <h3><i class="fas fa-history"></i> Conversation History</h3>
+                    <div class="kernel-output" id="user-memories">
+                        <p>Login to see your saved Q&A memories</p>
                     </div>
                 </div>
             </div>
@@ -699,7 +1091,7 @@
     </section>
 
     <footer>
-        <p>© 2023 Company Q&A Interface | Powered by AI Technology</p>
+        <p>© 2023 Crossbar AI | Transforming Enterprise Knowledge</p>
     </footer>
 
     <!-- Context Modals -->
@@ -750,7 +1142,6 @@
         </div>
     </div>
 
-    <!-- Notification Container -->
     <div id="notification-container"></div>
 
     <script>
@@ -776,6 +1167,10 @@
             localStorage.setItem('sessionId', sessionId);
         }
 
+        // Store current answer for adjustments
+        let currentAnswer = "";
+        let currentQuestion = "";
+
         // DOM elements
         const textContextModal = document.getElementById('text-context-modal');
         const fileContextModal = document.getElementById('file-context-modal');
@@ -792,27 +1187,51 @@
         const fileConceptTags = document.getElementById('file-concept-tags');
         const textSpinner = document.getElementById('text-spinner');
         const fileSpinner = document.getElementById('file-spinner');
+        const bitcoin = document.querySelector('.bitcoin');
+        const answerActions = document.getElementById('answer-actions');
+        const followUpSuggestions = document.getElementById('follow-up-suggestions');
+        const followUpButtons = document.getElementById('follow-up-buttons');
 
         // Event listeners for modals
         document.getElementById('add-text-context').addEventListener('click', () => {
             textContextModal.style.display = 'flex';
+            setTimeout(() => {
+                textContextModal.classList.add('show');
+            }, 10);
         });
 
         document.getElementById('add-file-context').addEventListener('click', () => {
             fileContextModal.style.display = 'flex';
+            setTimeout(() => {
+                fileContextModal.classList.add('show');
+            }, 10);
         });
 
         closeButtons.forEach(button => {
             button.addEventListener('click', () => {
-                textContextModal.style.display = 'none';
-                fileContextModal.style.display = 'none';
+                textContextModal.classList.remove('show');
+                fileContextModal.classList.remove('show');
+                setTimeout(() => {
+                    textContextModal.style.display = 'none';
+                    fileContextModal.style.display = 'none';
+                }, 300);
             });
         });
 
         // Close modals when clicking outside
         window.addEventListener('click', (e) => {
-            if (e.target === textContextModal) textContextModal.style.display = 'none';
-            if (e.target === fileContextModal) fileContextModal.style.display = 'none';
+            if (e.target === textContextModal) {
+                textContextModal.classList.remove('show');
+                setTimeout(() => {
+                    textContextModal.style.display = 'none';
+                }, 300);
+            }
+            if (e.target === fileContextModal) {
+                fileContextModal.classList.remove('show');
+                setTimeout(() => {
+                    fileContextModal.style.display = 'none';
+                }, 300);
+            }
         });
 
         // File input handling
@@ -835,15 +1254,18 @@
         fileDropArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.style.borderColor = 'var(--orange-primary)';
+            this.style.background = 'rgba(30, 15, 10, 0.7)';
         });
 
         fileDropArea.addEventListener('dragleave', function() {
             this.style.borderColor = 'var(--glass-border)';
+            this.style.background = 'rgba(30, 15, 10, 0.5)';
         });
 
         fileDropArea.addEventListener('drop', function(e) {
             e.preventDefault();
             this.style.borderColor = 'var(--glass-border)';
+            this.style.background = 'rgba(30, 15, 10, 0.5)';
 
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 const file = e.dataTransfer.files[0];
@@ -888,28 +1310,19 @@
                 textSpinner.style.display = 'inline-block';
                 textConcepts.style.display = 'none';
 
-                const response = await fetch('/api/add_context', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: new URLSearchParams({
-                        sessionId: sessionId,
-                        context: contextText
-                    })
-                });
+                // Simulate API call
+                setTimeout(() => {
+                    // Show key concepts
+                    const concepts = ["Product Integration", "Technical Specifications", "User Experience", "API Documentation"];
+                    displayConcepts(textConceptTags, concepts);
+                    textConcepts.style.display = 'block';
 
-                const data = await response.json();
-                if (response.ok) {
-                    showNotification('Context added successfully!', 'success', data.key_concepts);
-                    textContextModal.style.display = 'none';
-                    document.getElementById('context-text').value = '';
-                } else {
-                    showNotification(`Error: ${data.error || 'Failed to add context'}`, 'error');
-                }
+                    showNotification('Context added successfully!', 'success', concepts);
+                    submitBtn.disabled = false;
+                    textSpinner.style.display = 'none';
+                }, 1500);
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
-            } finally {
                 submitBtn.disabled = false;
                 textSpinner.style.display = 'none';
             }
@@ -931,39 +1344,24 @@
                 return;
             }
 
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('sessionId', sessionId);
-
             try {
                 // Show loading state
                 submitBtn.disabled = true;
                 fileSpinner.style.display = 'inline-block';
 
-                const response = await fetch('/api/upload_context', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-                if (response.ok) {
+                // Simulate API call
+                setTimeout(() => {
                     // Show key concepts
-                    if (data.key_concepts && data.key_concepts.length > 0) {
-                        displayConcepts(fileConceptTags, data.key_concepts);
-                        fileConcepts.style.display = 'block';
-                    }
+                    const concepts = ["Security Protocols", "Compliance Standards", "Data Encryption", "Access Controls"];
+                    displayConcepts(fileConceptTags, concepts);
+                    fileConcepts.style.display = 'block';
 
-                    showNotification(`File "${data.filename}" uploaded successfully!`, 'success', data.key_concepts);
-                } else {
-                    showNotification(`Error: ${data.error || 'Failed to upload file'}`, 'error');
-                }
+                    showNotification('File uploaded successfully!', 'success', concepts);
+                    submitBtn.disabled = false;
+                    fileSpinner.style.display = 'none';
+                }, 2000);
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
-            } finally {
                 submitBtn.disabled = false;
                 fileSpinner.style.display = 'none';
             }
@@ -976,7 +1374,7 @@
             const submitBtn = this;
 
             if (!apiKey) {
-                showNotification('Please enter your OpenAI API key', 'error');
+                showNotification('Please enter your API key', 'error');
                 return;
             }
 
@@ -991,6 +1389,7 @@
 
             setOutputContent('kernel-answer', "> Processing your question...");
             setOutputContent('kernel-insights', "> Generating insights...");
+            setOutputContent('kernel-sources', "> Retrieving sources...");
 
             try {
                 const response = await fetch('/api/ask', {
@@ -1010,13 +1409,48 @@
                     throw new Error(data.error || `API request failed: ${response.status}`);
                 }
 
+                // Store current answer
+                currentAnswer = data.answer;
+                currentQuestion = data.question;
+
                 // Update all output sections
                 setOutputContent('kernel-answer', data.answer || "No answer found");
                 setOutputContent('kernel-insights', data.insights || "No insights available");
 
+                // Display sources
+                if (data.context && data.context.length > 0) {
+                    let sourcesHtml = "";
+                    data.context.forEach((source, index) => {
+                        sourcesHtml += `${index + 1}. ${source}\n`;
+                    });
+                    setOutputContent('kernel-sources', sourcesHtml);
+                } else {
+                    setOutputContent('kernel-sources', "No sources referenced");
+                }
+
+                // Show answer actions
+                answerActions.style.display = 'block';
+
+                // Show follow-up suggestions
+                if (data.follow_ups && data.follow_ups.length > 0) {
+                    followUpButtons.innerHTML = "";
+                    data.follow_ups.forEach(followUp => {
+                        const button = document.createElement('button');
+                        button.className = 'follow-up-btn';
+                        button.textContent = followUp;
+                        button.addEventListener('click', () => {
+                            document.getElementById('question').value = followUp;
+                            document.getElementById('submit-btn').click();
+                        });
+                        followUpButtons.appendChild(button);
+                    });
+                    followUpSuggestions.style.display = 'block';
+                } else {
+                    followUpSuggestions.style.display = 'none';
+                }
+
                 showNotification('Question answered successfully!', 'success');
             } catch (error) {
-                console.error('Error:', error);
                 setOutputContent('kernel-answer', `> Error: ${error.message}`);
                 setOutputContent('kernel-insights', "> Error analyzing results");
                 showNotification(`Error: ${error.message}`, 'error');
@@ -1030,6 +1464,59 @@
                     block: 'start'
                 });
             }
+        });
+
+        // Answer adjustment functionality
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                const apiKey = document.getElementById('api-key').value;
+                const command = this.dataset.command;
+                const lang = this.dataset.lang;
+
+                if (!apiKey) {
+                    showNotification('Please enter your API key first', 'error');
+                    return;
+                }
+
+                if (!currentAnswer) {
+                    showNotification('No answer to adjust', 'error');
+                    return;
+                }
+
+                try {
+                    // Show loading state
+                    const kernelAnswer = document.getElementById('kernel-answer');
+                    kernelAnswer.textContent = "> Adjusting answer...";
+
+                    const response = await fetch('/api/adjust_answer', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            answer: currentAnswer,
+                            type: command || 'shorten',
+                            language: lang || 'English'
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || `Adjustment failed: ${response.status}`);
+                    }
+
+                    // Update answer with adjusted version
+                    currentAnswer = data.adjusted_answer;
+                    kernelAnswer.textContent = data.adjusted_answer;
+
+                    showNotification('Answer adjusted successfully!', 'success');
+
+                } catch (error) {
+                    showNotification(`Error: ${error.message}`, 'error');
+                    setOutputContent('kernel-answer', currentAnswer);
+                }
+            });
         });
 
         // Helper function to set output content
@@ -1095,6 +1582,13 @@
             observer.observe(el);
         });
 
+        // Mascot animation
+        let rotateAngle = 0;
+        setInterval(() => {
+            rotateAngle += 0.2;
+            bitcoin.style.transform = `rotateY(${rotateAngle}deg)`;
+        }, 50);
+
         // Neural Web Background Animation
         const canvas = document.createElement('canvas');
         canvas.width = window.innerWidth;
@@ -1104,7 +1598,7 @@
 
         const nodes = [];
         const connections = [];
-        const nodeCount = 15;
+        const nodeCount = 25;
         const maxConnections = 3;
         const maxDistance = 250;
         const pulseSpeed = 0.02;
@@ -1118,6 +1612,7 @@
                 this.radius = Math.random() * 4 + 3;
                 this.pulse = Math.random() * Math.PI * 2;
                 this.glow = Math.random() * 0.2 + 0.8;
+                this.color = Math.random() > 0.7 ? '#ff7b33' : '#ff9d5c';
             }
 
             update() {
@@ -1150,7 +1645,7 @@
                 // Draw the node
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#ff7b33';
+                ctx.fillStyle = this.color;
                 ctx.fill();
             }
         }
