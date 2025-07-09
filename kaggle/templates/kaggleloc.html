@@ -226,28 +226,85 @@
         .cta-button:hover::before {
             opacity: 1;
         }
+        /* New crypto mascot container */
         
-        .mascot {
-            width: 150px;
-            height: 150px;
+        .crypto-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
             margin: 2rem auto;
-            position: relative;
-            perspective: 1000px;
+            max-width: 800px;
         }
         
-        .bitcoin {
+        .mascot {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            perspective: 1000px;
+            transition: transform 0.3s ease;
+        }
+        
+        .mascot:hover {
+            transform: scale(1.1);
+        }
+        
+        .mascot:active {
+            transform: scale(0.95);
+        }
+        
+        .crypto {
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 30% 30%, #f7931a, #ac6707);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: white;
             transform-style: preserve-3d;
-            transition: transform 1s ease;
-            box-shadow: 0 0 30px rgba(247, 147, 26, 0.5);
+            transition: transform 0.5s ease;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        /* Different colors for each crypto */
+        
+        .bitcoin {
+            background: radial-gradient(circle at 30% 30%, #f7931a, #ac6707);
+        }
+        
+        .ethereum {
+            background: radial-gradient(circle at 30% 30%, #627eea, #2a3c8f);
+        }
+        
+        .solana {
+            background: radial-gradient(circle at 30% 30%, #00ffa3, #03e1ff);
+        }
+        
+        .crypto.flipping {
+            animation: flip 0.8s linear infinite;
+        }
+        
+        .crypto.flipping-fast {
+            animation: flip 0.3s linear infinite;
+        }
+        
+        @keyframes flip {
+            0% {
+                transform: rotateY(0deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+        
+        .crypto-name {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+            color: var(--cream);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
         }
         
         .api-section {
@@ -926,16 +983,17 @@
             .hero p {
                 font-size: 1.2rem;
             }
+            .crypto-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
             .api-info h2,
             .results-header h2 {
                 font-size: 2.2rem;
             }
             .nav-links {
                 gap: 1.5rem;
-            }
-            .mascot {
-                width: 120px;
-                height: 120px;
             }
         }
         
@@ -955,10 +1013,6 @@
             }
             .glass-panel {
                 padding: 1.8rem;
-            }
-            .mascot {
-                width: 100px;
-                height: 100px;
             }
         }
     </style>
@@ -987,9 +1041,25 @@
             <h1>Crossbar Knowledge Hub</h1>
             <p>Access company insights instantly with our AI-powered knowledge assistant</p>
 
-            <div class="mascot">
-                <div class="bitcoin">
-                    <i class="fab fa-bitcoin"></i>
+            <!-- Updated crypto mascots -->
+            <div class="crypto-container">
+                <div class="mascot">
+                    <div class="crypto bitcoin" id="bitcoin">
+                        <i class="fab fa-bitcoin"></i>
+                    </div>
+                    <div class="crypto-name">Bitcoin</div>
+                </div>
+                <div class="mascot">
+                    <div class="crypto ethereum" id="ethereum">
+                        <i class="fab fa-ethereum"></i>
+                    </div>
+                    <div class="crypto-name">Ethereum</div>
+                </div>
+                <div class="mascot">
+                    <div class="crypto solana" id="solana">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="crypto-name">Solana</div>
                 </div>
             </div>
 
@@ -1187,10 +1257,57 @@
         const fileConceptTags = document.getElementById('file-concept-tags');
         const textSpinner = document.getElementById('text-spinner');
         const fileSpinner = document.getElementById('file-spinner');
-        const bitcoin = document.querySelector('.bitcoin');
         const answerActions = document.getElementById('answer-actions');
         const followUpSuggestions = document.getElementById('follow-up-suggestions');
         const followUpButtons = document.getElementById('follow-up-buttons');
+
+        // Crypto animation logic
+        const cryptos = {
+            bitcoin: document.getElementById('bitcoin'),
+            ethereum: document.getElementById('ethereum'),
+            solana: document.getElementById('solana')
+        };
+
+        // Flip animation control
+        function toggleFlip(element, speed) {
+            element.classList.toggle('flipping');
+            if (speed === 'fast') {
+                element.classList.add('flipping-fast');
+            } else {
+                element.classList.remove('flipping-fast');
+            }
+        }
+
+        // Set up event listeners for each crypto
+        for (const [name, element] of Object.entries(cryptos)) {
+            // Start flipping on hover
+            element.addEventListener('mouseenter', () => {
+                toggleFlip(element, 'fast');
+            });
+
+            // Return to normal speed when mouse leaves
+            element.addEventListener('mouseleave', () => {
+                if (element.classList.contains('flipping')) {
+                    toggleFlip(element, 'normal');
+                }
+            });
+
+            // Click to toggle animation
+            element.addEventListener('click', () => {
+                if (element.classList.contains('flipping')) {
+                    element.classList.remove('flipping', 'flipping-fast');
+                } else {
+                    toggleFlip(element, 'fast');
+                }
+            });
+        }
+
+        // Start with all flipping at normal speed
+        setTimeout(() => {
+            for (const element of Object.values(cryptos)) {
+                toggleFlip(element, 'normal');
+            }
+        }, 1000);
 
         // Event listeners for modals
         document.getElementById('add-text-context').addEventListener('click', () => {
@@ -1388,8 +1505,6 @@
             submitBtn.disabled = true;
 
             setOutputContent('kernel-answer', "> Processing your question...");
-            setOutputContent('kernel-insights', "> Generating insights...");
-            setOutputContent('kernel-sources', "> Retrieving sources...");
 
             try {
                 const response = await fetch('/api/ask', {
@@ -1415,18 +1530,6 @@
 
                 // Update all output sections
                 setOutputContent('kernel-answer', data.answer || "No answer found");
-                setOutputContent('kernel-insights', data.insights || "No insights available");
-
-                // Display sources
-                if (data.context && data.context.length > 0) {
-                    let sourcesHtml = "";
-                    data.context.forEach((source, index) => {
-                        sourcesHtml += `${index + 1}. ${source}\n`;
-                    });
-                    setOutputContent('kernel-sources', sourcesHtml);
-                } else {
-                    setOutputContent('kernel-sources', "No sources referenced");
-                }
 
                 // Show answer actions
                 answerActions.style.display = 'block';
@@ -1452,7 +1555,6 @@
                 showNotification('Question answered successfully!', 'success');
             } catch (error) {
                 setOutputContent('kernel-answer', `> Error: ${error.message}`);
-                setOutputContent('kernel-insights', "> Error analyzing results");
                 showNotification(`Error: ${error.message}`, 'error');
             } finally {
                 submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
@@ -1581,13 +1683,6 @@
         document.querySelectorAll('.animate-on-scroll').forEach(el => {
             observer.observe(el);
         });
-
-        // Mascot animation
-        let rotateAngle = 0;
-        setInterval(() => {
-            rotateAngle += 0.2;
-            bitcoin.style.transform = `rotateY(${rotateAngle}deg)`;
-        }, 50);
 
         // Neural Web Background Animation
         const canvas = document.createElement('canvas');
