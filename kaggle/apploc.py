@@ -16,6 +16,7 @@ from werkzeug.utils import secure_filename
 import time
 import json
 import PyPDF2
+import pdfplumber  # Replaced pdfminer with pdfplumber
 from docx import Document
 import hashlib
 from datetime import datetime
@@ -23,15 +24,20 @@ import re
 from collections import Counter
 import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
 import heapq
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Get absolute path to templates directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(current_dir, "templates")
 DB_FILE = os.path.join(current_dir, "memory.db")
+VECTOR_STORE = os.path.join(current_dir, "vector_store")
+os.makedirs(VECTOR_STORE, exist_ok=True)
 
 app = Flask(__name__, template_folder=template_path)
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +70,16 @@ def init_db():
                 sources TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+        """
+        )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS context_vectors (
+                session_id TEXT NOT NULL,
+                context_id TEXT NOT NULL,
+                vector BLOB NOT NULL,
+                PRIMARY KEY (session_id, context_id)
             )
         """
         )
@@ -107,6 +123,24 @@ def get_user_memories(user_id):
             "SELECT id, question, answer, summary, sources, created_at FROM memories WHERE user_id = ? ORDER BY created_at DESC",
             (user_id,),
         ).fetchall()
+
+
+def store_context_vector(session_id, context_id, vector):
+    with get_db() as db:
+        db.execute(
+            "INSERT OR REPLACE INTO context_vectors (session_id, context_id, vector) VALUES (?, ?, ?)",
+            (session_id, context_id, json.dumps(vector.tolist())),
+        )
+        db.commit()
+
+
+def get_context_vectors(session_id):
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT context_id, vector FROM context_vectors WHERE session_id = ?",
+            (session_id,),
+        ).fetchall()
+    return [(row[0], np.array(json.loads(row[1]))) for row in rows]
 
 
 # Initialize database
@@ -179,19 +213,36 @@ def trim_conversation_history(history, max_tokens=3000):
     return trimmed_history
 
 
-def get_relevant_contexts(question, session_contexts):
-    relevant = []
+def get_relevant_contexts(question, session_contexts, session_id, top_n=3):
     if not question or not session_contexts:
-        return relevant
-    q_lower = question.lower()
-    q_keywords = set(q_lower.split())
-    for ctx in session_contexts:
-        if "summary" not in ctx:
-            continue
-        content = (ctx.get("summary", "") + " " + ctx.get("content", "")).lower()
-        if any(keyword in content for keyword in q_keywords):
-            relevant.append(ctx)
-    return relevant
+        return []
+
+    # Get stored vectors
+    stored_vectors = get_context_vectors(session_id)
+    if not stored_vectors:
+        return []
+
+    # Vectorize question
+    vectorizer = TfidfVectorizer()
+    try:
+        vectorizer.fit([question] + [ctx["content"] for ctx in session_contexts])
+    except:
+        return []
+
+    question_vec = vectorizer.transform([question]).toarray()[0]
+
+    # Calculate similarities
+    similarities = []
+    for context_id, ctx_vec in stored_vectors:
+        similarity = cosine_similarity([question_vec], [ctx_vec])[0][0]
+        similarities.append((context_id, similarity))
+
+    # Get top N contexts
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    top_contexts = [ctx_id for ctx_id, _ in similarities[:top_n]]
+
+    # Return context objects
+    return [ctx for ctx in session_contexts if ctx["id"] in top_contexts]
 
 
 def build_context_summary(contexts, max_length=500):
@@ -273,12 +324,31 @@ def extract_text_from_file(filepath, filename):
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 text = f.read()
         elif ext == "pdf":
-            with open(filepath, "rb") as f:
-                reader = PyPDF2.PdfReader(f)
-                for page in reader.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text + "\n"
+            # First try with PyPDF2
+            try:
+                with open(filepath, "rb") as f:
+                    reader = PyPDF2.PdfReader(f)
+                    for page in reader.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+                if text.strip():  # If we got text, use it
+                    return text.strip()
+            except Exception as e:
+                logging.error(f"PyPDF2 extraction error: {str(e)}")
+
+            # Fallback to pdfplumber
+            try:
+                text = ""
+                with pdfplumber.open(filepath) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+                return text.strip()
+            except Exception as e:
+                logging.error(f"PDFplumber extraction error: {str(e)}")
+                return f"Error processing PDF: {str(e)}"
         elif ext in ["doc", "docx"]:
             doc = Document(filepath)
             for para in doc.paragraphs:
@@ -295,21 +365,30 @@ def extract_text_from_file(filepath, filename):
     return text.strip()
 
 
-def chunk_text(text, max_tokens=1000):
-    words = text.split()
+def chunk_text(text, max_tokens=1000, overlap=100):
+    sentences = sent_tokenize(text)
     chunks = []
     current_chunk = []
-    current_length = 0
-    for word in words:
-        word_tokens = count_tokens(word)
-        if current_length + word_tokens > max_tokens and current_chunk:
+    current_tokens = 0
+
+    for sentence in sentences:
+        sentence_tokens = count_tokens(sentence)
+
+        if current_tokens + sentence_tokens > max_tokens and current_chunk:
             chunks.append(" ".join(current_chunk))
-            current_chunk = []
-            current_length = 0
-        current_chunk.append(word)
-        current_length += word_tokens
+            # Keep overlapping sentences
+            overlap_tokens = 0
+            while current_chunk and overlap_tokens < overlap:
+                removed = current_chunk.pop(0)
+                overlap_tokens += count_tokens(removed)
+                current_tokens -= count_tokens(removed)
+
+        current_chunk.append(sentence)
+        current_tokens += sentence_tokens
+
     if current_chunk:
         chunks.append(" ".join(current_chunk))
+
     return chunks
 
 
@@ -386,6 +465,15 @@ def generate_summary_and_key_concepts(text, api_key, max_length=300):
         )
         concepts = extract_key_concepts(text)
         return summary, concepts
+
+
+def generate_vector(text):
+    vectorizer = TfidfVectorizer()
+    try:
+        vector = vectorizer.fit_transform([text]).toarray()[0]
+    except:
+        vector = np.zeros(100)  # Fallback to zero vector
+    return vector
 
 
 @app.route("/")
@@ -501,37 +589,37 @@ def handle_question():
                 }
             )
 
-        messages = session["history"][:]
-        memory_context = ""
-        for memory_key, memory_content in session.get("persistent_memory", {}).items():
-            if question.lower() in memory_content["question"].lower():
-                memory_context += f"\nPrevious discussion about this topic: {memory_content['summary']}"
-        if memory_context:
-            messages.append({"role": "system", "content": memory_context})
-
-        relevant_contexts = get_relevant_contexts(question, session.get("contexts", []))
+        # Get relevant session contexts
+        relevant_contexts = get_relevant_contexts(
+            question, session.get("contexts", []), session_id, top_n=3
+        )
         context_summary = build_context_summary(relevant_contexts)
-        if context_summary:
-            messages.append({"role": "system", "content": context_summary})
+
+        # Build full context
+        full_context = []
         if rag_context:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": f"Document context for this question:\n{rag_context}",
-                }
-            )
+            full_context.append(f"Company Knowledge Base:\n{rag_context}")
+        if context_summary:
+            full_context.append(context_summary)
+
+        # Prepare messages
+        messages = session["history"][:]
+        if full_context:
+            messages.append({"role": "system", "content": "\n\n".join(full_context)})
+
         messages.append({"role": "user", "content": question})
         messages = trim_conversation_history(messages)
 
         client = OpenAI(api_key=api_key)
         chat = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo",
             messages=messages,
-            max_tokens=500,
+            max_tokens=1000,
             temperature=0.3,
         )
         answer = chat.choices[0].message.content.strip()
 
+        # Generate insights
         insight_prompt = (
             "Based on the following question and answer, extract 3 key insights in bullet points:\n\n"
             f"Question: {question}\n\n"
@@ -552,6 +640,7 @@ def handle_question():
         )
         insights = insight_response.choices[0].message.content.strip()
 
+        # Generate memory summary
         memory_prompt = (
             "Create a concise summary of the following Q&A pair that captures the key information "
             "for long-term memory storage. Focus on factual information and core concepts:\n\n"
@@ -595,7 +684,6 @@ def handle_question():
         follow_ups = []
         for line in follow_ups_text.split("\n"):
             if line.strip() and len(follow_ups) < 3:
-                # Remove any numbering
                 clean_line = re.sub(r"^\d+[\.\)]\s*", "", line.strip())
                 follow_ups.append(clean_line)
 
@@ -607,18 +695,7 @@ def handle_question():
                     user[0], question, answer, memory_summary, "\n".join(context_docs)
                 )
 
-        memory_key = generate_memory_key(question, answer)
-        with sessions_lock:
-            session = sessions[session_id]
-            session["persistent_memory"][memory_key] = {
-                "question": question,
-                "answer": answer,
-                "summary": memory_summary,
-                "timestamp": time.time(),
-            }
-            session["last_accessed"] = time.time()
-            save_session(session_id, session)
-
+        # Update session history
         with sessions_lock:
             session = sessions[session_id]
             session["history"].append({"role": "user", "content": question})
@@ -704,7 +781,7 @@ def adjust_answer():
             return jsonify({"error": "Invalid adjustment type"}), 400
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo",
             messages=[
                 {
                     "role": "system",
@@ -750,10 +827,16 @@ def add_context():
                 if not session:
                     session_id, session = create_new_session()
                 sessions[session_id] = session
+
             summary, key_concepts = generate_summary_and_key_concepts(
                 context_text, api_key
             )
             context_id = str(uuid.uuid4())
+
+            # Create vector for context
+            context_vector = generate_vector(context_text)
+            store_context_vector(session_id, context_id, context_vector)
+
             session["contexts"].append(
                 {
                     "id": context_id,
@@ -772,6 +855,7 @@ def add_context():
             )
             session["last_accessed"] = time.time()
             save_session(session_id, session)
+
         return jsonify(
             {
                 "status": "success",
@@ -810,6 +894,7 @@ def upload_context():
                 extracted_text, api_key
             )
             chunks = chunk_text(extracted_text)
+
             with sessions_lock:
                 if session_id in sessions:
                     session = sessions[session_id]
@@ -818,7 +903,15 @@ def upload_context():
                     if not session:
                         session_id, session = create_new_session()
                     sessions[session_id] = session
+
                 context_id = str(uuid.uuid4())
+
+                # Create vectors for each chunk
+                for chunk in chunks:
+                    chunk_id = str(uuid.uuid4())
+                    chunk_vector = generate_vector(chunk)
+                    store_context_vector(session_id, chunk_id, chunk_vector)
+
                 session["contexts"].append(
                     {
                         "id": context_id,
@@ -839,6 +932,7 @@ def upload_context():
                 )
                 session["last_accessed"] = time.time()
                 save_session(session_id, session)
+
             return jsonify(
                 {
                     "status": "success",
