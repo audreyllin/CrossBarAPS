@@ -19,9 +19,28 @@ import PyPDF2
 from docx import Document
 import hashlib
 from datetime import datetime
+import re
+from collections import Counter
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import heapq
 
-app = Flask(__name__)
+# Get absolute path to templates directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+template_path = os.path.join(current_dir, "templates")
+
+app = Flask(__name__, template_folder=template_path)  # Explicit template path
 logging.basicConfig(level=logging.INFO)
+
+# Download NLTK resources
+try:
+    nltk.download("punkt")
+    nltk.download("stopwords")
+except:
+    logging.warning(
+        "NLTK resources not downloaded. Key concept extraction may be limited"
+    )
 
 # Initialize RAG processor
 try:
@@ -112,7 +131,7 @@ def get_relevant_contexts(question, session_contexts):
     return relevant
 
 
-def build_context_summary(contexts):
+def build_context_summary(contexts, max_length=500):
     """Create a concise summary of all relevant contexts"""
     if not contexts:
         return ""
@@ -123,6 +142,11 @@ def build_context_summary(contexts):
             ctx.get("filename", "user input") if "filename" in ctx else "user input"
         )
         summary = ctx.get("summary", "No summary available")
+
+        # Truncate summary if needed
+        if len(summary) > max_length:
+            summary = summary[:max_length] + "..."
+
         context_str += f"{i}. From {source}: {summary}\n"
     return context_str
 
@@ -147,7 +171,7 @@ def create_new_session():
         "created_at": time.time(),
         "last_accessed": time.time(),
         "persistent_memory": {},
-        "context_embedding": None,  # Placeholder for future embedding-based matching
+        "context_embedding": None,
     }
     save_session(session_id, session)
     return session_id, session
@@ -213,7 +237,6 @@ def extract_text_from_file(filepath, filename):
                 text += para.text + "\n"
 
         elif ext in ["ppt", "pptx"]:
-            # PPT conversion requires additional libraries
             text = f"PPT file detected: {filename}. Please upload as PDF for full text extraction."
 
         elif ext in ["jpg", "jpeg", "png"]:
@@ -251,10 +274,107 @@ def chunk_text(text, max_tokens=1000):
     return chunks
 
 
+def extract_key_concepts(text, max_concepts=7):
+    """Extract key concepts from text using TF-IDF like approach"""
+    try:
+        # Tokenize and remove stopwords
+        stop_words = set(stopwords.words("english"))
+        words = word_tokenize(text.lower())
+        words = [word for word in words if word.isalnum() and word not in stop_words]
+
+        # Count word frequencies
+        word_freq = Counter(words)
+
+        # Get most common words
+        most_common = word_freq.most_common(max_concepts * 2)
+
+        # Filter out too short or too common words
+        concepts = [word for word, freq in most_common if len(word) > 3 and freq > 1]
+
+        return concepts[:max_concepts]
+    except:
+        # Fallback to simple method if NLP fails
+        words = text.lower().split()
+        words = [word for word in words if word.isalnum() and len(word) > 4]
+        word_freq = Counter(words)
+        return [word for word, freq in word_freq.most_common(max_concepts)]
+
+
 def generate_memory_key(question, answer):
     """Generate a unique key for storing memories"""
     content_hash = hashlib.sha256((question + answer).encode()).hexdigest()
     return f"memory_{content_hash[:16]}"
+
+
+def generate_summary_and_key_concepts(text, api_key, max_length=300):
+    """Generate summary and key concepts in one API call"""
+    client = OpenAI(api_key=api_key)
+
+    # For very short texts, don't call API
+    if len(text) < 100:
+        return text, extract_key_concepts(text)
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a document summarization system. Please provide:\n"
+                        "1. A concise summary (2-3 sentences)\n"
+                        "2. A comma-separated list of 5-7 key concepts\n"
+                        "Format: SUMMARY: [summary text]\nKEY CONCEPTS: [comma separated list]"
+                    ),
+                },
+                {"role": "user", "content": f"Text:\n\n{text[:5000]}"},
+            ],
+            max_tokens=300,
+            temperature=0.2,
+        )
+
+        result = response.choices[0].message.content.strip()
+
+        # Parse response
+        summary = ""
+        concepts = []
+
+        # Try to find summary section
+        summary_match = re.search(
+            r"SUMMARY:\s*(.*?)(?=\nKEY CONCEPTS:|$)", result, re.DOTALL | re.IGNORECASE
+        )
+        if summary_match:
+            summary = summary_match.group(1).strip()
+
+        # Try to find concepts section
+        concepts_match = re.search(
+            r"KEY CONCEPTS:\s*(.*)", result, re.DOTALL | re.IGNORECASE
+        )
+        if concepts_match:
+            concepts_str = concepts_match.group(1).strip()
+            concepts = [c.strip() for c in concepts_str.split(",") if c.strip()]
+
+        # If parsing failed, use fallback methods
+        if not summary:
+            # Generate simple summary
+            sentences = nltk.sent_tokenize(text)
+            summary = " ".join(sentences[:3])[:max_length] + (
+                "..." if len(sentences) > 3 else ""
+            )
+
+        if not concepts:
+            concepts = extract_key_concepts(text)
+
+        return summary, concepts
+    except Exception as e:
+        logging.error(f"Summary generation failed: {str(e)}")
+        # Fallback to simple methods
+        sentences = nltk.sent_tokenize(text)
+        summary = " ".join(sentences[:3])[:max_length] + (
+            "..." if len(sentences) > 3 else ""
+        )
+        concepts = extract_key_concepts(text)
+        return summary, concepts
 
 
 @app.route("/")
@@ -497,28 +617,10 @@ def add_context():
                     session_id, session = create_new_session()
                 sessions[session_id] = session
 
-            # Generate more focused summary for context
-            client = OpenAI(api_key=api_key)
-            summary_prompt = (
-                "Create a concise summary (1-2 sentences) of the following text focusing on key facts "
-                "that would be relevant for answering future questions:\n\n"
-                f"{context_text}"
+            # Generate summary and key concepts
+            summary, key_concepts = generate_summary_and_key_concepts(
+                context_text, api_key
             )
-
-            summary_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a knowledge distillation system. Extract only the most important information.",
-                    },
-                    {"role": "user", "content": summary_prompt},
-                ],
-                max_tokens=100,  # More concise summary
-                temperature=0.1,
-            )
-            summary = summary_response.choices[0].message.content.strip()
-            logging.info(f"Generated context summary: {summary}")
 
             # Add context to session
             context_id = str(uuid.uuid4())
@@ -528,6 +630,7 @@ def add_context():
                     "type": "text",
                     "content": context_text,
                     "summary": summary,
+                    "key_concepts": key_concepts,
                     "timestamp": time.time(),
                 }
             )
@@ -544,7 +647,12 @@ def add_context():
             save_session(session_id, session)
 
         return jsonify(
-            {"status": "success", "sessionId": session_id, "summary": summary}
+            {
+                "status": "success",
+                "sessionId": session_id,
+                "summary": summary,
+                "key_concepts": key_concepts,
+            }
         )
 
     except Exception as e:
@@ -578,34 +686,13 @@ def upload_context():
         # Extract and process file content
         extracted_text = extract_text_from_file(filepath, filename)
         summary = ""
+        key_concepts = []
 
         if extracted_text:
-            # Generate more focused summary for the document
-            try:
-                client = OpenAI(api_key=api_key)
-                summary_prompt = (
-                    "Create a concise summary (2-3 sentences) of the following document "
-                    "focusing on key information that would be relevant for answering questions:\n\n"
-                    f"{extracted_text[:5000]}"  # Use less text for summary
-                )
-
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": "You are a document summarization system. Extract only the most important information.",
-                        },
-                        {"role": "user", "content": summary_prompt},
-                    ],
-                    max_tokens=150,  # More concise summary
-                    temperature=0.2,
-                )
-                summary = response.choices[0].message.content.strip()
-                logging.info(f"Generated document summary: {summary}")
-            except Exception as e:
-                logging.error(f"Summary generation failed: {str(e)}")
-                summary = "Document processed but summary failed"
+            # Generate summary and key concepts
+            summary, key_concepts = generate_summary_and_key_concepts(
+                extracted_text, api_key
+            )
 
             # Chunk text for potential future use
             chunks = chunk_text(extracted_text)
@@ -630,6 +717,7 @@ def upload_context():
                         "content": extracted_text,
                         "chunks": chunks,
                         "summary": summary,
+                        "key_concepts": key_concepts,
                         "timestamp": time.time(),
                     }
                 )
@@ -650,6 +738,7 @@ def upload_context():
                     "status": "success",
                     "filename": filename,
                     "summary": summary,
+                    "key_concepts": key_concepts,
                     "sessionId": session_id,
                 }
             )
