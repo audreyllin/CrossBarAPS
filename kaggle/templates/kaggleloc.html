@@ -315,10 +315,62 @@
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-align: center;
+            min-height: 120px;
+            justify-content: center;
+            flex-direction: column;
         }
         
         .file-label:hover {
             border-color: var(--orange-primary);
+        }
+        
+        .file-preview {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .file-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-name {
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .remove-file {
+            color: var(--orange-secondary);
+            cursor: pointer;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .concepts-container {
+            margin-top: 1rem;
+        }
+        
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255, 157, 92, 0.2);
+            color: var(--orange-secondary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .summary-toggle {
+            color: var(--orange-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: inline-block;
         }
         
         .submit-btn {
@@ -342,6 +394,12 @@
         .submit-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(210, 105, 30, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .results-section {
@@ -442,6 +500,9 @@
             opacity: 0;
             transform: translateY(-20px);
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
         }
         
         .notification.show {
@@ -457,6 +518,25 @@
         .notification.error {
             background: linear-gradient(135deg, #f87171, #ef4444);
             color: white;
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: white;
+        }
+        
+        .concept-tags {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            gap: 5px;
+        }
+        
+        .notification-concept {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
         }
         /* Animation classes */
         
@@ -633,7 +713,12 @@
                 <label for="context-text">Enter additional context</label>
                 <textarea id="context-text" placeholder="Product A is a component used in Product B..."></textarea>
             </div>
-            <button class="submit-btn" id="submit-text-context">Add Context</button>
+            <div class="concepts-container" id="text-concepts" style="display: none;">
+                <h4>Key Concepts:</h4>
+                <div class="concept-tags" id="text-concept-tags"></div>
+            </div>
+            <button class="submit-btn" id="submit-text-context">Add Context <i class="fas fa-spinner fa-spin"
+                    style="display: none;" id="text-spinner"></i></button>
         </div>
     </div>
 
@@ -645,16 +730,23 @@
             </div>
             <div class="file-upload">
                 <input type="file" id="context-file" class="file-input" accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
-                <label for="context-file" class="file-label">
+                <label for="context-file" class="file-label" id="file-drop-area">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Choose a file or drag it here</span>
+                    <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
                 </label>
-                <div class="input-group">
-                    <label for="file-description">File Description (Optional)</label>
-                    <input type="text" id="file-description" placeholder="Describe what this file contains...">
+                <div class="file-preview" id="file-preview">
+                    <i class="file-icon" id="file-icon"></i>
+                    <span class="file-name" id="file-name"></span>
+                    <span class="remove-file" id="remove-file">Remove file</span>
                 </div>
             </div>
-            <button class="submit-btn" id="submit-file-context">Upload File</button>
+            <div class="concepts-container" id="file-concepts" style="display: none;">
+                <h4>Key Concepts:</h4>
+                <div class="concept-tags" id="file-concept-tags"></div>
+            </div>
+            <button class="submit-btn" id="submit-file-context">Upload File <i class="fas fa-spinner fa-spin"
+                    style="display: none;" id="file-spinner"></i></button>
         </div>
     </div>
 
@@ -662,6 +754,21 @@
     <div id="notification-container"></div>
 
     <script>
+        // File icon mapping
+        const fileIcons = {
+            pdf: 'fas fa-file-pdf',
+            doc: 'fas fa-file-word',
+            docx: 'fas fa-file-word',
+            txt: 'fas fa-file-alt',
+            ppt: 'fas fa-file-powerpoint',
+            pptx: 'fas fa-file-powerpoint',
+            jpg: 'fas fa-file-image',
+            jpeg: 'fas fa-file-image',
+            png: 'fas fa-file-image',
+            mp4: 'fas fa-file-video',
+            default: 'fas fa-file'
+        };
+
         // Session management
         let sessionId = localStorage.getItem('sessionId');
         if (!sessionId) {
@@ -673,6 +780,18 @@
         const textContextModal = document.getElementById('text-context-modal');
         const fileContextModal = document.getElementById('file-context-modal');
         const closeButtons = document.querySelectorAll('.close-modal');
+        const fileInput = document.getElementById('context-file');
+        const filePreview = document.getElementById('file-preview');
+        const fileIcon = document.getElementById('file-icon');
+        const fileName = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file');
+        const fileDropArea = document.getElementById('file-drop-area');
+        const textConcepts = document.getElementById('text-concepts');
+        const textConceptTags = document.getElementById('text-concept-tags');
+        const fileConcepts = document.getElementById('file-concepts');
+        const fileConceptTags = document.getElementById('file-concept-tags');
+        const textSpinner = document.getElementById('text-spinner');
+        const fileSpinner = document.getElementById('file-spinner');
 
         // Event listeners for modals
         document.getElementById('add-text-context').addEventListener('click', () => {
@@ -696,10 +815,62 @@
             if (e.target === fileContextModal) fileContextModal.style.display = 'none';
         });
 
+        // File input handling
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                displayFilePreview(file);
+            }
+        });
+
+        // Remove file button
+        removeFileBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            fileDropArea.style.display = 'flex';
+            fileConcepts.style.display = 'none';
+        });
+
+        // Drag and drop functionality
+        fileDropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--orange-primary)';
+        });
+
+        fileDropArea.addEventListener('dragleave', function() {
+            this.style.borderColor = 'var(--glass-border)';
+        });
+
+        fileDropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--glass-border)';
+
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                const file = e.dataTransfer.files[0];
+                fileInput.files = e.dataTransfer.files;
+                displayFilePreview(file);
+            }
+        });
+
+        function displayFilePreview(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            const iconClass = fileIcons[ext] || fileIcons.default;
+
+            fileIcon.className = `file-icon ${iconClass}`;
+            fileName.textContent = file.name;
+            filePreview.style.display = 'block';
+            fileDropArea.style.display = 'none';
+
+            // Hide concepts until processing
+            fileConcepts.style.display = 'none';
+        }
+
         // Add text context
         document.getElementById('submit-text-context').addEventListener('click', async() => {
             const contextText = document.getElementById('context-text').value;
             const apiKey = document.getElementById('api-key').value;
+            const submitBtn = document.getElementById('submit-text-context');
+            const textSpinner = document.getElementById('text-spinner');
 
             if (!contextText) {
                 showNotification('Please enter some context text', 'error');
@@ -712,6 +883,11 @@
             }
 
             try {
+                // Show loading state
+                submitBtn.disabled = true;
+                textSpinner.style.display = 'inline-block';
+                textConcepts.style.display = 'none';
+
                 const response = await fetch('/api/add_context', {
                     method: 'POST',
                     headers: {
@@ -725,7 +901,7 @@
 
                 const data = await response.json();
                 if (response.ok) {
-                    showNotification('Context added successfully!', 'success');
+                    showNotification('Context added successfully!', 'success', data.key_concepts);
                     textContextModal.style.display = 'none';
                     document.getElementById('context-text').value = '';
                 } else {
@@ -733,14 +909,17 @@
                 }
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                textSpinner.style.display = 'none';
             }
         });
 
         // Upload file context
         document.getElementById('submit-file-context').addEventListener('click', async() => {
-            const fileInput = document.getElementById('context-file');
             const apiKey = document.getElementById('api-key').value;
-            const description = document.getElementById('file-description').value;
+            const submitBtn = document.getElementById('submit-file-context');
+            const fileSpinner = document.getElementById('file-spinner');
 
             if (!fileInput.files || fileInput.files.length === 0) {
                 showNotification('Please select a file to upload', 'error');
@@ -756,9 +935,12 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('sessionId', sessionId);
-            if (description) formData.append('context', description);
 
             try {
+                // Show loading state
+                submitBtn.disabled = true;
+                fileSpinner.style.display = 'inline-block';
+
                 const response = await fetch('/api/upload_context', {
                     method: 'POST',
                     headers: {
@@ -769,15 +951,21 @@
 
                 const data = await response.json();
                 if (response.ok) {
-                    showNotification(`File "${data.filename}" uploaded successfully!`, 'success');
-                    fileContextModal.style.display = 'none';
-                    fileInput.value = '';
-                    document.getElementById('file-description').value = '';
+                    // Show key concepts
+                    if (data.key_concepts && data.key_concepts.length > 0) {
+                        displayConcepts(fileConceptTags, data.key_concepts);
+                        fileConcepts.style.display = 'block';
+                    }
+
+                    showNotification(`File "${data.filename}" uploaded successfully!`, 'success', data.key_concepts);
                 } else {
                     showNotification(`Error: ${data.error || 'Failed to upload file'}`, 'error');
                 }
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                fileSpinner.style.display = 'none';
             }
         });
 
@@ -852,12 +1040,34 @@
             }
         }
 
+        // Helper function to display concepts
+        function displayConcepts(container, concepts) {
+            container.innerHTML = '';
+            concepts.forEach(concept => {
+                const tag = document.createElement('span');
+                tag.className = 'concept-tag';
+                tag.textContent = concept;
+                container.appendChild(tag);
+            });
+        }
+
         // Helper function to show notifications
-        function showNotification(message, type) {
+        function showNotification(message, type, concepts = []) {
             const container = document.getElementById('notification-container');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            notification.textContent = message;
+
+            let content = `<div>${message}</div>`;
+
+            if (concepts && concepts.length > 0) {
+                content += `<div class="concept-tags">`;
+                concepts.forEach(concept => {
+                    content += `<span class="notification-concept">${concept}</span>`;
+                });
+                content += `</div>`;
+            }
+
+            notification.innerHTML = content;
             container.appendChild(notification);
 
             // Trigger animation
