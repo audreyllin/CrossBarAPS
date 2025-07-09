@@ -437,7 +437,7 @@
 
     <!-- Navigation -->
     <nav>
-        <div class="logo">Company<span>Q&A</span></div>
+        <div class="logo">Company<span style="color: var(--accent-secondary);">Q&A</span></div>
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
@@ -450,9 +450,8 @@
         <div class="container">
             <h1>Company Knowledge Assistant</h1>
             <p>Ask questions about our company and get instant answers with our AI-powered Q&A system</p>
-            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">
-                Ask a Question
-            </button>
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">Ask
+                a Question</button>
         </div>
     </section>
 
@@ -464,10 +463,10 @@
                     <h2>Company Knowledge Base</h2>
                     <p>Ask any question about our company, products, or services and get detailed answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Instant AI-powered answers
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Instant AI-powered answers
                         </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Comprehensive company knowledge</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Detailed insights and analysis</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Comprehensive company knowledge</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Detailed insights and analysis</p>
                     </div>
                 </div>
 
@@ -475,18 +474,17 @@
                     <div class="input-container">
                         <!-- GPT API Key Input -->
                         <div class="input-group">
-                            <label for="api-key"><i class="fas fa-key"></i> OpenAI API Key</label>
+                            <label for="api-key">OpenAI API Key</label>
                             <input type="password" id="api-key" placeholder="Enter your OpenAI API key">
                         </div>
 
                         <div class="input-group">
-                            <label for="question"><i class="fas fa-question-circle"></i> Your Question</label>
+                            <label for="question">Your Question</label>
                             <input type="text" id="question" placeholder="Ask about the company...">
                         </div>
 
-                        <button class="submit-btn" id="submit-btn">
-                            Ask Question <i class="fas fa-arrow-right"></i>
-                        </button>
+                        <button class="submit-btn" id="submit-btn">Ask Question <i
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </div>
@@ -518,7 +516,7 @@
                     </div>
                 </div>
 
-                <div class="result-card animate-on-scroll">
+                <div class="result-card animate-on-scroll" style="grid-column: span 2;">
                     <h3><i class="fas fa-terminal"></i> System Context</h3>
                     <p>Relevant context used for answering:</p>
                     <div class="kernel-output" id="kernel-context">
@@ -566,35 +564,45 @@
             setOutputContent('kernel-context', "> Retrieving context...");
 
             try {
-                // Simulated API response for demo purposes
-                setTimeout(() => {
-                    setOutputContent('kernel-answer', "Our company was founded in 2010 with a mission to revolutionize the tech industry through innovative AI solutions. We specialize in natural language processing and machine learning applications.");
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
 
-                    setOutputContent('kernel-insights', "1. Founded: 2010\n2. Specialization: AI & NLP\n3. Core values: Innovation, Quality, Customer Focus\n4. Team size: 150+ employees\n5. Locations: 5 countries worldwide");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API request failed: ${response.status}`);
+                }
 
-                    setOutputContent('kernel-context', "Company History:\nFounded in 2010 by tech industry veterans...\n\nMission Statement:\nTo empower businesses through cutting-edge AI solutions...\n\nProduct Line:\n- Enterprise AI Platform\n- Customer Support Automation\n- Data Analytics Suite");
+                const data = await response.json();
 
-                    showNotification('Question answered successfully!', 'success');
+                // Update all output sections
+                setOutputContent('kernel-answer', data.answer || "No answer found");
+                setOutputContent('kernel-insights', data.insights || "No insights available");
+                setOutputContent('kernel-context', data.context ? data.context.join("\n\n") : "No context retrieved");
 
-                    submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
-                    submitBtn.disabled = false;
-
-                    // Scroll to results
-                    document.getElementById('results').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 2000);
-
+                showNotification('Question answered successfully!', 'success');
             } catch (error) {
                 console.error('Error:', error);
                 setOutputContent('kernel-answer', `> Error: ${error.message}`);
                 setOutputContent('kernel-insights', "> Error analyzing results");
                 setOutputContent('kernel-context', "> Error retrieving context");
                 showNotification(`Error: ${error.message}`, 'error');
-
+            } finally {
                 submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
                 submitBtn.disabled = false;
+
+                // Scroll to results
+                document.getElementById('results').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             }
         });
 
@@ -603,6 +611,10 @@
             const element = document.getElementById(elementId);
             if (element) {
                 element.textContent = content;
+                // Add syntax highlighting for context
+                if (elementId === 'kernel-context') {
+                    element.innerHTML = highlightContext(content);
+                }
             }
         }
 
@@ -622,6 +634,21 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 5000);
+        }
+
+        // Function to highlight context
+        function highlightContext(text) {
+            return text
+                .split('\n\n')
+                .map(segment => {
+                    if (segment.startsWith('Q:')) {
+                        return `<div style="color: #4cc9f0; margin-bottom: 8px; font-weight: 500;">${segment}</div>`;
+                    } else if (segment.startsWith('A:')) {
+                        return `<div style="color: #f72585; margin-bottom: 15px;">${segment}</div>`;
+                    }
+                    return `<div>${segment}</div>`;
+                })
+                .join('');
         }
 
         // Animation on scroll
@@ -657,7 +684,7 @@
                 this.size = Math.random() * 3 + 1;
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * 1 - 0.5;
-                this.color = `rgba(255, 140, 0, ${Math.random() * 0.4})`;
+                this.color = `rgba(76, 201, 240, ${Math.random() * 0.5})`;
             }
 
             update() {
@@ -697,7 +724,7 @@
 
                     if (distance < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 140, 0, ${0.15 * (1 - distance / 100)})`;
+                        ctx.strokeStyle = `rgba(76, 201, 240, ${0.2 * (1 - distance / 100)})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
