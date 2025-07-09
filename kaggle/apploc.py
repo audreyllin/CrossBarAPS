@@ -78,6 +78,27 @@ def trim_conversation_history(history, max_tokens=3000):
     return trimmed_history
 
 
+def create_new_session():
+    """Create a new session with initial system prompt"""
+    return {
+        "history": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant that answers questions about our company. "
+                    "Here are key product relationships:\n"
+                    "- Product A is used as a component in Product B\n"
+                    "- Product C integrates with Product D\n"
+                    "- Product B outputs feed Product E"
+                ),
+            }
+        ],
+        "contexts": [],
+        "created_at": time.time(),
+        "last_accessed": time.time(),
+    }
+
+
 @app.route("/")
 def index():
     return render_template("kaggleloc.html")
@@ -100,23 +121,7 @@ def handle_question():
         with sessions_lock:
             if session_id not in sessions:
                 session_id = str(uuid.uuid4())
-                sessions[session_id] = {
-                    "history": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are a helpful assistant that answers questions about our company. "
-                                "Here are key product relationships:\n"
-                                "- Product A is used as a component in Product B\n"
-                                "- Product C integrates with Product D\n"
-                                "- Product B outputs feed Product E"
-                            ),
-                        }
-                    ],
-                    "contexts": [],
-                    "created_at": time.time(),
-                    "last_accessed": time.time(),
-                }
+                sessions[session_id] = create_new_session()
             session = sessions[session_id]
             session["last_accessed"] = time.time()
 
@@ -247,10 +252,10 @@ def add_context():
         return jsonify({"error": "Empty context"}), 400
 
     try:
-        # Get session
+        # Get or create session
         with sessions_lock:
             if session_id not in sessions:
-                return jsonify({"error": "Invalid session ID"}), 400
+                sessions[session_id] = create_new_session()
             session = sessions[session_id]
 
             # Add context to session
@@ -299,7 +304,7 @@ def upload_context():
         # Add to session context
         with sessions_lock:
             if session_id not in sessions:
-                return jsonify({"error": "Invalid session ID"}), 400
+                sessions[session_id] = create_new_session()
             session = sessions[session_id]
             session["contexts"].append(f"Uploaded file: {filename}")
 
