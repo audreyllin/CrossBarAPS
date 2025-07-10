@@ -1,11 +1,12 @@
 import sqlite3
 import os
 
+# Define path to the SQLite database
 db_path = os.path.join(os.path.dirname(__file__), "memory.db")
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
-# --- Create main context tables ---
+# --- Table: Stores vector embeddings per context chunk ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS context_vectors (
@@ -19,6 +20,7 @@ CREATE TABLE IF NOT EXISTS context_vectors (
 """
 )
 
+# --- Table: Stores all session-level document chunks and metadata ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS session_contexts (
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS session_contexts (
 """
 )
 
+# --- Table: Tracks per-session Q&A history (user view) ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS conversation_history (
@@ -47,8 +50,7 @@ CREATE TABLE IF NOT EXISTS conversation_history (
 """
 )
 
-# --- Admin dashboard & uploads tracking ---
-# conversations table (optionally includes session_id for traceability)
+# --- Table: Admin dashboard - logs all questions asked globally ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS conversations (
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS conversations (
 """
 )
 
-# uploads table
+# --- Table: Tracks uploaded files for dropdown and file history ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS uploads (
@@ -73,7 +75,7 @@ CREATE TABLE IF NOT EXISTS uploads (
 """
 )
 
-# --- Indexes for performance ---
+# --- Indexes for performance on frequent lookups ---
 c.execute(
     "CREATE INDEX IF NOT EXISTS idx_content_hash ON session_contexts (content_hash)"
 )
@@ -81,6 +83,7 @@ c.execute(
     "CREATE INDEX IF NOT EXISTS idx_session_active ON session_contexts (session_id, is_active)"
 )
 
+# Finalize and close
 conn.commit()
 conn.close()
 
