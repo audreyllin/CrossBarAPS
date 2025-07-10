@@ -15,5 +15,8 @@ openai
 PyPDF2
 pdfplumber
 python-docx
+python-pptx
+pytesseract
+Pillow
 tiktoken
 werkzeug
