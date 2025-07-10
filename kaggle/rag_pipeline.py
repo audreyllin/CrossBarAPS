@@ -1,186 +1,167 @@
 import os
-import re
-import nltk
-import faiss
-import numpy as np
 import logging
-from sklearn.preprocessing import normalize
-from nltk.tokenize import sent_tokenize
-from sentence_transformers import SentenceTransformer
-import nltk
-
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
+import pytesseract
+import pdfplumber
+from PIL import Image
+from docx import Document as DocxDoc
+from pptx import Presentation
+from openai import OpenAI
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt", quiet=True)
+
+# Text extraction from files using GPT when possible
+def extract_text_from_file(filepath):
+    """Extract text from various file formats"""
+    path = Path(filepath)
+    ext = path.suffix.lower()
+    text = ""
+
+    try:
+        if ext == ".pdf":
+            # For PDFs, try to extract text normally
+            with pdfplumber.open(filepath) as pdf:
+                text = "\n".join(
+                    page.extract_text() for page in pdf.pages if page.extract_text()
+                )
+
+            # If text extraction fails, use OCR with GPT vision
+            if not text.strip():
+                return extract_with_gpt_vision(filepath, "PDF")
+
+        elif ext in [".doc", ".docx"]:
+            doc = DocxDoc(filepath)
+            text = "\n".join(para.text for para in doc.paragraphs)
+
+        elif ext in [".ppt", ".pptx"]:
+            prs = Presentation(filepath)
+            text = "\n".join(
+                shape.text
+                for slide in prs.slides
+                for shape in slide.shapes
+                if hasattr(shape, "text") and shape.text
+            )
+
+        elif ext in [".jpg", ".jpeg", ".png"]:
+            # Use GPT Vision API for image text extraction
+            return extract_with_gpt_vision(filepath, "image")
+
+        elif ext == ".txt":
+            with open(filepath, "r", encoding="utf-8") as f:
+                text = f.read()
+
+        else:
+            logger.warning(f"Unsupported file type: {ext}")
+            return ""
+
+    except Exception as e:
+        logger.error(f"Text extraction failed: {str(e)}")
+        return f"Error extracting text: {str(e)}"
+
+    return text[:20000]  # Limit to 20k characters
 
 
-class RagProcessor:
-    def __init__(self, data_path="dataset/Crossbar_Database.txt"):
-        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
-        self.documents = []
-        self.embeddings = None
-        self.index = None
-        self.data_path = data_path
+def extract_with_gpt_vision(filepath, file_type):
+    """Extract text using GPT Vision API"""
+    try:
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not set")
 
-        # Known product relationships
-        self.known_relationships = {
-            "Product A": ["Component of Product B"],
-            "Product B": ["Uses Product A", "Feeds Product E"],
-            "Product C": ["Integrates with Product D"],
-            "Product D": ["Integrated by Product C"],
-            "Product E": ["Fed by Product B"],
+        client = OpenAI(api_key=api_key)
+
+        # Create prompt based on file type
+        if file_type == "PDF":
+            prompt = "Extract all text from this PDF document. Include all headings, paragraphs, and bullet points."
+        elif file_type == "image":
+            prompt = "Extract all text from this image. Include any visible text, numbers, and symbols."
+        else:
+            prompt = "Extract all text from this document."
+
+        with open(filepath, "rb") as image_file:
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image_file.read().hex()}"
+                                },
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=4096,
+            )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        logger.error(f"GPT Vision extraction failed: {str(e)}")
+        # Fallback to OCR for images
+        if file_type == "image":
+            try:
+                image = Image.open(filepath)
+                return pytesseract.image_to_string(image)
+            except:
+                return "Error extracting text"
+        return "Error extracting text"
+
+
+def embed_and_store_file(filepath, api_key, model="text-embedding-3-large"):
+    """Process a file: extract text, embed with GPT, and store"""
+    try:
+        # 1. Extract text
+        text_content = extract_text_from_file(filepath)
+        if not text_content.strip():
+            raise ValueError(f"No extractable content in file: {filepath}")
+
+        # 2. Generate embedding with GPT
+        client = OpenAI(api_key=api_key)
+        response = client.embeddings.create(
+            model=model,
+            input=[text_content[:8191]],  # Stay within token limits
+            encoding_format="float",
+        )
+        vector = np.array(response.data[0].embedding)
+
+        # 3. Return results for storage
+        return {
+            "text": text_content,
+            "vector": vector,
+            "filename": os.path.basename(filepath),
         }
 
-        self.load_database()
-        self.process_documents()
-        self.build_index()
+    except Exception as e:
+        logger.error(f"File processing failed: {str(e)}")
+        raise
 
-    def load_database(self):
-        try:
-            if not os.path.exists(self.data_path):
-                raise FileNotFoundError(f"Database file not found: {self.data_path}")
 
-            with open(self.data_path, "r", encoding="utf-8") as f:
-                raw_text = f.read()
+# GPT-based chunk embedding (if needed for large files)
+def embed_chunks_with_gpt(chunks, api_key, model="text-embedding-3-large"):
+    """Embed text chunks using GPT API"""
+    client = OpenAI(api_key=api_key)
+    response = client.embeddings.create(
+        model=model, input=chunks, encoding_format="float"
+    )
+    return [np.array(item.embedding) for item in response.data]
 
-            # Improved regex to handle different QA formats
-            qa_pattern = r"Q:\s*(.*?)\s*\nA:\s*(.*?)(?=(?:\n\s*Q:)|(?:\n*\s*$)|\Z)"
-            qas = re.findall(qa_pattern, raw_text, re.DOTALL)
 
-            if not qas:
-                raise ValueError("No valid Q&A pairs found in the database")
-
-            self.qa_pairs = [
-                {"question": q.strip(), "answer": a.strip()} for q, a in qas
-            ]
-            logger.info(f"Loaded {len(self.qa_pairs)} Q&A pairs from database")
-
-        except Exception as e:
-            logger.error(f"Database loading failed: {e}")
-            # Fallback to default knowledge
-            self.qa_pairs = [
-                {
-                    "question": "What is Crossbar?",
-                    "answer": "Crossbar is a technology company specializing in ReRAM memory solutions.",
-                },
-                {
-                    "question": "What does Crossbar do?",
-                    "answer": "Crossbar develops resistive random-access memory (ReRAM) technology for next-generation storage and computing applications.",
-                },
-            ]
-
-    def process_documents(self, max_chunk_size=500):
-        try:
-            if not hasattr(self, "qa_pairs") or not self.qa_pairs:
-                raise ValueError("No Q&A pairs available for processing")
-
-            for pair in self.qa_pairs:
-                q, a = pair["question"], pair["answer"]
-                text = f"Q: {q}\nA: {a}"
-                sentences = sent_tokenize(text)
-
-                chunk = []
-                current_length = 0
-
-                for sent in sentences:
-                    sent_words = sent.split()
-                    if current_length + len(sent_words) > max_chunk_size and chunk:
-                        self.documents.append(" ".join(chunk))
-                        chunk = []
-                        current_length = 0
-
-                    chunk.append(sent)
-                    current_length += len(sent_words)
-
-                if chunk:
-                    self.documents.append(" ".join(chunk))
-
-            logger.info(f"Processed {len(self.documents)} document chunks")
-
-            # Generate embeddings
-            if self.documents:
-                embs = self.embedder.encode(self.documents, convert_to_numpy=True)
-                self.embeddings = normalize(embs, axis=1)
-                logger.info("Document embeddings generated")
-            else:
-                raise ValueError("No documents available for embedding")
-
-        except Exception as e:
-            logger.error(f"Document processing failed: {e}")
-            # Fallback to default document
-            self.documents = [
-                "Q: What is Crossbar?\nA: Crossbar is a technology company specializing in ReRAM memory solutions."
-            ]
-            embs = self.embedder.encode(self.documents, convert_to_numpy=True)
-            self.embeddings = normalize(embs, axis=1)
-
-    def build_index(self):
-        try:
-            if self.embeddings is None or len(self.embeddings) == 0:
-                raise ValueError("No embeddings available for indexing")
-
-            dim = self.embeddings.shape[1]
-            self.index = faiss.IndexFlatIP(dim)
-            self.index.add(self.embeddings)
-            logger.info(f"FAISS index built with {self.index.ntotal} vectors")
-        except Exception as e:
-            logger.error(f"Index building failed: {e}")
-            self.index = None
-
-    def retrieve_context(self, question, top_k=3):
-        if not self.index or self.index.ntotal == 0:
-            logger.warning("FAISS index not available or empty")
-            return []
-
-        try:
-            # Embed the question
-            q_embed = self.embedder.encode([question], convert_to_numpy=True)
-            q_embed = normalize(q_embed, axis=1)
-
-            # Search the index
-            distances, indices = self.index.search(q_embed, top_k)
-
-            # Retrieve top documents
-            results = []
-            for i in indices[0]:
-                if i < len(self.documents):
-                    results.append(self.documents[i])
-
-            logger.info(
-                f"Retrieved {len(results)} context documents for question: {question}"
-            )
-            return results
-
-        except Exception as e:
-            logger.error(f"Context retrieval failed: {e}")
-            return []
-
-    def get_known_relationship(self, question):
-        """Check for known relationships before querying GPT"""
-        # Simple pattern matching for product relationships
-        products = []
-        for product in self.known_relationships.keys():
-            if product.lower() in question.lower():
-                products.append(product)
-
-        if len(products) >= 2:
-            # Try to find direct relationship
-            for i, prod1 in enumerate(products):
-                for prod2 in products[i + 1 :]:
-                    # Check both directions
-                    if prod2 in self.known_relationships.get(prod1, []):
-                        return f"{prod1} is related to {prod2}: {', '.join(self.known_relationships[prod1])}"
-                    if prod1 in self.known_relationships.get(prod2, []):
-                        return f"{prod2} is related to {prod1}: {', '.join(self.known_relationships[prod2])}"
-
-        return None
+if __name__ == "__main__":
+    # Test file processing
+    test_file = "uploads/sample.pdf"
+    if os.path.exists(test_file):
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if api_key:
+            result = embed_and_store_file(test_file, api_key)
+            print(f"Processed file: {result['filename']}")
+            print(f"Text length: {len(result['text'])} characters")
+        else:
+            print("OPENAI_API_KEY not set")
