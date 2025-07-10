@@ -569,6 +569,36 @@
             border: 1px solid var(--glass-border);
         }
         
+        .multi-file-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 157, 92, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-file {
+            color: var(--orange-secondary);
+            cursor: pointer;
+            padding: 0.3rem;
+            transition: color 0.3s;
+        }
+        
+        .remove-file:hover {
+            color: var(--orange-primary);
+        }
+        
         .file-icon {
             font-size: 3rem;
             margin-bottom: 0.5rem;
@@ -577,18 +607,6 @@
         .file-name {
             font-size: 0.9rem;
             word-break: break-all;
-        }
-        
-        .remove-file {
-            color: var(--orange-secondary);
-            cursor: pointer;
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-            transition: color 0.3s;
-        }
-        
-        .remove-file:hover {
-            color: var(--orange-primary);
         }
         
         .concepts-container {
@@ -1185,6 +1203,24 @@
                         <p>Login to see your saved Q&A memories</p>
                     </div>
                 </div>
+
+                <!-- File History Card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-folder-open"></i> File History</h3>
+                    <div class="kernel-output" id="file-history">
+                        <p>No uploaded files yet.</p>
+                    </div>
+                </div>
+
+                <!-- Download Conversation Card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-download"></i> Download Conversation</h3>
+                    <div class="answer-actions">
+                        <button class="action-btn" onclick="downloadConversation('txt')">.TXT</button>
+                        <button class="action-btn" onclick="downloadConversation('docx')">.DOCX</button>
+                        <button class="action-btn" onclick="downloadConversation('pdf')">.PDF</button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1220,23 +1256,21 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div class="file-upload">
-                <input type="file" id="context-file" class="file-input" accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
-                <label for="context-file" class="file-label" id="file-drop-area">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
+                <label for="context-files" class="file-label" id="file-drop-area">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Choose a file or drag it here</span>
+                    <span>Choose files or drag them here</span>
                     <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
                 </label>
-                <div class="file-preview" id="file-preview">
-                    <i class="file-icon" id="file-icon"></i>
-                    <span class="file-name" id="file-name"></span>
-                    <span class="remove-file" id="remove-file">Remove file</span>
+                <div class="multi-file-preview" id="multi-file-preview">
+                    <!-- File previews will be added here -->
                 </div>
             </div>
             <div class="concepts-container" id="file-concepts" style="display: none;">
                 <h4>Key Concepts:</h4>
                 <div class="concept-tags" id="file-concept-tags"></div>
             </div>
-            <button class="submit-btn" id="submit-file-context">Upload File <i class="fas fa-spinner fa-spin"
+            <button class="submit-btn" id="submit-file-context">Upload Files <i class="fas fa-spinner fa-spin"
                     style="display: none;" id="file-spinner"></i></button>
         </div>
     </div>
@@ -1256,6 +1290,39 @@
             <div class="kernel-output" id="vectorOutput" style="margin-top: 20px; max-height: 300px;"></div>
         </div>
     </div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal" id="admin-login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Admin Login</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="admin-username">Username</label>
+                <input type="text" id="admin-username">
+            </div>
+            <div class="input-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password">
+            </div>
+            <button class="submit-btn" id="admin-login-btn">Login</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <section id="admin-dashboard" style="display:none; padding:2rem">
+        <div class="glass-panel">
+            <h2>Admin Dashboard</h2>
+            <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
+            <div style="margin-top:2rem">
+                <h3>Conversation Logs</h3>
+                <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
+                <h3>Frequent Questions</h3>
+                <ul id="frequent-questions"></ul>
+            </div>
+        </div>
+    </section>
 
     <div id="notification-container"></div>
 
@@ -1290,13 +1357,10 @@
         const textContextModal = document.getElementById('text-context-modal');
         const fileContextModal = document.getElementById('file-context-modal');
         const vectorDebugModal = document.getElementById('vector-debug-modal');
+        const adminLoginModal = document.getElementById('admin-login-modal');
         const closeButtons = document.querySelectorAll('.close-modal');
-        const fileInput = document.getElementById('context-file');
-        const filePreview = document.getElementById('file-preview');
-        const fileIcon = document.getElementById('file-icon');
-        const fileName = document.getElementById('file-name');
-        const removeFileBtn = document.getElementById('remove-file');
-        const fileDropArea = document.getElementById('file-drop-area');
+        const fileInput = document.getElementById('context-files');
+        const multiFilePreview = document.getElementById('multi-file-preview');
         const textConcepts = document.getElementById('text-concepts');
         const textConceptTags = document.getElementById('text-concept-tags');
         const fileConcepts = document.getElementById('file-concepts');
@@ -1365,10 +1429,12 @@
                 textContextModal.classList.remove('show');
                 fileContextModal.classList.remove('show');
                 vectorDebugModal.classList.remove('show');
+                adminLoginModal.classList.remove('show');
                 setTimeout(() => {
                     textContextModal.style.display = 'none';
                     fileContextModal.style.display = 'none';
                     vectorDebugModal.style.display = 'none';
+                    adminLoginModal.style.display = 'none';
                 }, 300);
             });
         });
@@ -1387,22 +1453,21 @@
                 vectorDebugModal.classList.remove('show');
                 setTimeout(() => vectorDebugModal.style.display = 'none', 300);
             }
+            if (e.target === adminLoginModal) {
+                adminLoginModal.classList.remove('show');
+                setTimeout(() => adminLoginModal.style.display = 'none', 300);
+            }
         });
 
         // File input handling
         fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files[0]) displayFilePreview(this.files[0]);
-        });
-
-        // Remove file button
-        removeFileBtn.addEventListener('click', function() {
-            fileInput.value = '';
-            filePreview.style.display = 'none';
-            fileDropArea.style.display = 'flex';
-            fileConcepts.style.display = 'none';
+            if (this.files && this.files.length > 0) {
+                displayMultiFilePreview(this.files);
+            }
         });
 
         // Drag and drop functionality
+        const fileDropArea = document.getElementById('file-drop-area');
         fileDropArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.style.borderColor = 'var(--orange-primary)';
@@ -1419,20 +1484,54 @@
             this.style.borderColor = 'var(--glass-border)';
             this.style.background = 'rgba(30, 15, 10, 0.5)';
 
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 fileInput.files = e.dataTransfer.files;
-                displayFilePreview(e.dataTransfer.files[0]);
+                displayMultiFilePreview(e.dataTransfer.files);
             }
         });
 
-        function displayFilePreview(file) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const iconClass = fileIcons[ext] || fileIcons.default;
-            fileIcon.className = `file-icon ${iconClass}`;
-            fileName.textContent = file.name;
-            filePreview.style.display = 'block';
-            fileDropArea.style.display = 'none';
-            fileConcepts.style.display = 'none';
+        function displayMultiFilePreview(files) {
+            multiFilePreview.innerHTML = '';
+            multiFilePreview.style.display = 'block';
+
+            Array.from(files).forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                const iconClass = fileIcons[ext] || fileIcons.default;
+
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <i class="${iconClass}"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <span class="remove-file" data-file="${file.name}">✕</span>
+                `;
+
+                multiFilePreview.appendChild(fileItem);
+            });
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-file').forEach(button => {
+                button.addEventListener('click', function() {
+                    const fileName = this.getAttribute('data-file');
+                    const dt = new DataTransfer();
+                    const files = fileInput.files;
+
+                    for (let i = 0; i < files.length; i++) {
+                        if (files[i].name !== fileName) {
+                            dt.items.add(files[i]);
+                        }
+                    }
+
+                    fileInput.files = dt.files;
+                    displayMultiFilePreview(dt.files);
+
+                    if (dt.files.length === 0) {
+                        multiFilePreview.style.display = 'none';
+                    }
+                });
+            });
         }
 
         // Get selected embedding model
@@ -1500,7 +1599,7 @@
             const fileSpinner = document.getElementById('file-spinner');
 
             if (!fileInput.files || fileInput.files.length === 0) {
-                showNotification('Please select a file to upload', 'error');
+                showNotification('Please select files to upload', 'error');
                 return;
             }
 
@@ -1515,7 +1614,11 @@
 
                 const model = getSelectedModel();
                 const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+
+                Array.from(fileInput.files).forEach(file => {
+                    formData.append('files', file);
+                });
+
                 formData.append('sessionId', sessionId);
                 formData.append('model', model);
 
@@ -1529,13 +1632,14 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to upload file');
+                    throw new Error(errorData.error || 'Failed to upload files');
                 }
 
                 const data = await response.json();
                 displayConcepts(fileConceptTags, data.concepts || []);
                 fileConcepts.style.display = 'block';
-                showNotification('File uploaded successfully!', 'success', data.concepts);
+                showNotification('Files uploaded successfully!', 'success', data.concepts);
+                fetchFileHistory();
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
             } finally {
@@ -1700,6 +1804,164 @@
                 showNotification(`Error: ${error.message}`, 'error');
             }
         });
+
+        // File History Fetch
+        async function fetchFileHistory() {
+            try {
+                const res = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
+                if (!res.ok) throw new Error('Failed to fetch file history');
+
+                const data = await res.json();
+                const container = document.getElementById('file-history');
+                container.innerHTML = "";
+
+                if (data.length === 0) {
+                    container.innerHTML = "<p>No files uploaded.</p>";
+                    return;
+                }
+
+                data.forEach(ctx => {
+                    const row = document.createElement("div");
+                    row.className = "memory-entry";
+                    row.innerHTML = `
+                        <div><strong>${ctx.filename}</strong></div>
+                        <div>${new Date(ctx.timestamp).toLocaleString()}</div>
+                        <div class="memory-actions">
+                            <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">Remove</button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Remove context file
+        async function removeContext(contextId) {
+            try {
+                const apiKey = document.getElementById('api-key').value;
+                if (!apiKey) {
+                    showNotification('Please enter API key', 'error');
+                    return;
+                }
+
+                const response = await fetch("/api/remove_context", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        contextId: contextId
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to remove context');
+                }
+
+                showNotification('Context removed successfully', 'success');
+                fetchFileHistory();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Download conversation
+        function downloadConversation(format) {
+            window.open(`/api/download_conversation?sessionId=${sessionId}&format=${format}`, "_blank");
+        }
+
+        // Admin login functionality
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 'a') {
+                adminLoginModal.style.display = 'flex';
+                setTimeout(() => adminLoginModal.classList.add('show'), 10);
+            }
+        });
+
+        document.getElementById('admin-login-btn').addEventListener('click', async() => {
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+
+            if (!username || !password) {
+                showNotification('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/admin_login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Login failed');
+
+                showNotification('Admin login successful', 'success');
+                adminLoginModal.classList.remove('show');
+                setTimeout(() => adminLoginModal.style.display = 'none', 300);
+                document.getElementById('admin-dashboard').style.display = 'block';
+                loadAdminDashboard();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Load admin dashboard
+        async function loadAdminDashboard() {
+            try {
+                const convoRes = await fetch("/api/admin/conversations");
+                if (!convoRes.ok) throw new Error('Failed to load conversations');
+
+                const convos = await convoRes.json();
+                const convoContainer = document.getElementById('admin-conversations');
+                convoContainer.textContent = convos.map(c => `[${new Date(c.timestamp).toLocaleString()}]\nQ: ${c.question}\nA: ${c.answer}\n`).join('\n\n');
+
+                const freqRes = await fetch("/api/admin/frequent_questions");
+                if (!freqRes.ok) throw new Error('Failed to load frequent questions');
+
+                const questions = await freqRes.json();
+                const list = document.getElementById('frequent-questions');
+                list.innerHTML = "";
+
+                questions.forEach(q => {
+                    const li = document.createElement('li');
+                    li.textContent = `${q.question} (${q.count} times)`;
+                    list.appendChild(li);
+                });
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Reset database
+        async function resetDatabase() {
+            if (!confirm("Are you sure you want to reset the entire database? This cannot be undone.")) return;
+
+            try {
+                const response = await fetch("/api/admin/reset_db", {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Reset failed');
+
+                showNotification('Database reset successfully', 'success');
+                loadAdminDashboard();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
 
         // Helper function to set output content
         function setOutputContent(elementId, content) {
@@ -1870,8 +2132,10 @@
             canvas.height = window.innerHeight;
         });
 
+        // Initialize and fetch file history
         initNeuralNetwork();
         animateNeuralNetwork();
+        fetchFileHistory();
     </script>
 </body>
 
