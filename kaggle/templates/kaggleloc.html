@@ -1069,6 +1069,7 @@
             <a href="#features">Features</a>
             <a href="#api">Ask Question</a>
             <a href="#results">Results</a>
+            <a href="#" id="admin-nav">Admin</a>
         </div>
     </nav>
 
@@ -1246,6 +1247,9 @@
             </div>
             <button class="submit-btn" id="submit-text-context">Add Context <i class="fas fa-spinner fa-spin"
                     style="display: none;" id="text-spinner"></i></button>
+            <button class="context-btn" id="clear-text-context" style="margin-top: 1rem;">
+                <i class="fas fa-eraser"></i> Clear Text
+            </button>
         </div>
     </div>
 
@@ -1876,11 +1880,9 @@
         }
 
         // Admin login functionality
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && e.key === 'a') {
-                adminLoginModal.style.display = 'flex';
-                setTimeout(() => adminLoginModal.classList.add('show'), 10);
-            }
+        document.getElementById('admin-nav').addEventListener('click', () => {
+            adminLoginModal.style.display = 'flex';
+            setTimeout(() => adminLoginModal.classList.add('show'), 10);
         });
 
         document.getElementById('admin-login-btn').addEventListener('click', async() => {
@@ -2136,6 +2138,12 @@
         initNeuralNetwork();
         animateNeuralNetwork();
         fetchFileHistory();
+
+        document.getElementById('clear-text-context').addEventListener('click', () => {
+            document.getElementById('context-text').value = '';
+            document.getElementById('text-concepts').style.display = 'none';
+            document.getElementById('text-concept-tags').innerHTML = '';
+        });
     </script>
 </body>
 
