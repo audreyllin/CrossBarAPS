@@ -7,6 +7,7 @@ from docx import Document as DocxDoc
 from pptx import Presentation
 from openai import OpenAI
 from pathlib import Path
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

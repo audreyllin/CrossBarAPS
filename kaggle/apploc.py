@@ -1,12 +1,8 @@
-from flask import Flask, request, jsonify, render_template, send_file
 import os
 import logging
 import uuid
 import tiktoken
 import json
-import PyPDF2
-import pdfplumber
-from docx import Document as DocxDoc
 import hashlib
 import re
 import sqlite3
@@ -15,20 +11,25 @@ from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
 from werkzeug.utils import secure_filename
 from collections import Counter
-import pytesseract
-from PIL import Image
-from pptx import Presentation
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from dotenv import load_dotenv
+from rag_pipeline import extract_text_from_file, embed_and_store_file
+from flask import Flask, request, jsonify, render_template, send_file
 from io import BytesIO
-import datetime
+from docx import Document as DocxDoc
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+# Load environment variables
+load_dotenv()
 
 # Initialize app and paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(current_dir, "templates")
 DB_FILE = os.path.join(current_dir, "memory.db")
 UPLOAD_FOLDER = "uploads"
+EMBEDDED_FLAGS = "embedded_flags"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(EMBEDDED_FLAGS, exist_ok=True)
 ALLOWED_EXTENSIONS = {
     "txt",
     "pdf",
@@ -122,43 +123,6 @@ def count_tokens(text):
     return len(encoding.encode(text))
 
 
-# Text extraction from files
-def extract_text_from_file(filepath, filename):
-    ext = filename.split(".")[-1].lower()
-    text = ""
-    try:
-        if ext == "pdf":
-            with pdfplumber.open(filepath) as pdf:
-                text = "\n".join(
-                    [page.extract_text() for page in pdf.pages if page.extract_text()]
-                )
-        elif ext in ["doc", "docx"]:
-            doc = Document(filepath)
-            text = "\n".join([para.text for para in doc.paragraphs])
-        elif ext in ["ppt", "pptx"]:
-            prs = Presentation(filepath)
-            text = "\n".join(
-                [
-                    shape.text
-                    for slide in prs.slides
-                    for shape in slide.shapes
-                    if hasattr(shape, "text") and shape.text
-                ]
-            )
-        elif ext in ["jpg", "jpeg", "png"]:
-            image = Image.open(filepath)
-            text = pytesseract.image_to_string(image)
-        elif ext == "mp4":
-            text = "Video content not extracted"
-        else:  # txt and others
-            with open(filepath, "r", encoding="utf-8") as f:
-                text = f.read()
-    except Exception as e:
-        logging.error(f"Text extraction failed: {str(e)}")
-        text = f"Error extracting text: {str(e)}"
-    return text[:20000]  # Limit to 20k characters
-
-
 # GPT Embedding
 def generate_vector(text, api_key, model="text-embedding-3-large"):
     try:
@@ -173,12 +137,12 @@ def generate_vector(text, api_key, model="text-embedding-3-large"):
         return np.zeros(dim)
 
 
-# Concept extraction
+# Concept extraction with GPT
 def extract_concepts(text, api_key):
     try:
         client = OpenAI(api_key=api_key)
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo",
             messages=[
                 {
                     "role": "system",
@@ -186,34 +150,37 @@ def extract_concepts(text, api_key):
                 },
                 {"role": "user", "content": f"Extract concepts from:\n\n{text[:3000]}"},
             ],
+            response_format={"type": "json_object"},
             max_tokens=150,
             temperature=0.3,
         )
-        concepts = json.loads(response.choices[0].message.content)
+        response_content = response.choices[0].message.content
+        concepts = json.loads(response_content).get("concepts", [])
         if isinstance(concepts, list) and len(concepts) > 0:
             return [concept.capitalize() for concept in concepts]
     except Exception as e:
         logging.error(f"Concept extraction failed: {str(e)}")
 
-    # Fallback method
-    words = re.findall(r"\b\w{4,}\b", text.lower())
-    stop_words = {
-        "this",
-        "that",
-        "which",
-        "with",
-        "from",
-        "your",
-        "have",
-        "more",
-        "about",
-    }
-    top_words = [
-        word
-        for word, count in Counter(words).most_common(5)
-        if word not in stop_words and len(word) > 3
-    ]
-    return [word.capitalize() for word in top_words]
+    # Fallback to GPT-3.5 if GPT-4 fails
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Extract top 5 key concepts as comma-separated list",
+                },
+                {"role": "user", "content": f"Extract concepts from:\n\n{text[:3000]}"},
+            ],
+            max_tokens=100,
+            temperature=0.3,
+        )
+        concepts = response.choices[0].message.content.strip().split(",")
+        return [concept.strip().capitalize() for concept in concepts[:5]]
+    except Exception as e:
+        logging.error(f"Fallback concept extraction failed: {str(e)}")
+        return ["General", "Information", "Technology", "Business", "Data"]
 
 
 # Context retrieval
@@ -249,6 +216,42 @@ def get_relevant_contexts(
     similarities.sort(key=lambda x: x[1], reverse=True)
     top_contexts = [ctx_id for ctx_id, _ in similarities[:top_n]]
     return [ctx for ctx in session_contexts if ctx["id"] in top_contexts]
+
+
+# File processing functions
+def process_all_uploads_on_start():
+    print("[Startup] Processing files in uploads/ folder...")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logging.warning("OPENAI_API_KEY not set. Skipping file auto-processing.")
+        return
+
+    for filename in os.listdir(UPLOAD_FOLDER):
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.isfile(filepath) or not allowed_file(filename):
+            continue
+
+        # Skip already-processed files
+        if check_if_file_embedded(filename):
+            print(f"[Skipped] {filename} already embedded.")
+            continue
+
+        try:
+            print(f"[Processing] Embedding {filename}...")
+            embed_and_store_file(filepath, api_key)
+            mark_file_as_embedded(filename)
+            print(f"[Done] Embedded {filename}.")
+        except Exception as e:
+            print(f"[Error] Failed to embed {filename}: {e}")
+
+
+def check_if_file_embedded(filename):
+    return os.path.exists(f"{EMBEDDED_FLAGS}/{filename}.done")
+
+
+def mark_file_as_embedded(filename):
+    with open(f"{EMBEDDED_FLAGS}/{filename}.done", "w") as f:
+        f.write("embedded")
 
 
 # ===== ADMIN ROUTES =====
@@ -455,57 +458,76 @@ def upload_context():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(filepath)
-            text_content = extract_text_from_file(filepath, filename)
-            content_hash = hashlib.sha256(text_content.encode()).hexdigest()
 
-            # Check for duplicates
-            with sqlite3.connect(DB_FILE) as db:
-                existing = db.execute(
-                    "SELECT context_id FROM session_contexts "
-                    "WHERE session_id = ? AND content_hash = ? AND is_active = 1",
-                    (session_id, content_hash),
-                ).fetchone()
+            try:
+                # Process file with GPT-based functions
+                text_content = extract_text_from_file(filepath)
 
-                if existing:
-                    os.remove(filepath)
-                    results.append(
-                        {
-                            "status": "duplicate",
-                            "filename": filename,
-                            "context_id": existing[0],
-                        }
+                # SAFEGUARD: Check for readable content
+                if not text_content.strip():
+                    raise ValueError("No readable content found in the uploaded file.")
+
+                content_hash = hashlib.sha256(text_content.encode()).hexdigest()
+
+                # Check for duplicates
+                with sqlite3.connect(DB_FILE) as db:
+                    existing = db.execute(
+                        "SELECT context_id FROM session_contexts "
+                        "WHERE session_id = ? AND content_hash = ? AND is_active = 1",
+                        (session_id, content_hash),
+                    ).fetchone()
+
+                    if existing:
+                        os.remove(filepath)
+                        results.append(
+                            {
+                                "status": "duplicate",
+                                "filename": filename,
+                                "context_id": existing[0],
+                            }
+                        )
+                        continue
+
+                context_id = f"file_{hashlib.md5((filename + session_id).encode()).hexdigest()[:10]}"
+                vector = generate_vector(text_content, api_key, model=model)
+
+                with sqlite3.connect(DB_FILE) as db:
+                    db.execute(
+                        "INSERT INTO context_vectors (context_id, session_id, vector, model) "
+                        "VALUES (?, ?, ?, ?)",
+                        (context_id, session_id, json.dumps(vector.tolist()), model),
                     )
-                    continue
+                    db.execute(
+                        "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename, content_hash) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (
+                            session_id,
+                            context_id,
+                            text_content,
+                            "file",
+                            filename,
+                            content_hash,
+                        ),
+                    )
+                    db.commit()
 
-            context_id = (
-                f"file_{hashlib.md5((filename + session_id).encode()).hexdigest()[:10]}"
-            )
-            vector = generate_vector(text_content, api_key, model=model)
-
-            with sqlite3.connect(DB_FILE) as db:
-                db.execute(
-                    "INSERT INTO context_vectors (context_id, session_id, vector, model) "
-                    "VALUES (?, ?, ?, ?)",
-                    (context_id, session_id, json.dumps(vector.tolist()), model),
+                concepts = extract_concepts(text_content, api_key)
+                results.append(
+                    {
+                        "filename": filename,
+                        "status": "success",
+                        "context_id": context_id,
+                        "concepts": concepts,
+                    }
                 )
-                db.execute(
-                    "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename, content_hash) "
-                    "VALUES (?, ?, ?, ?, ?, ?)",
-                    (
-                        session_id,
-                        context_id,
-                        text_content,
-                        "file",
-                        filename,
-                        content_hash,
-                    ),
+            except Exception as e:
+                logging.error(f"File processing failed: {str(e)}")
+                # Clean up invalid file
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                results.append(
+                    {"filename": filename, "status": "error", "error": str(e)}
                 )
-                db.commit()
-
-            concepts = extract_concepts(text_content, api_key)
-            results.append(
-                {"filename": filename, "context_id": context_id, "concepts": concepts}
-            )
     else:
         return jsonify({"error": "No valid context provided"}), 400
 
@@ -569,22 +591,37 @@ def ask_question():
             )
             db.commit()
 
-        # Generate follow-up questions
-        follow_up_prompt = f"Given Q: '{question}' and A: '{answer}', generate 3 relevant follow-ups as JSON array."
+        # Generate follow-up questions with GPT
+        follow_up_prompt = (
+            f"Given the following conversation:\n"
+            f"Question: {question}\n"
+            f"Answer: {answer}\n\n"
+            "Generate 3 relevant follow-up questions as a JSON array of strings."
+        )
+
         follow_up_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": follow_up_prompt}],
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that generates follow-up questions",
+                },
+                {"role": "user", "content": follow_up_prompt},
+            ],
+            response_format={"type": "json_object"},
             max_tokens=150,
             temperature=0.5,
         )
 
         try:
-            follow_ups = json.loads(follow_up_response.choices[0].message.content)
+            follow_ups = json.loads(follow_up_response.choices[0].message.content).get(
+                "questions", []
+            )
         except:
             follow_ups = [
-                "Can you elaborate?",
-                "Related topics?",
-                "What else should I know?",
+                "Can you elaborate on that?",
+                "What are the key points I should remember?",
+                "How does this relate to other topics?",
             ]
 
         return jsonify(
@@ -610,65 +647,6 @@ def index():
     return render_template("kaggleloc.html")
 
 
-def process_existing_uploads(
-    session_id="manual_batch_session", model="text-embedding-3-large"
-):
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        logging.warning("OPENAI_API_KEY not set. Skipping file auto-processing.")
-        return
-
-    processed = 0
-    skipped = 0
-
-    for fname in os.listdir(UPLOAD_FOLDER):
-        if not allowed_file(fname):
-            continue
-        fpath = os.path.join(UPLOAD_FOLDER, fname)
-
-        try:
-            content = extract_text_from_file(fpath, fname)[:20000]
-            content_hash = hashlib.sha256(content.encode()).hexdigest()
-
-            # Skip if already in DB
-            with sqlite3.connect(DB_FILE) as db:
-                exists = db.execute(
-                    "SELECT 1 FROM session_contexts WHERE session_id = ? AND content_hash = ? AND is_active = 1",
-                    (session_id, content_hash),
-                ).fetchone()
-            if exists:
-                logging.info(f"Skipped (already processed): {fname}")
-                skipped += 1
-                continue
-
-            context_id = (
-                f"file_{hashlib.md5((fname + session_id).encode()).hexdigest()[:10]}"
-            )
-            vector = generate_vector(content, api_key, model)
-            concepts = extract_concepts(content, api_key)
-
-            with sqlite3.connect(DB_FILE) as db:
-                db.execute(
-                    "INSERT INTO context_vectors (context_id, session_id, vector, model) VALUES (?, ?, ?, ?)",
-                    (context_id, session_id, json.dumps(vector.tolist()), model),
-                )
-                db.execute(
-                    "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename, content_hash, is_active) VALUES (?, ?, ?, 'file', ?, ?, 1)",
-                    (session_id, context_id, content, fname, content_hash),
-                )
-                db.commit()
-
-            logging.info(f"Processed: {fname} | Concepts: {concepts}")
-            processed += 1
-
-        except Exception as e:
-            logging.error(f"Failed on {fname}: {e}")
-
-    logging.info(
-        f"File auto-processing complete. Processed: {processed}, Skipped: {skipped}"
-    )
-
-
 if __name__ == "__main__":
-    process_existing_uploads()  # Auto-process files on startup
+    process_all_uploads_on_start()  # Auto-process files on startup
     app.run(host="0.0.0.0", port=5000, debug=True)
