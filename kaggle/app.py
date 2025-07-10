@@ -1,482 +1,744 @@
-from flask import Flask, request, jsonify, render_template
-import subprocess
 import os
-import shlex
-import tempfile
-import json
-import glob
-import re
-import uuid
 import logging
-import traceback
-from kaggle.api.kaggle_api_extended import KaggleApi
+import uuid
+import tiktoken
+import json
+import hashlib
+import re
+import sqlite3
+import numpy as np
+import base64
+import tempfile
+from sklearn.metrics.pairwise import cosine_similarity
+from openai import OpenAI
+from werkzeug.utils import secure_filename
+from collections import Counter
+from dotenv import load_dotenv
+from rag_pipeline import (
+    extract_text_from_file,
+    extract_with_gpt_vision_base64,
+    extract_image_metadata,
+    is_image_heavy_pdf,
+)
+from flask import Flask, request, jsonify, render_template, send_file
+from io import BytesIO
+from docx import Document as DocxDoc
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
-app = Flask(__name__)
+# Load environment variables
+load_dotenv()
 
-# Hardcoded Kaggle credentials
-KAGGLE_API_KEY = "3a73335499bf468b54cf6e46fdf24adb"
-KAGGLE_USERNAME = "isha21700"
+# Initialize app and paths
+current_dir = os.path.dirname(os.path.abspath(__file__))
+template_path = os.path.join(current_dir, "templates")
+DB_FILE = os.path.join(current_dir, "memory.db")
+UPLOAD_FOLDER = "uploads"
+EMBEDDED_FLAGS = "embedded_flags"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(EMBEDDED_FLAGS, exist_ok=True)
+ALLOWED_EXTENSIONS = {
+    "txt",
+    "pdf",
+    "doc",
+    "docx",
+    "ppt",
+    "pptx",
+    "jpg",
+    "jpeg",
+    "png",
+    "mp4",
+}
 
-# Configure logging
+# Admin credentials
+ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
+ADMIN_PASS = os.environ.get("ADMIN_PASS", "securepassword")
+
+app = Flask(__name__, template_folder=template_path)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
-# Session storage for follow-up questions
-session_data = {}
+# Constants
+IMAGE_RATIO_THRESHOLD = 0.5  # >50% images considered image-heavy
+
+
+# Initialize database
+def init_db():
+    with sqlite3.connect(DB_FILE) as db:
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS context_vectors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                context_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                vector TEXT NOT NULL,
+                model TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS session_contexts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                context_id TEXT NOT NULL,
+                content TEXT NOT NULL,
+                content_hash TEXT NOT NULL,
+                source_type TEXT,
+                filename TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1
+            )
+            """
+        )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS conversation_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        # Add columns if missing
+        try:
+            db.execute("ALTER TABLE session_contexts ADD COLUMN content_hash TEXT")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            db.execute(
+                "ALTER TABLE session_contexts ADD COLUMN is_active BOOLEAN DEFAULT 1"
+            )
+        except sqlite3.OperationalError:
+            pass
+        # Create indexes
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_content_hash ON session_contexts (content_hash)"
+        )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_session_active ON session_contexts (session_id, is_active)"
+        )
+
+
+init_db()
+
+# Token counting
+encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+
+
+def count_tokens(text):
+    return len(encoding.encode(text))
+
+
+# GPT Embedding
+def generate_vector(text, api_key, model="text-embedding-3-large"):
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.embeddings.create(
+            model=model, input=[text[:8192]]  # Truncate to model limit
+        )
+        return np.array(response.data[0].embedding)
+    except Exception as e:
+        logging.error(f"Embedding generation failed: {str(e)}")
+        dim = 3072 if model == "text-embedding-3-large" else 1536
+        return np.zeros(dim)
+
+
+# Concept extraction with GPT
+def extract_concepts(text, api_key):
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Extract top 5 key concepts as JSON array",
+                },
+                {"role": "user", "content": f"Extract concepts from:\n\n{text[:3000]}"},
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=150,
+            temperature=0.3,
+        )
+        response_content = response.choices[0].message.content
+        concepts = json.loads(response_content).get("concepts", [])
+        if isinstance(concepts, list) and len(concepts) > 0:
+            return [concept.capitalize() for concept in concepts]
+    except Exception as e:
+        logging.error(f"Concept extraction failed: {str(e)}")
+
+    # Fallback to GPT-3.5 if GPT-4 fails
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Extract top 5 key concepts as comma-separated list",
+                },
+                {"role": "user", "content": f"Extract concepts from:\n\n{text[:3000]}"},
+            ],
+            max_tokens=100,
+            temperature=0.3,
+        )
+        concepts = response.choices[0].message.content.strip().split(",")
+        return [concept.strip().capitalize() for concept in concepts[:5]]
+    except Exception as e:
+        logging.error(f"Fallback concept extraction failed: {str(e)}")
+        return ["General", "Information", "Technology", "Business", "Data"]
+
+
+# Context retrieval
+def get_context_vectors(session_id, model):
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT context_id, vector FROM context_vectors WHERE session_id = ? AND model = ?",
+            (session_id, model),
+        ).fetchall()
+    return [(row[0], np.array(json.loads(row[1]))) for row in rows]
+
+
+def get_relevant_contexts(
+    question, session_contexts, session_id, api_key, model, top_n=3
+):
+    if not question or not session_contexts:
+        return []
+
+    stored_vectors = get_context_vectors(session_id, model)
+    if not stored_vectors:
+        return []
+
+    question_vector = generate_vector(question, api_key, model=model)
+    similarities = []
+    for context_id, ctx_vec in stored_vectors:
+        try:
+            similarity = cosine_similarity([question_vector], [ctx_vec])[0][0]
+            similarities.append((context_id, similarity))
+        except Exception as e:
+            logging.error(f"Similarity error: {str(e)}")
+            similarities.append((context_id, 0))
+
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    top_contexts = [ctx_id for ctx_id, _ in similarities[:top_n]]
+    return [ctx for ctx in session_contexts if ctx["id"] in top_contexts]
+
+
+# File processing functions
+def process_all_uploads_on_start():
+    print("[Startup] Processing files in uploads/ folder...")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logging.warning("OPENAI_API_KEY not set. Skipping file auto-processing.")
+        return
+
+    for filename in os.listdir(UPLOAD_FOLDER):
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.isfile(filepath) or not allowed_file(filename):
+            continue
+
+        # Skip already-processed files
+        if check_if_file_embedded(filename):
+            print(f"[Skipped] {filename} already embedded.")
+            continue
+
+        try:
+            print(f"[Processing] Embedding {filename}...")
+            embed_and_store_file(filepath, api_key)
+            mark_file_as_embedded(filename)
+            print(f"[Done] Embedded {filename}.")
+        except Exception as e:
+            print(f"[Error] Failed to embed {filename}: {e}")
+
+
+def check_if_file_embedded(filename):
+    return os.path.exists(f"{EMBEDDED_FLAGS}/{filename}.done")
+
+
+def mark_file_as_embedded(filename):
+    with open(f"{EMBEDDED_FLAGS}/{filename}.done", "w") as f:
+        f.write("embedded")
+
+
+# ===== ADMIN ROUTES =====
+@app.route("/api/admin_login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+    if data.get("username") == ADMIN_USER and data.get("password") == ADMIN_PASS:
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Invalid credentials"}), 401
+
+
+@app.route("/api/admin/reset_db", methods=["POST"])
+def reset_db():
+    try:
+        os.system("python init_db.py")
+        return jsonify({"status": "reset successful"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/admin/conversations", methods=["GET"])
+def admin_conversations():
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT session_id, question, answer, timestamp FROM conversation_history ORDER BY timestamp DESC"
+        ).fetchall()
+    return jsonify(
+        [
+            {"session_id": r[0], "question": r[1], "answer": r[2], "timestamp": r[3]}
+            for r in rows
+        ]
+    )
+
+
+@app.route("/api/admin/frequent_questions", methods=["GET"])
+def frequent_questions():
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT question, COUNT(*) as count FROM conversation_history GROUP BY question ORDER BY count DESC LIMIT 10"
+        ).fetchall()
+    return jsonify([{"question": r[0], "count": r[1]} for r in rows])
+
+
+# ===== FILE MANAGEMENT ROUTES =====
+@app.route("/api/download_conversation", methods=["GET"])
+def download_convo():
+    session_id = request.args.get("sessionId")
+    fmt = request.args.get("format", "txt")
+    if not session_id:
+        return jsonify({"error": "Missing session ID"}), 400
+
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT question, answer, timestamp FROM conversation_history WHERE session_id = ?",
+            (session_id,),
+        ).fetchall()
+
+    content = [f"Q: {q}\nA: {a}\nTime: {t}" for q, a, t in rows]
+
+    if fmt == "txt":
+        return (
+            BytesIO("\n\n".join(content).encode("utf-8")),
+            200,
+            {
+                "Content-Type": "text/plain",
+                "Content-Disposition": f"attachment; filename=chat_{session_id}.txt",
+            },
+        )
+    elif fmt == "docx":
+        doc = DocxDoc()
+        for entry in content:
+            doc.add_paragraph(entry)
+        buf = BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        return send_file(
+            buf, as_attachment=True, download_name=f"chat_{session_id}.docx"
+        )
+    elif fmt == "pdf":
+        buf = BytesIO()
+        c = canvas.Canvas(buf, pagesize=letter)
+        width, height = letter
+        y = height - 50
+        for entry in content:
+            for line in entry.split("\n"):
+                c.drawString(50, y, line)
+                y -= 15
+                if y < 50:
+                    c.showPage()
+                    y = height - 50
+        c.save()
+        buf.seek(0)
+        return send_file(
+            buf, as_attachment=True, download_name=f"chat_{session_id}.pdf"
+        )
+    return jsonify({"error": "Unsupported format"}), 400
+
+
+@app.route("/api/list_contexts", methods=["GET"])
+def list_contexts():
+    session_id = request.args.get("sessionId")
+    if not session_id:
+        return jsonify({"error": "Missing session ID"}), 400
+
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT context_id, filename, timestamp FROM session_contexts "
+            "WHERE session_id = ? AND is_active = 1",
+            (session_id,),
+        ).fetchall()
+    return jsonify(
+        [{"context_id": r[0], "filename": r[1], "timestamp": r[2]} for r in rows]
+    )
+
+
+@app.route("/api/remove_context", methods=["POST"])
+def remove_context():
+    data = request.get_json()
+    context_id = data.get("contextId")
+    session_id = data.get("sessionId")
+    if not context_id or not session_id:
+        return jsonify({"error": "Missing parameters"}), 400
+
+    with sqlite3.connect(DB_FILE) as db:
+        db.execute(
+            "UPDATE session_contexts SET is_active = 0 WHERE context_id = ? AND session_id = ?",
+            (context_id, session_id),
+        )
+        db.execute(
+            "DELETE FROM context_vectors WHERE context_id = ? AND session_id = ?",
+            (context_id, session_id),
+        )
+        db.commit()
+    return jsonify({"status": "removed"})
+
+
+# ===== MAIN FUNCTIONALITY ROUTES =====
+def process_text_content(
+    text_content, api_key, session_id, model, filename, source_type
+):
+    content_hash = hashlib.sha256(text_content.encode()).hexdigest()
+
+    # Check for duplicates
+    with sqlite3.connect(DB_FILE) as db:
+        existing = db.execute(
+            "SELECT context_id FROM session_contexts "
+            "WHERE session_id = ? AND content_hash = ? AND is_active = 1",
+            (session_id, content_hash),
+        ).fetchone()
+
+        if existing:
+            return {
+                "status": "duplicate",
+                "filename": filename,
+                "context_id": existing[0],
+            }
+
+    context_id = (
+        f"file_{hashlib.md5((filename + session_id).encode()).hexdigest()[:10]}"
+    )
+    vector = generate_vector(text_content, api_key, model=model)
+
+    with sqlite3.connect(DB_FILE) as db:
+        db.execute(
+            "INSERT INTO context_vectors (context_id, session_id, vector, model) "
+            "VALUES (?, ?, ?, ?)",
+            (context_id, session_id, json.dumps(vector.tolist()), model),
+        )
+        db.execute(
+            "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename, content_hash) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                session_id,
+                context_id,
+                text_content,
+                source_type,
+                filename,
+                content_hash,
+            ),
+        )
+        db.commit()
+
+    concepts = extract_concepts(text_content, api_key)
+    return {
+        "filename": filename,
+        "status": "success",
+        "context_id": context_id,
+        "concepts": concepts,
+    }
+
+
+@app.route("/api/upload_context", methods=["POST"])
+def upload_context():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    session_id = request.form.get("sessionId")
+    model = request.form.get("model", "text-embedding-3-large")
+    results = []
+
+    # Handle text context
+    if "text" in request.form:
+        text_content = request.form["text"].strip()[:20000]
+        if not text_content:
+            return jsonify({"error": "Empty text content"}), 400
+
+        results.append(
+            process_text_content(
+                text_content, api_key, session_id, model, "text_context", "text"
+            )
+        )
+
+    # Handle Base64 files
+    elif "filesBase64" in request.form:
+        base64_files = request.form.getlist("filesBase64")
+        filenames = request.form.getlist("filenames")
+
+        for i, b64_data in enumerate(base64_files):
+            filename = filenames[i] if i < len(filenames) else f"file_{i}"
+
+            try:
+                # Extract base64 string (remove data URL prefix)
+                header, encoded = b64_data.split(",", 1)
+                file_data = base64.b64decode(encoded)
+
+                # Create temp file
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=os.path.splitext(filename)[1]
+                ) as tmp_file:
+                    tmp_file.write(file_data)
+                    tmp_path = tmp_file.name
+
+                # Process file
+                result = process_file(tmp_path, api_key, session_id, model, filename)
+                results.append(result)
+
+                # Clean up temp file
+                os.unlink(tmp_path)
+
+            except Exception as e:
+                results.append(
+                    {"filename": filename, "status": "error", "error": str(e)}
+                )
+    else:
+        return jsonify({"error": "No valid context provided"}), 400
+
+    return jsonify(results)
+
+
+def process_file(filepath, api_key, session_id, model, filename):
+    """Process a file with visual content analysis"""
+    try:
+        # Extract text with visual analysis
+        text_content = extract_text_from_file(filepath)
+        file_ext = os.path.splitext(filepath)[1].lower()
+
+        # Analyze content type
+        if not text_content.strip():
+            # Visual content only
+            logging.info(
+                f"Visual content only: {filename}, switching to image analysis"
+            )
+            image_analysis = extract_image_metadata(filepath)
+            return {
+                "status": "visual_only",
+                "filename": filename,
+                "image_analysis": image_analysis,
+            }
+
+        # Calculate image ratio (for PDFs)
+        image_ratio = 0
+        if file_ext == ".pdf":
+            image_ratio = 1.0 if is_image_heavy_pdf(filepath) else 0.0
+
+        # Handle different content types
+        if image_ratio > IMAGE_RATIO_THRESHOLD:
+            # Image-heavy document
+            image_analysis = extract_image_metadata(filepath)
+            return {
+                "status": "image_heavy",
+                "filename": filename,
+                "text": text_content,
+                "image_insights": image_analysis,
+            }
+        elif image_ratio > 0:
+            # Mixed content
+            image_analysis = extract_image_metadata(filepath)
+            return {
+                "status": "mixed",
+                "filename": filename,
+                "text": text_content,
+                "image_insights": image_analysis,
+            }
+        else:
+            # Text-heavy document
+            return process_text_content(
+                text_content, api_key, session_id, model, filename, "file"
+            )
+
+    except Exception as e:
+        logging.error(f"File processing failed: {str(e)}")
+        return {"filename": filename, "status": "error", "error": str(e)}
+
+
+@app.route("/api/ask", methods=["POST"])
+def ask_question():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    data = request.get_json()
+    question = data.get("question", "").strip()
+    session_id = data.get("sessionId", "")
+    model = data.get("model", "text-embedding-3-large")
+
+    if not question:
+        return jsonify({"error": "Missing question"}), 400
+    if not session_id:
+        return jsonify({"error": "Missing session ID"}), 400
+
+    try:
+        # Get active contexts
+        with sqlite3.connect(DB_FILE) as db:
+            rows = db.execute(
+                "SELECT context_id, content FROM session_contexts "
+                "WHERE session_id = ? AND is_active = 1",
+                (session_id,),
+            ).fetchall()
+        session_contexts = [{"id": row[0], "content": row[1]} for row in rows]
+
+        # Get relevant contexts
+        relevant_contexts = get_relevant_contexts(
+            question, session_contexts, session_id, api_key, model
+        )
+
+        # Prepare context for GPT
+        context_text = "\n\n".join([ctx["content"] for ctx in relevant_contexts[:3]])
+        prompt = f"Context:\n{context_text}\n\nQuestion: {question}\nAnswer:"
+
+        # Call GPT
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "Answer based on provided context"},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=500,
+            temperature=0.3,
+        )
+        answer = response.choices[0].message.content.strip()
+
+        # Store conversation
+        with sqlite3.connect(DB_FILE) as db:
+            db.execute(
+                "INSERT INTO conversation_history (session_id, question, answer) "
+                "VALUES (?, ?, ?)",
+                (session_id, question, answer),
+            )
+            db.commit()
+
+        # Generate follow-up questions with GPT
+        follow_up_prompt = (
+            f"Given the following conversation:\n"
+            f"Question: {question}\n"
+            f"Answer: {answer}\n\n"
+            "Generate 3 relevant follow-up questions as a JSON array of strings."
+        )
+
+        follow_up_response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that generates follow-up questions",
+                },
+                {"role": "user", "content": follow_up_prompt},
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=150,
+            temperature=0.5,
+        )
+
+        try:
+            follow_ups = json.loads(follow_up_response.choices[0].message.content).get(
+                "questions", []
+            )
+        except:
+            follow_ups = [
+                "Can you elaborate on that?",
+                "What are the key points I should remember?",
+                "How does this relate to other topics?",
+            ]
+
+        return jsonify(
+            {
+                "question": question,
+                "answer": answer,
+                "contexts": [ctx["content"] for ctx in relevant_contexts],
+                "follow_ups": follow_ups,
+            }
+        )
+    except Exception as e:
+        logging.error(f"Question answering failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate_content", methods=["POST"])
+def generate_content():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    data = request.get_json()
+    content = data.get("content", "").strip()
+    content_type = data.get("type", "memo")
+
+    if not content:
+        return jsonify({"error": "Missing content"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+
+        # Prompt templates for different content types
+        prompts = {
+            "memo": "Generate a structured company memo or whitepaper based on this content.",
+            "poster": "Design a compelling marketing poster description with a title, tagline, and layout elements.",
+            "slides": "Create a JSON array of 5 slide titles and bullet points for a pitch deck presentation.",
+            "video": "Generate a short storyboard with scenes (title + scene description) for video generation.",
+        }
+
+        prompt = prompts.get(content_type, "Summarize this content.")
+
+        # Call GPT-4
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional content generator for enterprise knowledge management.",
+                },
+                {"role": "user", "content": f"{prompt}\n\nContent:\n{content[:4000]}"},
+            ],
+            max_tokens=700,
+            temperature=0.5,
+        )
+
+        generated = response.choices[0].message.content.strip()
+
+        # Format slides as JSON if requested
+        if content_type == "slides":
+            try:
+                # Try to parse as JSON
+                slides = json.loads(generated)
+                return jsonify({"generated": slides})
+            except:
+                # If not valid JSON, return as is
+                return jsonify({"generated": generated})
+
+        return jsonify({"generated": generated})
+
+    except Exception as e:
+        logging.error(f"Content generation failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+# Helper functions
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route("/")
 def index():
-    # Set default command and parameters
-    default_command = "kaggle kernels output"
-    default_kernel = f"{KAGGLE_USERNAME}/isha-mistralai-test"
-    default_params = "--path output"
-
-    # Generate a unique session ID
-    session_id = str(uuid.uuid4())
-    session_data[session_id] = {"history": [], "context": ""}
-
-    return render_template(
-        "kaggle.html",
-        api_key=KAGGLE_API_KEY,
-        username=KAGGLE_USERNAME,
-        default_command=default_command,
-        default_kernel=default_kernel,
-        default_params=default_params,
-        session_id=session_id,
-    )
-
-
-def extract_insights(output):
-    """Extract key insights from kernel output"""
-    if not output:
-        return "No insights found"
-
-    # Look for common insight patterns
-    patterns = [
-        r"Key Insights:\s*\n(.*?)(?:\n\n|$)",
-        r"Summary:\s*\n(.*?)(?:\n\n|$)",
-        r"Conclusions:\s*\n(.*?)(?:\n\n|$)",
-        r"Insights:\s*\n(.*?)(?:\n\n|$)",
-    ]
-
-    for pattern in patterns:
-        match = re.search(pattern, output, re.DOTALL | re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-
-    # Fallback: take the last 5 meaningful lines
-    lines = [line.strip() for line in output.split("\n") if len(line.strip()) > 40]
-    return "\n".join(lines[-5:]) if lines else "No insights found"
-
-
-@app.route("/api/kaggle/execute", methods=["POST"])
-def execute_kaggle_command():
-    # Authorization
-    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not api_key or api_key != KAGGLE_API_KEY:
-        return jsonify({"error": "Invalid API key"}), 401
-
-    # Get request data
-    data = request.json
-    command = data.get("command", "")
-    parameters = data.get("parameters", "")
-    kernel_ref = data.get("kernel", "")
-    question = data.get("question", "")
-    session_id = data.get("session_id", "")
-    quit_session = data.get("quit", False)
-
-    # Handle session quit
-    if quit_session and session_id in session_data:
-        del session_data[session_id]
-        return jsonify({"message": "Session ended"})
-
-    # Initialize session if new
-    if session_id and session_id not in session_data:
-        session_data[session_id] = {"history": [], "context": ""}
-
-    # Get session context
-    session_context = session_data[session_id]["context"] if session_id else ""
-
-    # Append previous context to question for follow-ups
-    if session_context and question:
-        full_question = f"{session_context}\n\nFollow-up: {question}"
-    else:
-        full_question = question
-
-    if not command:
-        return jsonify({"error": "No command provided"}), 400
-
-    try:
-        # Create Kaggle config file in temporary directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            config_path = os.path.join(temp_dir, "kaggle.json")
-            with open(config_path, "w") as config_file:
-                json.dump(
-                    {"username": KAGGLE_USERNAME, "key": KAGGLE_API_KEY}, config_file
-                )
-
-            # Create unique output directory for this execution
-            output_dir = os.path.join(os.getcwd(), "output")
-            os.makedirs(output_dir, exist_ok=True)
-
-            # Prepare environment with config directory
-            env = os.environ.copy()
-            env["KAGGLE_CONFIG_DIR"] = temp_dir
-
-            # Build command list
-            base_command = shlex.split(command)
-
-            # Add parameters BEFORE kernel reference
-            if parameters:
-                base_command += shlex.split(parameters)
-
-            # Add kernel reference LAST
-            if kernel_ref:
-                base_command.append(kernel_ref)
-
-            # Add question and context to environment
-            env["QUESTION"] = full_question
-            if session_context:
-                env["CONTEXT"] = session_context
-
-            # Execute Kaggle command
-            result = subprocess.run(
-                base_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env=env,
-                timeout=300,
-            )
-
-            # Step: Pull result.json via Kaggle API
-            try:
-                api = KaggleApi()
-                api.authenticate()
-
-                kernel_slug = kernel_ref.split("/")[-1]
-                download_path = os.path.join(os.getcwd(), "output")
-                os.makedirs(download_path, exist_ok=True)
-
-                logger.info(
-                    f"🔽 Downloading kernel output for: {kernel_slug} into {download_path}"
-                )
-                api.kernels_output(kernel_slug=kernel_ref, path=download_path)
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to download output via Kaggle API: {str(e)}")
-
-            # Capture command output
-            cmd_output = result.stdout
-            logger.info(f"Command output: {cmd_output}")
-
-            # DEBUG: List files in output directory
-            logger.info(f"Files in output_dir: {os.listdir(output_dir)}")
-
-            # Determine expected log filename
-            kernel_slug = kernel_ref.split("/")[-1] if kernel_ref else "kernel"
-            log_filename = f"{kernel_slug}.log"
-            log_path = os.path.join(output_dir, log_filename)
-
-            # Parse output files
-            output_content = cmd_output
-            result_files = []
-            log_content = ""
-            output_path = ""  # Initialize output_path
-
-            # 1. Try to read the kernel log file
-            if os.path.exists(log_path):
-                try:
-                    with open(log_path, "r", encoding="utf-8") as f:
-                        log_content = f.read()
-                        result_files.append(log_filename)
-                        output_content += (
-                            f"\n\n--- KERNEL LOG CONTENT ---\n{log_content}"
-                        )
-                        output_path = log_path
-                        logger.info(f"✅ Found kernel log: {log_path}")
-                except Exception as e:
-                    logger.error(f"❌ Error reading log file: {str(e)}")
-                    output_content += f"\n\nError reading log file: {str(e)}"
-
-            # ✅ 2. Check for structured output files (IMPROVED)
-            answer = ""
-            insights = ""
-            notebook_suggestion = ""
-            result_json_path = os.path.join(output_dir, "result.json")
-            answer_txt_path = os.path.join(output_dir, "answer.txt")
-
-            # First priority: result.json
-            if os.path.exists(result_json_path):
-                try:
-                    with open(result_json_path, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                        answer = data.get("answer", "").strip()
-                        insights = data.get("explanation", "").strip()
-                        result_files.append("result.json")
-                        logger.info("✅ Extracted answer from result.json")
-                        output_content += f"\n\n--- STRUCTURED RESULT (result.json) ---\nAnswer: {answer}\nExplanation: {insights}"
-                except Exception as e:
-                    logger.error(f"❌ Error reading result.json: {str(e)}")
-                    answer = "⚠️ Error parsing result.json"
-                    insights = ""
-
-            # Second priority: answer.txt (fallback)
-            if not answer and os.path.exists(answer_txt_path):
-                try:
-                    with open(answer_txt_path, "r", encoding="utf-8") as f:
-                        answer = f.read().strip()
-                        result_files.append("answer.txt")
-                        logger.info("✅ Extracted answer from answer.txt")
-                        output_content += f"\n\n--- ANSWER (answer.txt) ---\n{answer}"
-                except Exception as e:
-                    logger.error(f"❌ Error reading answer.txt: {str(e)}")
-                    output_content += f"\n\nError reading answer.txt: {str(e)}"
-
-            # 3. Try to parse JSON log format (fallback)
-            json_log = []
-            if not answer and log_content:
-                try:
-                    # Try parsing as JSON array
-                    json_log = json.loads(log_content)
-                    logger.info(f"✅ Parsed JSON log with {len(json_log)} entries")
-                except json.JSONDecodeError:
-                    try:
-                        # Try parsing as JSON lines
-                        json_log = [
-                            json.loads(line)
-                            for line in log_content.splitlines()
-                            if line.strip()
-                        ]
-                        logger.info(
-                            f"✅ Parsed JSON lines with {len(json_log)} entries"
-                        )
-                    except:
-                        json_log = []
-                        logger.warning("⚠️ Failed to parse log as JSON")
-
-            # 4. Extract meaningful content from log (fallback)
-            meaningful_output = ""
-            if not answer:
-                if json_log:
-                    for entry in json_log:
-                        if isinstance(entry, dict) and "data" in entry:
-                            meaningful_output += entry["data"] + "\n"
-                elif log_content:
-                    meaningful_output = log_content
-
-            # 5. Look for other output files (fallback)
-            if not answer:
-                for file_path in glob.glob(os.path.join(output_dir, "*")):
-                    if os.path.isfile(file_path) and file_path != log_path:
-                        filename = os.path.basename(file_path)
-                        # Skip files we already processed
-                        if filename in ["result.json", "answer.txt"]:
-                            continue
-                        try:
-                            with open(file_path, "r", encoding="utf-8") as f:
-                                content = f.read()
-                                result_files.append(filename)
-                                output_content += (
-                                    f"\n\n--- FILE: {filename} ---\n{content}"
-                                )
-                                meaningful_output += (
-                                    f"\n\n--- {filename} ---\n{content}"
-                                )
-                                if not output_path:
-                                    output_path = file_path
-                        except Exception as e:
-                            logger.warning(f"⚠️ Error reading {filename}: {str(e)}")
-                            output_content += f"\n\nError reading {filename}: {str(e)}"
-
-            # 6. Final extraction from logs if no structured answer found
-            if not answer and full_question and meaningful_output:
-                # Enhanced patterns for instructor/contact questions
-                answer_patterns = [
-                    r"Answer:\s*(.*?)(?:\n\n|$)",
-                    r"Response:\s*(.*?)(?:\n\n|$)",
-                    r"Result:\s*(.*?)(?:\n\n|$)",
-                    r"Summary:\s*(.*?)(?:\n\n|$)",
-                    r"Final Answer:\s*(.*?)(?:\n\n|$)",
-                    r"```answer\n(.*?)\n```",
-                    r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)",
-                    r"Course Instructor:\s*(.*?)\n",
-                    r"Contact her at:\s*(.*?)(?:\n|$)",
-                    r"Email:\s*(\S+@\S+\.\S+)",
-                ]
-
-                for pattern in answer_patterns:
-                    match = re.search(
-                        pattern, meaningful_output, re.DOTALL | re.IGNORECASE
-                    )
-                    if match:
-                        # Handle instructor + contact pattern separately
-                        if pattern == r"Instructor:\s*(.*?)\s*Contact:\s*(.*?)(?:\n|$)":
-                            instructor = match.group(1).strip()
-                            contact = match.group(2).strip()
-                            answer = f"Instructor: {instructor}\nContact: {contact}"
-                        else:
-                            answer = match.group(1).strip()
-                        logger.info(f"🔍 Found answer using pattern: {pattern}")
-                        break
-
-                # If no pattern match, try to extract using NLP-like approach
-                if not answer:
-                    answer = extract_answer(meaningful_output, full_question)
-
-                # Special handling for instructor/contact questions
-                if not answer and (
-                    "instructor" in full_question.lower()
-                    and "contact" in full_question.lower()
-                ):
-                    instructor_match = re.search(
-                        r"(?i)(?:course\s+)?instructor\s*[:\-]\s*(.*?)(?:\n|$)",
-                        meaningful_output,
-                    )
-                    contact_match = re.search(
-                        r"(?i)contact\s*(?:her|information)?\s*[:\-]\s*(.*?)(?:\n|$)",
-                        meaningful_output,
-                    )
-
-                    if instructor_match and contact_match:
-                        answer = f"Instructor: {instructor_match.group(1).strip()}\nContact: {contact_match.group(1).strip()}"
-                    elif instructor_match:
-                        answer = f"Instructor: {instructor_match.group(1).strip()}"
-                    elif contact_match:
-                        answer = f"Contact: {contact_match.group(1).strip()}"
-
-                # Extract insights if not already set
-                if not insights:
-                    insights = extract_insights(meaningful_output)
-
-                # If still no answer, provide suggestion
-                if not answer:
-                    notebook_suggestion = (
-                        "🔍 No answer found in kernel output. To fix this:\n"
-                        "1. Ensure your notebook writes structured output:\n"
-                        "```python\n"
-                        "with open('result.json', 'w') as f:\n"
-                        "    json.dump({\n"
-                        "        'question': user_input,\n"
-                        "        'answer': answer,\n"
-                        "        'explanation': explanation\n"
-                        "    }, f)\n"
-                        "```\n"
-                        "2. Commit and rerun your notebook\n"
-                        "3. Try your question again"
-                    )
-
-            # Fallback for company questions
-            if not answer and "company" in full_question.lower():
-                answer = "Crossbar Inc. is a technology company based in Santa Clara, California, specializing in Resistive RAM (ReRAM), a type of non-volatile memory that offers high performance, energy efficiency, and scalability."
-
-        # Update session context for follow-up questions
-        if session_id:
-            # Preserve important context
-            if len(session_data[session_id]["history"]) > 5:
-                session_data[session_id]["history"] = session_data[session_id][
-                    "history"
-                ][-5:]
-
-            session_data[session_id]["history"].append(
-                {"question": question, "answer": answer}
-            )
-
-            # Build context from history
-            session_context = "\n\n".join(
-                [
-                    f"Q: {item['question']}\nA: {item['answer']}"
-                    for item in session_data[session_id]["history"]
-                ]
-            )
-            session_data[session_id]["context"] = session_context
-
-        # Prepare response
-        response_data = {
-            "output": output_content,
-            "output_path": output_path,
-            "metrics": {},
-            "answer": answer if answer else "No answer found in kernel output",
-            "insights": insights,
-            "files": result_files,
-            "session_id": session_id,
-            "success": True,
-        }
-
-        # Add suggestion if needed
-        if not answer:
-            response_data["suggestion"] = notebook_suggestion
-
-        # Log response for debugging
-        logger.info(
-            f"Response JSON: {json.dumps({k: v for k, v in response_data.items() if k != 'output'}, indent=2)}"
-        )
-        logger.info(f"Output content length: {len(output_content)} characters")
-
-        return jsonify(response_data)
-
-    except Exception as e:
-        logger.error(f"❌ Critical error: {str(e)}\n{traceback.format_exc()}")
-        return (
-            jsonify(
-                {
-                    "error": str(e),
-                    "output": f"Error executing command: {str(e)}",
-                    "output_path": "",
-                    "answer": "Error processing question",
-                    "insights": "Error extracting insights",
-                    "success": False,
-                }
-            ),
-            500,
-        )
-
-
-def extract_answer(output, question):
-    """Advanced answer extraction from kernel output"""
-    if not output:
-        return ""
-
-    # Try to find a relevant section
-    lines = output.split("\n")
-    question_keywords = set(question.lower().split())
-
-    # Look for lines containing question keywords
-    candidate_lines = []
-    for i, line in enumerate(lines):
-        line_keywords = set(line.lower().split())
-        if question_keywords & line_keywords:  # Any common keywords
-            candidate_lines.extend(lines[i : i + 6])
-
-    if candidate_lines:
-        return "\n".join(candidate_lines)
-
-    # Look for blocks that seem like answers
-    blocks = re.split(r"\n{2,}", output)
-    best_block = ""
-    best_score = 0
-
-    for block in blocks:
-        block_keywords = set(block.lower().split())
-        score = len(question_keywords & block_keywords)
-        if score > best_score:
-            best_block = block
-            best_score = score
-
-    if best_score > 1:  # At least 2 common keywords
-        return best_block
-
-    # Return the first substantial block of text
-    for block in blocks:
-        if len(block) > 50:
-            return block
-
-    # Return the first 5 lines if nothing else
-    return "\n".join(lines[:5]) if lines else "No answer found"
+    return render_template("kaggle.html")
 
 
 if __name__ == "__main__":
-    # Create output directory if it doesn't exist
-    if not os.path.exists("output"):
-        os.makedirs("output")
+    process_all_uploads_on_start()  # Auto-process files on startup
     app.run(host="0.0.0.0", port=5000, debug=True)

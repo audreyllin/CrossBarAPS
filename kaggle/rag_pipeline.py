@@ -8,6 +8,8 @@ from pptx import Presentation
 from openai import OpenAI
 from pathlib import Path
 import numpy as np
+import base64
+from pdf2image import convert_from_bytes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -16,22 +18,26 @@ logger = logging.getLogger(__name__)
 
 # Text extraction from files using GPT when possible
 def extract_text_from_file(filepath):
-    """Extract text from various file formats"""
+    """Extract text from various file formats with visual analysis"""
     path = Path(filepath)
     ext = path.suffix.lower()
     text = ""
 
     try:
         if ext == ".pdf":
-            # For PDFs, try to extract text normally
+            # First try text extraction
             with pdfplumber.open(filepath) as pdf:
                 text = "\n".join(
                     page.extract_text() for page in pdf.pages if page.extract_text()
                 )
 
-            # If text extraction fails, use OCR with GPT vision
-            if not text.strip():
-                return extract_with_gpt_vision(filepath, "PDF")
+            # If text extraction fails or sparse, use GPT-Vision
+            if not text.strip() or is_image_heavy_pdf(filepath):
+                return extract_with_gpt_vision_base64(filepath)
+
+        elif ext in [".jpg", ".jpeg", ".png"]:
+            # Use GPT Vision API for image text extraction
+            return extract_with_gpt_vision_base64(filepath)
 
         elif ext in [".doc", ".docx"]:
             doc = DocxDoc(filepath)
@@ -45,10 +51,6 @@ def extract_text_from_file(filepath):
                 for shape in slide.shapes
                 if hasattr(shape, "text") and shape.text
             )
-
-        elif ext in [".jpg", ".jpeg", ".png"]:
-            # Use GPT Vision API for image text extraction
-            return extract_with_gpt_vision(filepath, "image")
 
         elif ext == ".txt":
             with open(filepath, "r", encoding="utf-8") as f:
@@ -65,8 +67,8 @@ def extract_text_from_file(filepath):
     return text[:20000]  # Limit to 20k characters
 
 
-def extract_with_gpt_vision(filepath, file_type):
-    """Extract text using GPT Vision API"""
+def extract_with_gpt_vision_base64(filepath):
+    """Extract text using GPT Vision API with base64 encoding"""
     try:
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
@@ -74,46 +76,122 @@ def extract_with_gpt_vision(filepath, file_type):
 
         client = OpenAI(api_key=api_key)
 
-        # Create prompt based on file type
-        if file_type == "PDF":
-            prompt = "Extract all text from this PDF document. Include all headings, paragraphs, and bullet points."
-        elif file_type == "image":
-            prompt = "Extract all text from this image. Include any visible text, numbers, and symbols."
-        else:
-            prompt = "Extract all text from this document."
+        # Read file as base64
+        with open(filepath, "rb") as file:
+            base64_image = base64.b64encode(file.read()).decode("utf-8")
 
-        with open(filepath, "rb") as image_file:
-            response = client.chat.completions.create(
-                model="gpt-4-turbo",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{image_file.read().hex()}"
-                                },
+        # Create prompt
+        prompt = (
+            "Extract all text and describe visual content. "
+            "Include headings, paragraphs, captions, and any visible text. "
+            "Also describe any diagrams, charts, or significant visual elements."
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
                             },
-                        ],
-                    }
-                ],
-                max_tokens=4096,
-            )
+                        },
+                    ],
+                }
+            ],
+            max_tokens=2000,
+        )
 
         return response.choices[0].message.content
 
     except Exception as e:
         logger.error(f"GPT Vision extraction failed: {str(e)}")
-        # Fallback to OCR for images
-        if file_type == "image":
-            try:
-                image = Image.open(filepath)
-                return pytesseract.image_to_string(image)
-            except:
-                return "Error extracting text"
-        return "Error extracting text"
+        # Fallback to OCR
+        return extract_with_ocr(filepath)
+
+
+def extract_image_metadata(filepath):
+    """Get detailed image analysis with GPT Vision"""
+    try:
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not set")
+
+        client = OpenAI(api_key=api_key)
+
+        # Read file as base64
+        with open(filepath, "rb") as file:
+            base64_image = base64.b64encode(file.read()).decode("utf-8")
+
+        # Create detailed analysis prompt
+        prompt = (
+            "Analyze this image in detail. Describe: "
+            "1. All visual elements and their composition "
+            "2. Artistic style and techniques used "
+            "3. Color palette and lighting "
+            "4. Any text or symbols present "
+            "5. Overall mood and aesthetic qualities "
+            "6. Potential meaning or purpose"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            },
+                        },
+                    ],
+                }
+            ],
+            max_tokens=1500,
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        logger.error(f"Image analysis failed: {str(e)}")
+        return "Image analysis not available"
+
+
+def extract_with_ocr(filepath):
+    """Fallback to OCR when GPT Vision fails"""
+    try:
+        # For PDFs, convert to images first
+        if filepath.lower().endswith(".pdf"):
+            images = convert_from_bytes(open(filepath, "rb").read())
+            text = ""
+            for img in images:
+                text += pytesseract.image_to_string(img) + "\n"
+            return text
+
+        # For images, use direct OCR
+        return pytesseract.image_to_string(Image.open(filepath))
+
+    except Exception as e:
+        logger.error(f"OCR extraction failed: {str(e)}")
+        return "Text extraction failed"
+
+
+def is_image_heavy_pdf(filepath, threshold=0.5):
+    """Check if PDF is image-heavy"""
+    try:
+        with pdfplumber.open(filepath) as pdf:
+            total_pages = len(pdf.pages)
+            image_pages = sum(1 for page in pdf.pages if page.images)
+            return (image_pages / total_pages) > threshold if total_pages > 0 else False
+    except:
+        return False
 
 
 def embed_and_store_file(filepath, api_key, model="text-embedding-3-large"):

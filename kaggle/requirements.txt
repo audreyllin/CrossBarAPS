@@ -1,6 +1,5 @@
 Flask==3.0.0
 gunicorn==21.2.0
-kaggle==1.5.16
 torch>=2.0.0
 transformers>=4.36.0
 sentence-transformers
@@ -21,3 +20,5 @@ Pillow
 tiktoken
 werkzeug
 reportlab
+pdf2image
+python-dotenv
