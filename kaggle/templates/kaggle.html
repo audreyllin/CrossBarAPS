@@ -1379,11 +1379,30 @@
         <div class="glass-panel">
             <h2>Admin Dashboard</h2>
             <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
+
             <div style="margin-top:2rem">
-                <h3>Conversation Logs</h3>
-                <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
+                <h3>Upload History</h3>
+                <table id="admin-uploads" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
+                                Filename</th>
+                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
+                                Session ID</th>
+                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
+                                Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;"></tbody>
+                </table>
+
+                <h3 style="margin-top:2rem">Conversation Logs</h3>
+                <div class="kernel-output" id="admin-conversations" style="max-height:300px; overflow:auto"></div>
+
                 <h3>Frequent Questions</h3>
-                <ul id="frequent-questions"></ul>
+                <ul id="frequent-questions" style="list-style-type: none; padding-left: 0;">
+                    <!-- Will be populated dynamically -->
+                </ul>
             </div>
         </div>
     </section>
@@ -2057,13 +2076,34 @@
         // Load admin dashboard
         async function loadAdminDashboard() {
             try {
+                // Load upload history
+                const uploadRes = await fetch("/api/admin/uploads");
+                if (!uploadRes.ok) throw new Error('Failed to load uploads');
+                const uploads = await uploadRes.json();
+
+                const uploadTable = document.querySelector("#admin-uploads tbody");
+                uploadTable.innerHTML = "";
+                uploads.forEach(upload => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${upload.filename}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${upload.session_id.substring(0, 8)}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${new Date(upload.timestamp).toLocaleString()}</td>
+                    `;
+                    uploadTable.appendChild(row);
+                });
+
+                // Load conversations
                 const convoRes = await fetch("/api/admin/conversations");
                 if (!convoRes.ok) throw new Error('Failed to load conversations');
-
                 const convos = await convoRes.json();
-                const convoContainer = document.getElementById('admin-conversations');
-                convoContainer.textContent = convos.map(c => `[${new Date(c.timestamp).toLocaleString()}]\nQ: ${c.question}\nA: ${c.answer}\n`).join('\n\n');
 
+                const convoContainer = document.getElementById('admin-conversations');
+                convoContainer.textContent = convos.map(c =>
+                    `[${new Date(c.timestamp).toLocaleString()}]\nSession: ${c.session_id.substring(0, 8)}\nQ: ${c.question}\nA: ${c.answer}\nFile: ${c.file || 'None'}`
+                ).join('\n\n');
+
+                // Load frequent questions
                 const freqRes = await fetch("/api/admin/frequent_questions");
                 if (!freqRes.ok) throw new Error('Failed to load frequent questions');
 
@@ -2073,11 +2113,13 @@
 
                 questions.forEach(q => {
                     const li = document.createElement('li');
+                    li.style.padding = "8px 0";
+                    li.style.borderBottom = "1px solid rgba(255,157,92,0.2)";
                     li.textContent = `${q.question} (${q.count} times)`;
                     list.appendChild(li);
                 });
             } catch (error) {
-                showNotification(`Error: ${error.message}`, 'error');
+                showNotification(`Error: ${error.message}`, "error");
             }
         }
 
