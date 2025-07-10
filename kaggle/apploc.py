@@ -14,6 +14,10 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
 from werkzeug.utils import secure_filename
+from collections import Counter
+import pytesseract
+from PIL import Image
+from pptx import Presentation
 
 # Initialize app and paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +43,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 logging.basicConfig(level=logging.INFO)
 
 
-# Initialize database
+# Initialize database with new columns
 def init_db():
     with sqlite3.connect(DB_FILE) as db:
         db.execute(
@@ -61,9 +65,11 @@ def init_db():
                 session_id TEXT NOT NULL,
                 context_id TEXT NOT NULL,
                 content TEXT NOT NULL,
+                content_hash TEXT NOT NULL,  -- New column for deduplication
                 source_type TEXT,
                 filename TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1  -- New column for file history
             )
         """
         )
@@ -78,6 +84,25 @@ def init_db():
             )
         """
         )
+        # Add content_hash column if not exists
+        try:
+            db.execute("ALTER TABLE session_contexts ADD COLUMN content_hash TEXT")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+        # Add is_active column if not exists
+        try:
+            db.execute(
+                "ALTER TABLE session_contexts ADD COLUMN is_active BOOLEAN DEFAULT 1"
+            )
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+        # Create index for faster deduplication checks
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_content_hash ON session_contexts (content_hash)"
+        )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_session_active ON session_contexts (session_id, is_active)"
+        )
 
 
 init_db()
@@ -90,7 +115,7 @@ def count_tokens(text):
     return len(encoding.encode(text))
 
 
-# Text extraction from files
+# Text extraction from files with OCR support
 def extract_text_from_file(filepath, filename):
     ext = filename.split(".")[-1].lower()
     text = ""
@@ -105,13 +130,19 @@ def extract_text_from_file(filepath, filename):
             doc = Document(filepath)
             text = "\n".join([para.text for para in doc.paragraphs])
         elif ext in ["ppt", "pptx"]:
-            # Placeholder for PPT extraction - would require additional libraries
-            text = "PPT content extraction not implemented"
+            prs = Presentation(filepath)
+            text = "\n".join(
+                [
+                    shape.text
+                    for slide in prs.slides
+                    for shape in slide.shapes
+                    if hasattr(shape, "text") and shape.text
+                ]
+            )
         elif ext in ["jpg", "jpeg", "png"]:
-            # Placeholder for image OCR - would require additional libraries
-            text = "Image OCR not implemented"
+            image = Image.open(filepath)
+            text = pytesseract.image_to_string(image)
         elif ext == "mp4":
-            # Placeholder for video transcription - would require additional libraries
             text = "Video transcription not implemented"
         else:  # txt and others
             with open(filepath, "r", encoding="utf-8") as f:
@@ -120,7 +151,7 @@ def extract_text_from_file(filepath, filename):
         logging.error(f"Text extraction failed: {str(e)}")
         text = f"Error extracting text: {str(e)}"
 
-    return text[:10000]  # Limit to 10k characters
+    return text[:20000]  # Increase limit to 20k characters
 
 
 # GPT Embedding with model selection
@@ -136,6 +167,44 @@ def generate_vector(text, api_key, model="text-embedding-3-large"):
         # Return zero vector of appropriate dimension
         dim = 3072 if model == "text-embedding-3-large" else 1536
         return np.zeros(dim)
+
+
+# Improved concept extraction using GPT
+def extract_concepts(text, api_key):
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that extracts key concepts from text. List the top 5 key concepts as a JSON array of strings.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Extract the top 5 key concepts from the following text, focusing on important entities, topics, and actions. Return only a JSON array:\n\n{text[:3000]}",
+                },
+            ],
+            max_tokens=150,
+            temperature=0.3,
+        )
+        concepts = json.loads(response.choices[0].message.content)
+        if isinstance(concepts, list) and len(concepts) > 0:
+            return [concept.capitalize() for concept in concepts]
+    except Exception as e:
+        logging.error(f"Concept extraction failed: {str(e)}")
+
+    # Fallback to simple frequency-based method
+    words = re.findall(r"\b\w{4,}\b", text.lower())
+    stop_words = set(
+        ["this", "that", "which", "with", "from", "your", "have", "more", "about"]
+    )
+    top_words = [
+        word
+        for word, count in Counter(words).most_common(5)
+        if word not in stop_words and len(word) > 3
+    ]
+    return [word.capitalize() for word in top_words]
 
 
 # GPT-based context retrieval
@@ -226,7 +295,7 @@ def clear_vectors():
         return jsonify({"error": str(e)}), 500
 
 
-# Upload context handler
+# Upload context handler with deduplication
 @app.route("/api/upload_context", methods=["POST"])
 def upload_context():
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
@@ -241,9 +310,28 @@ def upload_context():
 
     # Handle text context
     if "text" in request.form:
-        text_content = request.form["text"]
+        text_content = request.form["text"].strip()[:20000]  # Truncate for storage
         if not text_content:
             return jsonify({"error": "Empty text content"}), 400
+
+        # Compute content hash for deduplication
+        content_hash = hashlib.sha256(text_content.encode()).hexdigest()
+
+        # Check for duplicate content in this session
+        with sqlite3.connect(DB_FILE) as db:
+            existing = db.execute(
+                "SELECT context_id FROM session_contexts WHERE session_id = ? AND content_hash = ? AND is_active = 1",
+                (session_id, content_hash),
+            ).fetchone()
+
+            if existing:
+                return jsonify(
+                    {
+                        "status": "duplicate",
+                        "message": "This content already exists in your session",
+                        "context_id": existing[0],
+                    }
+                )
 
         context_id = f"text_{hashlib.md5(text_content.encode()).hexdigest()[:10]}"
 
@@ -255,22 +343,13 @@ def upload_context():
                 (context_id, session_id, json.dumps(vector.tolist()), model),
             )
             db.execute(
-                "INSERT INTO session_contexts (session_id, context_id, content, source_type) VALUES (?, ?, ?, ?)",
-                (session_id, context_id, text_content, "text"),
+                "INSERT INTO session_contexts (session_id, context_id, content, source_type, content_hash) VALUES (?, ?, ?, ?, ?)",
+                (session_id, context_id, text_content, "text", content_hash),
             )
             db.commit()
 
-        # Extract key concepts (simplified)
-        words = re.findall(r"\b\w{4,}\b", text_content.lower())
-        stop_words = set(
-            ["this", "that", "which", "with", "from", "your", "have", "more", "about"]
-        )
-        top_words = [
-            word
-            for word, count in Counter(words).most_common(5)
-            if word not in stop_words and len(word) > 3
-        ]
-        concepts = [word.capitalize() for word in top_words]
+        # Extract key concepts using GPT
+        concepts = extract_concepts(text_content, api_key)
 
         return jsonify(
             {"status": "success", "context_id": context_id, "concepts": concepts}
@@ -291,7 +370,30 @@ def upload_context():
 
         # Extract text from file
         text_content = extract_text_from_file(filepath, filename)
-        context_id = f"file_{hashlib.md5(filename.encode()).hexdigest()[:10]}"
+
+        # Compute content hash for deduplication
+        content_hash = hashlib.sha256(text_content.encode()).hexdigest()
+
+        # Check for duplicate content in this session
+        with sqlite3.connect(DB_FILE) as db:
+            existing = db.execute(
+                "SELECT context_id FROM session_contexts WHERE session_id = ? AND content_hash = ? AND is_active = 1",
+                (session_id, content_hash),
+            ).fetchone()
+
+            if existing:
+                os.remove(filepath)  # Remove duplicate file
+                return jsonify(
+                    {
+                        "status": "duplicate",
+                        "message": "This content already exists in your session",
+                        "context_id": existing[0],
+                    }
+                )
+
+        context_id = (
+            f"file_{hashlib.md5((filename + session_id).encode()).hexdigest()[:10]}"
+        )
 
         # Generate and store vector
         vector = generate_vector(text_content, api_key, model=model)
@@ -301,28 +403,88 @@ def upload_context():
                 (context_id, session_id, json.dumps(vector.tolist()), model),
             )
             db.execute(
-                "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename) VALUES (?, ?, ?, ?, ?)",
-                (session_id, context_id, text_content, "file", filename),
+                "INSERT INTO session_contexts (session_id, context_id, content, source_type, filename, content_hash) VALUES (?, ?, ?, ?, ?, ?)",
+                (session_id, context_id, text_content, "file", filename, content_hash),
             )
             db.commit()
 
-        # Extract key concepts
-        words = re.findall(r"\b\w{4,}\b", text_content.lower())
-        stop_words = set(
-            ["this", "that", "which", "with", "from", "your", "have", "more", "about"]
-        )
-        top_words = [
-            word
-            for word, count in Counter(words).most_common(5)
-            if word not in stop_words and len(word) > 3
-        ]
-        concepts = [word.capitalize() for word in top_words]
+        # Extract key concepts using GPT
+        concepts = extract_concepts(text_content, api_key)
 
         return jsonify(
             {"status": "success", "context_id": context_id, "concepts": concepts}
         )
 
     return jsonify({"error": "No valid context provided"}), 400
+
+
+# New endpoint to remove context
+@app.route("/api/remove_context", methods=["POST"])
+def remove_context():
+    data = request.get_json()
+    session_id = data.get("sessionId", "")
+    context_id = data.get("contextId", "")
+
+    if not session_id or not context_id:
+        return jsonify({"error": "Missing session ID or context ID"}), 400
+
+    try:
+        with sqlite3.connect(DB_FILE) as db:
+            # Soft delete by marking as inactive
+            db.execute(
+                "UPDATE session_contexts SET is_active = 0 WHERE session_id = ? AND context_id = ?",
+                (session_id, context_id),
+            )
+            # Remove corresponding vector
+            db.execute(
+                "DELETE FROM context_vectors WHERE session_id = ? AND context_id = ?",
+                (session_id, context_id),
+            )
+            db.commit()
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Context {context_id} removed from session {session_id}",
+            }
+        )
+    except Exception as e:
+        logging.error(f"Failed to remove context: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+# New endpoint to list active contexts
+@app.route("/api/list_contexts", methods=["GET"])
+def list_contexts():
+    session_id = request.args.get("sessionId", "")
+    if not session_id:
+        return jsonify({"error": "Missing session ID"}), 400
+
+    try:
+        with sqlite3.connect(DB_FILE) as db:
+            rows = db.execute(
+                "SELECT context_id, content, source_type, filename, timestamp "
+                "FROM session_contexts WHERE session_id = ? AND is_active = 1",
+                (session_id,),
+            ).fetchall()
+
+        contexts = [
+            {
+                "id": row[0],
+                "content": (
+                    row[1][:500] + "..." if len(row[1]) > 500 else row[1]
+                ),  # Preview
+                "type": row[2],
+                "filename": row[3],
+                "timestamp": row[4],
+            }
+            for row in rows
+        ]
+
+        return jsonify({"contexts": contexts})
+    except Exception as e:
+        logging.error(f"Failed to list contexts: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 def allowed_file(filename):
@@ -347,10 +509,10 @@ def ask_question():
         return jsonify({"error": "Missing session ID"}), 400
 
     try:
-        # Get session contexts
+        # Get active session contexts
         with sqlite3.connect(DB_FILE) as db:
             rows = db.execute(
-                "SELECT context_id, content FROM session_contexts WHERE session_id = ?",
+                "SELECT context_id, content FROM session_contexts WHERE session_id = ? AND is_active = 1",
                 (session_id,),
             ).fetchall()
         session_contexts = [{"id": row[0], "content": row[1]} for row in rows]
@@ -364,15 +526,21 @@ def ask_question():
         context_text = "\n\n".join([ctx["content"] for ctx in relevant_contexts[:3]])
         prompt = f"Context:\n{context_text}\n\nQuestion: {question}\nAnswer:"
 
-        # Call GPT (simplified)
+        # Call GPT
         client = OpenAI(api_key=api_key)
-        response = client.completions.create(
-            model="gpt-3.5-turbo-instruct",
-            prompt=prompt,
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that answers questions based on the provided context.",
+                },
+                {"role": "user", "content": prompt},
+            ],
             max_tokens=500,
             temperature=0.3,
         )
-        answer = response.choices[0].text.strip()
+        answer = response.choices[0].message.content.strip()
 
         # Store conversation
         with sqlite3.connect(DB_FILE) as db:
@@ -387,13 +555,21 @@ def ask_question():
             f"Given this question: '{question}' and this answer: '{answer}', "
             "generate 3 relevant follow-up questions. Output as JSON array."
         )
-        follow_up_response = client.completions.create(
-            model="gpt-3.5-turbo-instruct",
-            prompt=follow_up_prompt,
+        follow_up_response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": follow_up_prompt}],
             max_tokens=150,
             temperature=0.5,
         )
-        follow_ups = json.loads(follow_up_response.choices[0].text.strip())
+
+        try:
+            follow_ups = json.loads(follow_up_response.choices[0].message.content)
+        except:
+            follow_ups = [
+                "Can you elaborate?",
+                "What else should I know?",
+                "Related topics?",
+            ]
 
         return jsonify(
             {
