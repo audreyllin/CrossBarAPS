@@ -226,7 +226,6 @@
         .cta-button:hover::before {
             opacity: 1;
         }
-        /* New crypto mascot container */
         
         .crypto-container {
             display: flex;
@@ -266,7 +265,6 @@
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
             cursor: pointer;
         }
-        /* Different colors for each crypto */
         
         .bitcoin {
             background: radial-gradient(circle at 30% 30%, #f7931a, #ac6707);
@@ -375,6 +373,26 @@
             100% {
                 transform: rotate(45deg) translateX(50%);
             }
+        }
+        
+        .model-selector {
+            margin-bottom: 1.5rem;
+        }
+        
+        .model-selector select {
+            background: rgba(30, 15, 10, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: var(--cream);
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .model-selector select:focus {
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.2);
         }
         
         .context-actions {
@@ -1041,7 +1059,6 @@
             <h1>Crossbar Knowledge Hub</h1>
             <p>Access company insights instantly with our AI-powered knowledge assistant</p>
 
-            <!-- Updated crypto mascots -->
             <div class="crypto-container">
                 <div class="mascot">
                     <div class="crypto bitcoin" id="bitcoin">
@@ -1083,12 +1100,24 @@
                 </div>
 
                 <div class="glass-panel animate-on-scroll">
+                    <!-- Model selector dropdown -->
+                    <div class="model-selector">
+                        <label for="modelSelect">Embedding Model:</label>
+                        <select id="modelSelect">
+                            <option value="text-embedding-3-large" selected>text-embedding-3-large (default)</option>
+                            <option value="text-embedding-3-small">text-embedding-3-small</option>
+                        </select>
+                    </div>
+
                     <div class="context-actions">
                         <button class="context-btn" id="add-text-context">
                             <i class="fas fa-comment"></i> Add Text Context
                         </button>
                         <button class="context-btn" id="add-file-context">
                             <i class="fas fa-file-upload"></i> Upload File
+                        </button>
+                        <button class="context-btn" id="debug-vector-btn">
+                            <i class="fas fa-bug"></i> Debug Embeddings
                         </button>
                     </div>
 
@@ -1212,6 +1241,22 @@
         </div>
     </div>
 
+    <!-- Debug Vector Modal -->
+    <div class="modal" id="vector-debug-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Embedding Debug Tool</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="testInput">Test Text</label>
+                <textarea id="testInput" placeholder="Enter text to test embedding..."></textarea>
+            </div>
+            <button class="submit-btn" id="test-vector-btn">Generate Embedding</button>
+            <div class="kernel-output" id="vectorOutput" style="margin-top: 20px; max-height: 300px;"></div>
+        </div>
+    </div>
+
     <div id="notification-container"></div>
 
     <script>
@@ -1244,6 +1289,7 @@
         // DOM elements
         const textContextModal = document.getElementById('text-context-modal');
         const fileContextModal = document.getElementById('file-context-modal');
+        const vectorDebugModal = document.getElementById('vector-debug-modal');
         const closeButtons = document.querySelectorAll('.close-modal');
         const fileInput = document.getElementById('context-file');
         const filePreview = document.getElementById('file-preview');
@@ -1280,19 +1326,10 @@
 
         // Set up event listeners for each crypto
         for (const [name, element] of Object.entries(cryptos)) {
-            // Start flipping on hover
-            element.addEventListener('mouseenter', () => {
-                toggleFlip(element, 'fast');
-            });
-
-            // Return to normal speed when mouse leaves
+            element.addEventListener('mouseenter', () => toggleFlip(element, 'fast'));
             element.addEventListener('mouseleave', () => {
-                if (element.classList.contains('flipping')) {
-                    toggleFlip(element, 'normal');
-                }
+                if (element.classList.contains('flipping')) toggleFlip(element, 'normal');
             });
-
-            // Click to toggle animation
             element.addEventListener('click', () => {
                 if (element.classList.contains('flipping')) {
                     element.classList.remove('flipping', 'flipping-fast');
@@ -1304,33 +1341,34 @@
 
         // Start with all flipping at normal speed
         setTimeout(() => {
-            for (const element of Object.values(cryptos)) {
-                toggleFlip(element, 'normal');
-            }
+            for (const element of Object.values(cryptos)) toggleFlip(element, 'normal');
         }, 1000);
 
         // Event listeners for modals
         document.getElementById('add-text-context').addEventListener('click', () => {
             textContextModal.style.display = 'flex';
-            setTimeout(() => {
-                textContextModal.classList.add('show');
-            }, 10);
+            setTimeout(() => textContextModal.classList.add('show'), 10);
         });
 
         document.getElementById('add-file-context').addEventListener('click', () => {
             fileContextModal.style.display = 'flex';
-            setTimeout(() => {
-                fileContextModal.classList.add('show');
-            }, 10);
+            setTimeout(() => fileContextModal.classList.add('show'), 10);
+        });
+
+        document.getElementById('debug-vector-btn').addEventListener('click', () => {
+            vectorDebugModal.style.display = 'flex';
+            setTimeout(() => vectorDebugModal.classList.add('show'), 10);
         });
 
         closeButtons.forEach(button => {
             button.addEventListener('click', () => {
                 textContextModal.classList.remove('show');
                 fileContextModal.classList.remove('show');
+                vectorDebugModal.classList.remove('show');
                 setTimeout(() => {
                     textContextModal.style.display = 'none';
                     fileContextModal.style.display = 'none';
+                    vectorDebugModal.style.display = 'none';
                 }, 300);
             });
         });
@@ -1339,24 +1377,21 @@
         window.addEventListener('click', (e) => {
             if (e.target === textContextModal) {
                 textContextModal.classList.remove('show');
-                setTimeout(() => {
-                    textContextModal.style.display = 'none';
-                }, 300);
+                setTimeout(() => textContextModal.style.display = 'none', 300);
             }
             if (e.target === fileContextModal) {
                 fileContextModal.classList.remove('show');
-                setTimeout(() => {
-                    fileContextModal.style.display = 'none';
-                }, 300);
+                setTimeout(() => fileContextModal.style.display = 'none', 300);
+            }
+            if (e.target === vectorDebugModal) {
+                vectorDebugModal.classList.remove('show');
+                setTimeout(() => vectorDebugModal.style.display = 'none', 300);
             }
         });
 
         // File input handling
         fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                displayFilePreview(file);
-            }
+            if (this.files && this.files[0]) displayFilePreview(this.files[0]);
         });
 
         // Remove file button
@@ -1385,23 +1420,24 @@
             this.style.background = 'rgba(30, 15, 10, 0.5)';
 
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                const file = e.dataTransfer.files[0];
                 fileInput.files = e.dataTransfer.files;
-                displayFilePreview(file);
+                displayFilePreview(e.dataTransfer.files[0]);
             }
         });
 
         function displayFilePreview(file) {
             const ext = file.name.split('.').pop().toLowerCase();
             const iconClass = fileIcons[ext] || fileIcons.default;
-
             fileIcon.className = `file-icon ${iconClass}`;
             fileName.textContent = file.name;
             filePreview.style.display = 'block';
             fileDropArea.style.display = 'none';
-
-            // Hide concepts until processing
             fileConcepts.style.display = 'none';
+        }
+
+        // Get selected embedding model
+        function getSelectedModel() {
+            return document.getElementById("modelSelect").value || "text-embedding-3-large";
         }
 
         // Add text context
@@ -1422,24 +1458,36 @@
             }
 
             try {
-                // Show loading state
                 submitBtn.disabled = true;
                 textSpinner.style.display = 'inline-block';
                 textConcepts.style.display = 'none';
 
-                // Simulate API call
-                setTimeout(() => {
-                    // Show key concepts
-                    const concepts = ["Product Integration", "Technical Specifications", "User Experience", "API Documentation"];
-                    displayConcepts(textConceptTags, concepts);
-                    textConcepts.style.display = 'block';
+                const model = getSelectedModel();
+                const formData = new FormData();
+                formData.append('text', contextText);
+                formData.append('sessionId', sessionId);
+                formData.append('model', model);
 
-                    showNotification('Context added successfully!', 'success', concepts);
-                    submitBtn.disabled = false;
-                    textSpinner.style.display = 'none';
-                }, 1500);
+                const response = await fetch('/api/upload_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to add context');
+                }
+
+                const data = await response.json();
+                displayConcepts(textConceptTags, data.concepts || []);
+                textConcepts.style.display = 'block';
+                showNotification('Context added successfully!', 'success', data.concepts);
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
+            } finally {
                 submitBtn.disabled = false;
                 textSpinner.style.display = 'none';
             }
@@ -1462,23 +1510,35 @@
             }
 
             try {
-                // Show loading state
                 submitBtn.disabled = true;
                 fileSpinner.style.display = 'inline-block';
 
-                // Simulate API call
-                setTimeout(() => {
-                    // Show key concepts
-                    const concepts = ["Security Protocols", "Compliance Standards", "Data Encryption", "Access Controls"];
-                    displayConcepts(fileConceptTags, concepts);
-                    fileConcepts.style.display = 'block';
+                const model = getSelectedModel();
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('sessionId', sessionId);
+                formData.append('model', model);
 
-                    showNotification('File uploaded successfully!', 'success', concepts);
-                    submitBtn.disabled = false;
-                    fileSpinner.style.display = 'none';
-                }, 2000);
+                const response = await fetch('/api/upload_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to upload file');
+                }
+
+                const data = await response.json();
+                displayConcepts(fileConceptTags, data.concepts || []);
+                fileConcepts.style.display = 'block';
+                showNotification('File uploaded successfully!', 'success', data.concepts);
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
+            } finally {
                 submitBtn.disabled = false;
                 fileSpinner.style.display = 'none';
             }
@@ -1500,13 +1560,12 @@
                 return;
             }
 
-            // Show loading state
             submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
-
             setOutputContent('kernel-answer', "> Processing your question...");
 
             try {
+                const model = getSelectedModel();
                 const response = await fetch('/api/ask', {
                     method: 'POST',
                     headers: {
@@ -1515,26 +1574,19 @@
                     },
                     body: JSON.stringify({
                         question: question,
-                        sessionId: sessionId
+                        sessionId: sessionId,
+                        model: model
                     })
                 });
 
                 const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || `API request failed: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(data.error || `API request failed: ${response.status}`);
 
-                // Store current answer
                 currentAnswer = data.answer;
                 currentQuestion = data.question;
-
-                // Update all output sections
                 setOutputContent('kernel-answer', data.answer || "No answer found");
-
-                // Show answer actions
                 answerActions.style.display = 'block';
 
-                // Show follow-up suggestions
                 if (data.follow_ups && data.follow_ups.length > 0) {
                     followUpButtons.innerHTML = "";
                     data.follow_ups.forEach(followUp => {
@@ -1559,8 +1611,6 @@
             } finally {
                 submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
                 submitBtn.disabled = false;
-
-                // Scroll to results
                 document.getElementById('results').scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1586,7 +1636,6 @@
                 }
 
                 try {
-                    // Show loading state
                     const kernelAnswer = document.getElementById('kernel-answer');
                     kernelAnswer.textContent = "> Adjusting answer...";
 
@@ -1604,16 +1653,11 @@
                     });
 
                     const data = await response.json();
-                    if (!response.ok) {
-                        throw new Error(data.error || `Adjustment failed: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(data.error || `Adjustment failed: ${response.status}`);
 
-                    // Update answer with adjusted version
                     currentAnswer = data.adjusted_answer;
                     kernelAnswer.textContent = data.adjusted_answer;
-
                     showNotification('Answer adjusted successfully!', 'success');
-
                 } catch (error) {
                     showNotification(`Error: ${error.message}`, 'error');
                     setOutputContent('kernel-answer', currentAnswer);
@@ -1621,12 +1665,46 @@
             });
         });
 
+        // Debug vector tool
+        document.getElementById('test-vector-btn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('api-key').value;
+            const text = document.getElementById('testInput').value.trim();
+            const model = getSelectedModel();
+
+            if (!apiKey) {
+                showNotification('Please enter your API key', 'error');
+                return;
+            }
+
+            if (!text) {
+                showNotification('Please enter some text', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/debug_vector', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        text,
+                        model
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('vectorOutput').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
         // Helper function to set output content
         function setOutputContent(elementId, content) {
             const element = document.getElementById(elementId);
-            if (element) {
-                element.textContent = content;
-            }
+            if (element) element.textContent = content;
         }
 
         // Helper function to display concepts
@@ -1647,22 +1725,15 @@
             notification.className = `notification ${type}`;
 
             let content = `<div>${message}</div>`;
-
             if (concepts && concepts.length > 0) {
                 content += `<div class="concept-tags">`;
-                concepts.forEach(concept => {
-                    content += `<span class="notification-concept">${concept}</span>`;
-                });
+                concepts.forEach(concept => content += `<span class="notification-concept">${concept}</span>`);
                 content += `</div>`;
             }
 
             notification.innerHTML = content;
             container.appendChild(notification);
-
-            // Trigger animation
             setTimeout(() => notification.classList.add('show'), 10);
-
-            // Auto-remove after 5 seconds
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
@@ -1672,17 +1743,13 @@
         // Animation on scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
+                if (entry.isIntersecting) entry.target.classList.add('visible');
             });
         }, {
             threshold: 0.1
         });
 
-        document.querySelectorAll('.animate-on-scroll').forEach(el => {
-            observer.observe(el);
-        });
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
         // Neural Web Background Animation
         const canvas = document.createElement('canvas');
@@ -1690,7 +1757,6 @@
         canvas.height = window.innerHeight;
         document.getElementById('bg-canvas').appendChild(canvas);
         const ctx = canvas.getContext('2d');
-
         const nodes = [];
         const connections = [];
         const nodeCount = 25;
@@ -1713,31 +1779,23 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-
                 this.pulse += pulseSpeed;
                 if (this.pulse > Math.PI * 2) this.pulse -= Math.PI * 2;
-
                 this.glow = 0.8 + Math.sin(this.pulse) * 0.2;
             }
 
             draw() {
-                // Draw glow effect
                 const gradient = ctx.createRadialGradient(
-                    this.x, this.y, 0,
-                    this.x, this.y, this.radius * 4
+                    this.x, this.y, 0, this.x, this.y, this.radius * 4
                 );
                 gradient.addColorStop(0, `rgba(255, 123, 51, ${this.glow * 0.6})`);
                 gradient.addColorStop(1, 'rgba(255, 123, 51, 0)');
-
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius * 4, 0, Math.PI * 2);
                 ctx.fillStyle = gradient;
                 ctx.fill();
-
-                // Draw the node
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
@@ -1762,11 +1820,8 @@
                 const dx = this.target.x - this.source.x;
                 const dy = this.target.y - this.source.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-
                 if (distance > maxDistance) return;
-
                 const alpha = this.strength * (0.3 + Math.sin(this.pulse) * 0.1) * (1 - distance / maxDistance);
-
                 ctx.beginPath();
                 ctx.moveTo(this.source.x, this.source.y);
                 ctx.lineTo(this.target.x, this.target.y);
@@ -1776,26 +1831,17 @@
             }
         }
 
-        // Initialize neural network
         function initNeuralNetwork() {
-            // Create nodes
-            for (let i = 0; i < nodeCount; i++) {
-                nodes.push(new Node());
-            }
-
-            // Create connections
+            for (let i = 0; i < nodeCount; i++) nodes.push(new Node());
             for (let i = 0; i < nodes.length; i++) {
                 const source = nodes[i];
                 let connectionCount = 0;
-
                 for (let j = 0; j < nodes.length; j++) {
                     if (i === j) continue;
-
                     const target = nodes[j];
                     const dx = target.x - source.x;
                     const dy = target.y - source.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
                     if (distance < maxDistance && connectionCount < maxConnections && Math.random() > 0.5) {
                         connections.push(new Connection(source, target));
                         connectionCount++;
@@ -1804,29 +1850,21 @@
             }
         }
 
-        // Animation function
         function animateNeuralNetwork() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw connections
             ctx.globalCompositeOperation = 'lighter';
             for (const connection of connections) {
                 connection.update();
                 connection.draw();
             }
-
-            // Draw nodes
             for (const node of nodes) {
                 node.update();
                 node.draw();
             }
-
             ctx.globalCompositeOperation = 'source-over';
-
             requestAnimationFrame(animateNeuralNetwork);
         }
 
-        // Window resize handler
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
