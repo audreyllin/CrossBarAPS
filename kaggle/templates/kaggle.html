@@ -4,65 +4,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaggle API Interface | Cinematic Experience</title>
+    <title>Crossbar | AI-Powered Company Q&A</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
          :root {
             --bg-dark: #0a0a0a;
-            --bg-dark-secondary: #1a1a1a;
-            --text-light: #ffffff;
-            --text-accent: #ff7b33;
-            --text-accent-secondary: #ff9d5c;
-            --glass-bg: rgba(25, 20, 15, 0.8);
-            --glass-border: rgba(255, 123, 51, 0.2);
-            --accent-primary: #ff7b33;
-            --accent-secondary: #ff9d5c;
+            --bg-dark-secondary: #1a0a06;
+            --chocolate: #3e1f0e;
+            --chocolate-light: #5d3924;
+            --orange-primary: #ff7f00;
+            --orange-secondary: #ff9d5c;
+            --neon-cyan: #00f2ff;
+            --electric-violet: #8a2be2;
+            --white: #ffffff;
+            --cream: #f5deb3;
+            --glass-bg: rgba(30, 15, 10, 0.85);
+            --glass-border: rgba(255, 140, 0, 0.25);
+            --hexagon-size: 80px;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
         }
         
         body {
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--bg-dark), var(--bg-dark-secondary));
-            color: var(--text-light);
+            color: var(--white);
+            min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
             line-height: 1.6;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        /* Navigation */
-        
-        nav {
+        .hex-pattern {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            padding: 1.5rem 2rem;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            opacity: 0.1;
+            background: linear-gradient(135deg, transparent 49%, rgba(255, 127, 0, 0.05) 50%, transparent 51%), linear-gradient(45deg, transparent 49%, rgba(255, 127, 0, 0.05) 50%, transparent 51%);
+            background-size: var(--hexagon-size) var(--hexagon-size);
+        }
+        
+        .bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
+            padding: 1.5rem 5%;
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             border-bottom: 1px solid var(--glass-border);
         }
         
         .logo {
             font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo span {
+            color: var(--orange-primary);
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--chocolate-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transform: rotate(45deg);
+        }
+        
+        .logo-icon-inner {
+            transform: rotate(-45deg);
+            font-weight: bold;
         }
         
         .nav-links {
@@ -71,64 +112,86 @@
         }
         
         .nav-links a {
-            color: var(--text-light);
             text-decoration: none;
+            color: var(--cream);
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: color 0.3s;
             position: relative;
         }
         
-        .nav-links a:after {
+        .nav-links a:hover {
+            color: var(--orange-primary);
+        }
+        
+        .nav-links a::after {
             content: '';
             position: absolute;
             bottom: -5px;
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--accent-primary);
-            transition: width 0.3s ease;
+            background: var(--orange-primary);
+            transition: width 0.3s;
         }
         
-        .nav-links a:hover {
-            color: var(--accent-primary);
-        }
-        
-        .nav-links a:hover:after {
+        .nav-links a:hover::after {
             width: 100%;
         }
-        /* Hero Section */
         
-        .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding-top: 5rem;
+        section {
+            padding: 5rem 5%;
             position: relative;
             overflow: hidden;
         }
         
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero {
+            text-align: center;
+            padding-top: 10rem;
+            padding-bottom: 8rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 127, 0, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+        
         .hero h1 {
-            font-size: 4rem;
+            font-size: 3.8rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, var(--text-light), var(--accent-secondary));
+            background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary));
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: transparent;
+            line-height: 1.2;
         }
         
         .hero p {
-            font-size: 1.5rem;
-            max-width: 800px;
-            margin-bottom: 2.5rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            color: var(--cream);
         }
         
         .cta-button {
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            color: var(--text-light);
+            background: linear-gradient(135deg, var(--orange-primary), var(--chocolate-light));
+            color: var(--white);
             border: none;
             padding: 1rem 2.5rem;
             font-size: 1.1rem;
@@ -136,32 +199,118 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 127, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(255, 123, 51, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(255, 127, 0, 0.4);
         }
-        /* Glass Panel */
         
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        .cta-button:hover::before {
+            opacity: 1;
         }
-        /* API Input Section */
+        
+        .crypto-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+        
+        .mascot {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            perspective: 1000px;
+            transition: transform 0.3s ease;
+        }
+        
+        .mascot:hover {
+            transform: scale(1.1);
+        }
+        
+        .mascot:active {
+            transform: scale(0.95);
+        }
+        
+        .crypto {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: white;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        
+        .bitcoin {
+            background: radial-gradient(circle at 30% 30%, #f7931a, #ac6707);
+        }
+        
+        .ethereum {
+            background: radial-gradient(circle at 30% 30%, #627eea, #2a3c8f);
+        }
+        
+        .solana {
+            background: radial-gradient(circle at 30% 30%, #00ffa3, #03e1ff);
+        }
+        
+        .crypto.flipping {
+            animation: flip 0.8s linear infinite;
+        }
+        
+        .crypto.flipping-fast {
+            animation: flip 0.3s linear infinite;
+        }
+        
+        @keyframes flip {
+            0% {
+                transform: rotateY(0deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+        
+        .crypto-name {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+            color: var(--cream);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
         
         .api-section {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 5rem 0;
-            position: relative;
         }
         
         .api-container {
@@ -172,74 +321,375 @@
         }
         
         .api-info h2 {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             margin-bottom: 1.5rem;
-            color: var(--accent-primary);
+            color: var(--orange-primary);
         }
         
         .api-info p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--cream);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .feature-list p {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--cream);
+        }
+        
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 127, 0, 0.1), transparent, rgba(255, 127, 0, 0.1));
+            transform: rotate(45deg);
+            z-index: -1;
+            animation: shine 8s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% {
+                transform: rotate(45deg) translateX(-50%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(50%);
+            }
+        }
+        
+        .model-selector {
             margin-bottom: 1.5rem;
         }
         
-        .input-container {
+        .model-selector select {
+            background: rgba(30, 15, 10, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: var(--cream);
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .model-selector select:focus {
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.2);
+        }
+        
+        .context-actions {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .context-btn {
+            background: rgba(255, 157, 92, 0.2);
+            border: 1px solid var(--orange-secondary);
+            color: var(--cream);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .context-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 157, 92, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .context-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .context-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+            box-shadow: 0 0 15px rgba(255, 157, 92, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--orange-primary);
         }
         
         .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            margin-bottom: 1.8rem;
+            position: relative;
         }
         
         .input-group label {
-            font-weight: 600;
-            color: var(--accent-primary);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--cream);
         }
         
         .input-group input,
         .input-group textarea {
-            background: rgba(15, 12, 10, 0.7);
-            border: 1px solid rgba(255, 123, 51, 0.2);
-            border-radius: 10px;
-            padding: 1rem;
-            color: var(--text-light);
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(30, 15, 10, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--white);
             font-size: 1rem;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .input-group textarea {
+            min-height: 150px;
+            resize: vertical;
         }
         
         .input-group input:focus,
         .input-group textarea:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(255, 123, 51, 0.3);
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.2);
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border: 1px dashed var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 120px;
+            justify-content: center;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .file-label:hover {
+            border-color: var(--orange-primary);
+            background: rgba(30, 15, 10, 0.7);
+        }
+        
+        .file-preview {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .multi-file-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(30, 15, 10, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 157, 92, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-file {
+            color: var(--orange-secondary);
+            cursor: pointer;
+            padding: 0.3rem;
+            transition: color 0.3s;
+        }
+        
+        .remove-file:hover {
+            color: var(--orange-primary);
+        }
+        
+        .file-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-name {
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .concepts-container {
+            margin-top: 1rem;
+        }
+        
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255, 157, 92, 0.2);
+            color: var(--orange-secondary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .concept-tag:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .summary-toggle {
+            color: var(--orange-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: inline-block;
         }
         
         .submit-btn {
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            color: var(--text-light);
+            background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
+            color: var(--white);
             border: none;
-            padding: 1rem;
+            width: 100%;
+            padding: 1.2rem;
             font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
         }
         
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 123, 51, 0.4);
+            box-shadow: 0 6px 20px rgba(210, 105, 30, 0.4);
         }
-        /* Results Section */
+        
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
         
         .results-section {
+            padding-top: 4rem;
+            padding-bottom: 8rem;
             min-height: 100vh;
-            padding: 5rem 0;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .results-header {
@@ -248,113 +698,263 @@
         }
         
         .results-header h2 {
-            font-size: 2.5rem;
-            color: var(--accent-primary);
-            margin-bottom: 1rem;
+            font-size: 2.6rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            color: var(--orange-primary);
+        }
+        
+        .results-header p {
+            color: var(--cream);
+            font-size: 1.1rem;
         }
         
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 2rem;
         }
         
         .result-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--orange-primary), var(--chocolate-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s;
         }
         
         .result-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 123, 51, 0.4);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+            border-color: rgba(255, 140, 0, 0.4);
+        }
+        
+        .result-card:hover::before {
+            transform: scaleX(1);
         }
         
         .result-card h3 {
-            color: var(--accent-primary);
+            font-size: 1.5rem;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .result-card h3 i {
-            color: var(--accent-secondary);
+            gap: 0.8rem;
+            color: var(--orange-secondary);
         }
         
         .result-card p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--cream);
             margin-bottom: 1rem;
         }
         
         .kernel-output {
-            background: rgba(10, 8, 6, 0.5);
-            border: 1px solid rgba(255, 123, 51, 0.2);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: 0.9rem;
-            max-height: 300px;
-            overflow-y: auto;
-            color: var(--accent-secondary);
+            min-height: 150px;
+            background: rgba(20, 10, 5, 0.6);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 10px;
             white-space: pre-wrap;
+            overflow: auto;
+            max-height: 300px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border: 1px solid rgba(255, 140, 0, 0.15);
+            position: relative;
         }
         
-        .output-line {
-            margin-bottom: 5px;
-            line-height: 1.4;
+        .kernel-output::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 95%, rgba(255, 127, 0, 0.05));
+            pointer-events: none;
         }
-        /* Footer */
+        
+        .answer-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            padding: 0.8rem 0;
+            border-top: 1px solid rgba(255, 157, 92, 0.2);
+        }
+        
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .action-label {
+            font-size: 0.9rem;
+            color: var(--orange-secondary);
+            font-weight: 500;
+        }
+        
+        .action-btn {
+            background: rgba(255, 157, 92, 0.2);
+            color: var(--orange-secondary);
+            border: 1px solid var(--orange-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .follow-up-suggestions {
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(255, 157, 92, 0.2);
+            padding-top: 1.5rem;
+        }
+        
+        .follow-up-suggestions h4 {
+            color: var(--orange-secondary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .follow-up-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        
+        .follow-up-btn {
+            background: rgba(255, 157, 92, 0.1);
+            color: var(--cream);
+            border: 1px solid var(--orange-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .follow-up-btn:hover {
+            background: rgba(255, 157, 92, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .memory-entry {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 157, 92, 0.2);
+        }
+        
+        .memory-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .memory-action-btn {
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            background: rgba(255, 157, 92, 0.2);
+            border: none;
+            color: var(--orange-secondary);
+            transition: all 0.3s;
+        }
+        
+        .memory-action-btn:hover {
+            background: rgba(255, 157, 92, 0.3);
+            transform: translateY(-2px);
+        }
         
         footer {
-            background: var(--bg-dark-secondary);
-            padding: 3rem 0;
             text-align: center;
+            padding: 2.5rem;
             border-top: 1px solid var(--glass-border);
+            color: var(--cream);
+            font-size: 0.95rem;
+            background: rgba(10, 5, 0, 0.7);
+            backdrop-filter: blur(10px);
         }
         
-        .footer-content {
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            background: rgba(30, 15, 10, 0.9);
+            border: 1px solid var(--glass-border);
         }
         
-        .social-links {
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background: rgba(30, 70, 30, 0.9);
+            border-color: rgba(0, 255, 0, 0.2);
+        }
+        
+        .notification.error {
+            background: rgba(70, 30, 30, 0.9);
+            border-color: rgba(255, 0, 0, 0.2);
+        }
+        
+        .notification.info {
+            background: rgba(30, 30, 70, 0.9);
+            border-color: rgba(0, 100, 255, 0.2);
+        }
+        
+        .concept-tags {
             display: flex;
-            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            gap: 5px;
         }
         
-        .social-links a {
-            color: var(--text-light);
-            font-size: 1.5rem;
-            transition: color 0.3s ease;
+        .notification-concept {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
         }
-        
-        .social-links a:hover {
-            color: var(--accent-primary);
-        }
-        /* Animations */
-        
-        @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        /* Scroll animations */
         
         .animate-on-scroll {
             opacity: 0;
@@ -366,106 +966,225 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* Background elements */
         
-        .bg-elements {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .section-divider {
             width: 100%;
-            height: 100%;
-            z-index: -2;
-            overflow: hidden;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--orange-secondary), transparent);
+            margin: 4rem 0;
         }
-        /* Responsive */
         
-        @media (max-width: 992px) {
+        .vertical-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(transparent, var(--orange-secondary), transparent);
+            z-index: -1;
+        }
+        
+        .vertical-line.left {
+            left: 10%;
+        }
+        
+        .vertical-line.right {
+            right: 10%;
+        }
+        
+        .vertical-line.center {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* New styles for generation buttons */
+        
+        .generation-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .generation-btn {
+            background: rgba(255, 157, 92, 0.3);
+            border: 1px solid var(--orange-secondary);
+            color: var(--cream);
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .generation-btn:hover {
+            background: rgba(255, 157, 92, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .generation-btn i {
+            font-size: 1.2em;
+        }
+        
+        .iframe-container {
+            margin-top: 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        @media (max-width: 900px) {
             .api-container {
                 grid-template-columns: 1fr;
             }
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            .vertical-line {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 7rem;
+                padding-bottom: 5rem;
+            }
             .hero h1 {
-                font-size: 3rem;
+                font-size: 2.8rem;
+            }
+            .hero p {
+                font-size: 1.2rem;
+            }
+            .crypto-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            .api-info h2,
+            .results-header h2 {
+                font-size: 2.2rem;
+            }
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
             }
             .nav-links {
                 display: none;
             }
-            .kernel-output {
-                font-size: 0.8rem;
+            .api-info h2,
+            .results-header h2 {
+                font-size: 2rem;
+            }
+            .glass-panel {
+                padding: 1.8rem;
+            }
+            .generation-buttons {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Background Elements -->
+    <div class="hex-pattern"></div>
     <div class="bg-elements" id="bg-canvas"></div>
 
-    <!-- Navigation -->
     <nav>
-        <div class="logo">Kaggle<span style="color: var(--accent-secondary);">API</span></div>
+        <div class="logo">
+            <div class="logo-icon">
+                <div class="logo-icon-inner">C</div>
+            </div>
+            Crossbar<span>AI</span>
+        </div>
         <div class="nav-links">
             <a href="#features">Features</a>
-            <a href="#api">API</a>
+            <a href="#api">Ask Question</a>
             <a href="#results">Results</a>
-            <a href="#docs">Documentation</a>
+            <a href="#" id="admin-nav">Admin</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Kaggle API Interface</h1>
-            <p>Access the world's largest data science community through a beautifully designed, cinematic interface</p>
-            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">Get
-                Started</button>
+            <h1>Crossbar Knowledge Hub</h1>
+            <p>Access company insights instantly with our AI-powered knowledge assistant</p>
+
+            <div class="crypto-container">
+                <div class="mascot">
+                    <div class="crypto bitcoin" id="bitcoin">
+                        <i class="fab fa-bitcoin"></i>
+                    </div>
+                    <div class="crypto-name">Bitcoin</div>
+                </div>
+                <div class="mascot">
+                    <div class="crypto ethereum" id="ethereum">
+                        <i class="fab fa-ethereum"></i>
+                    </div>
+                    <div class="crypto-name">Ethereum</div>
+                </div>
+                <div class="mascot">
+                    <div class="crypto solana" id="solana">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="crypto-name">Solana</div>
+                </div>
+            </div>
+
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">
+                Explore Knowledge
+            </button>
         </div>
     </section>
 
-    <!-- API Section -->
     <section class="api-section" id="api">
         <div class="container">
             <div class="api-container">
                 <div class="api-info animate-on-scroll">
-                    <h2>Kaggle API Integration</h2>
-                    <p>Interact with Kaggle datasets, kernels, and competitions directly through our intuitive interface.
-                    </p>
-                    <p>Your API key is pre-filled below - just execute the kernel command to see results:</p>
+                    <h2>Intelligent Q&A System</h2>
+                    <p>Ask any question about our operations, products, or services and receive precise answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Real-time data fetching
-                        </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Secure API handling
-                        </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Beautiful visualizations
-                        </p>
-                        <p><i class="fas fa-check-circle" style="color: var(--accent-primary);"></i> Natural language question answering</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context across sessions</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports document and text context additions</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified company knowledge base</p>
                     </div>
                 </div>
 
                 <div class="glass-panel animate-on-scroll">
+                    <!-- Model selector dropdown -->
+                    <div class="model-selector">
+                        <label for="modelSelect">Embedding Model:</label>
+                        <select id="modelSelect">
+                            <option value="text-embedding-3-large" selected>text-embedding-3-large (default)</option>
+                            <option value="text-embedding-3-small">text-embedding-3-small</option>
+                        </select>
+                    </div>
+
+                    <div class="context-actions">
+                        <button class="context-btn" id="add-text-context">
+                            <i class="fas fa-comment"></i> Add Text Context
+                        </button>
+                        <button class="context-btn" id="add-file-context">
+                            <i class="fas fa-file-upload"></i> Upload File
+                        </button>
+                        <button class="context-btn" id="debug-vector-btn">
+                            <i class="fas fa-bug"></i> Debug Embeddings
+                        </button>
+                    </div>
+
                     <div class="input-container">
-                        <!-- Hidden session ID field -->
-                        <input type="hidden" id="session-id" value="{{ session_id }}">
-
                         <div class="input-group">
-                            <label for="api-key">Kaggle API Key</label>
-                            <input type="password" id="api-key" value="{{ api_key }}" readonly>
-                        </div>
-
-                        <!-- Base command only -->
-                        <div class="input-group">
-                            <label for="kernel-command">Kernel Command</label>
-                            <input type="text" id="kernel-command" value="{{ default_command }}" readonly>
-                        </div>
-
-                        <!-- Separate kernel reference input -->
-                        <div class="input-group">
-                            <label for="kernel-reference">Kernel Reference</label>
-                            <input type="text" id="kernel-reference" value="{{ default_kernel }}">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="parameters">Additional Parameters (CLI flags only)</label>
-                            <textarea id="parameters" rows="2">{{ default_params }}</textarea>
+                            <label for="api-key">API Key</label>
+                            <input type="password" id="api-key" placeholder="Enter your access key">
                         </div>
 
                         <div class="input-group">
@@ -473,300 +1192,1092 @@
                             <input type="text" id="question" placeholder="Ask about the company...">
                         </div>
 
-                        <button class="submit-btn">Execute Kernel <i class="fas fa-arrow-right"></i></button>
+                        <button class="submit-btn" id="submit-btn">Ask Question <i
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Results Section -->
     <section class="results-section" id="results">
         <div class="container">
             <div class="results-header animate-on-scroll">
-                <h2>Analysis Results</h2>
-                <p>Visualized insights from your Kaggle kernel execution</p>
+                <h2><i class="fas fa-brain"></i> AI Analysis Results</h2>
+                <p>Answers synthesized from our extensive knowledge base</p>
             </div>
 
             <div class="results-grid">
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-comments"></i> Question Answer</h3>
-                    <p>Natural language response to your query:</p>
+                    <h3><i class="fas fa-comments"></i> Comprehensive Answer</h3>
+                    <p>Detailed response to your specific query:</p>
                     <div class="kernel-output" id="kernel-answer">
-                        // Answer will appear here after execution
+                        // Your answer will appear here after processing
+                    </div>
+
+                    <!-- Generation Buttons -->
+                    <div class="generation-buttons" id="generation-buttons" style="display: none;">
+                        <button class="generation-btn" onclick="generateFromAnswer('video')">
+                            <i class="fas fa-video"></i> Generate Video
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
+                            <i class="fas fa-image"></i> Generate Poster
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('slides')">
+                            <i class="fas fa-presentation"></i> Generate Slides
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
+                            <i class="fas fa-file-alt"></i> Generate Memo
+                        </button>
+                    </div>
+
+                    <!-- Iframe Container for Generated Content -->
+                    <div class="iframe-container" id="generated-content"></div>
+
+                    <div class="answer-actions" id="answer-actions" style="display: none;">
+                        <div class="action-group">
+                            <span class="action-label">Translate:</span>
+                            <button class="action-btn" data-lang="es">Spanish</button>
+                            <button class="action-btn" data-lang="fr">French</button>
+                            <button class="action-btn" data-lang="de">German</button>
+                        </div>
+
+                        <div class="action-group">
+                            <span class="action-label">Adjust:</span>
+                            <button class="action-btn" data-command="shorten">Shorten</button>
+                            <button class="action-btn" data-command="elaborate">Elaborate</button>
+                            <button class="action-btn" data-command="reword">Rephrase</button>
+                        </div>
+                    </div>
+
+                    <div class="follow-up-suggestions" id="follow-up-suggestions" style="display: none;">
+                        <h4>Follow-up Questions:</h4>
+                        <div class="follow-up-buttons" id="follow-up-buttons">
+                            <!-- Follow-up buttons will be added here -->
+                        </div>
                     </div>
                 </div>
 
                 <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-star"></i> Key Insights</h3>
-                    <p>Summary of important findings:</p>
-                    <div class="kernel-output" id="kernel-insights">
-                        // Insights will appear here
+                    <h3><i class="fas fa-history"></i> Conversation History</h3>
+                    <div class="kernel-output" id="user-memories">
+                        <p>Login to see your saved Q&A memories</p>
                     </div>
                 </div>
 
-                <div class="result-card animate-on-scroll" style="grid-column: span 2;">
-                    <h3><i class="fas fa-terminal"></i> Kernel Output</h3>
-                    <p>Full results from your Kaggle kernel execution:</p>
-                    <div class="kernel-output" id="kernel-output">
-                        // Kernel output will appear here after execution
+                <!-- File History Card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-folder-open"></i> File History</h3>
+                    <div class="kernel-output" id="file-history">
+                        <p>No uploaded files yet.</p>
+                    </div>
+                </div>
+
+                <!-- Download Conversation Card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-download"></i> Download Conversation</h3>
+                    <div class="answer-actions">
+                        <button class="action-btn" onclick="downloadConversation('txt')">.TXT</button>
+                        <button class="action-btn" onclick="downloadConversation('docx')">.DOCX</button>
+                        <button class="action-btn" onclick="downloadConversation('pdf')">.PDF</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="logo">Kaggle<span style="color: var(--accent-secondary);">API</span></div>
-                <p>Cinematic interface for Kaggle API interactions</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-github"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
-                    <a href="#"><i class="fab fa-kaggle"></i></a>
-                </div>
-                <p>© 2024 KaggleAPI Interface. All rights reserved.</p>
-            </div>
-        </div>
+        <p>© 2023 Crossbar AI | Transforming Enterprise Knowledge</p>
     </footer>
 
-    <script>
-        // Helper function to set output content
-        function setOutputContent(elementId, content, fallback = "") {
-            const element = document.getElementById(elementId);
-            element.innerHTML = '';
+    <!-- Context Modals -->
+    <div class="modal" id="text-context-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Text Context</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="context-text">Enter additional context</label>
+                <textarea id="context-text" placeholder="Product A is a component used in Product B..."></textarea>
+            </div>
+            <div class="concepts-container" id="text-concepts" style="display: none;">
+                <h4>Key Concepts:</h4>
+                <div class="concept-tags" id="text-concept-tags"></div>
+            </div>
+            <button class="submit-btn" id="submit-text-context">Add Context <i class="fas fa-spinner fa-spin"
+                    style="display: none;" id="text-spinner"></i></button>
+            <button class="context-btn" id="clear-text-context" style="margin-top: 1rem;">
+                <i class="fas fa-eraser"></i> Clear Text
+            </button>
+        </div>
+    </div>
 
-            if (content) {
-                content.split('\n').forEach(line => {
-                    const lineElement = document.createElement('div');
-                    lineElement.className = 'output-line';
-                    lineElement.textContent = line;
-                    element.appendChild(lineElement);
-                });
+    <div class="modal" id="file-context-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload Context File</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="file-upload">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
+                <label for="context-files" class="file-label" id="file-drop-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose files or drag them here</span>
+                    <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
+                </label>
+                <div class="multi-file-preview" id="multi-file-preview">
+                    <!-- File previews will be added here -->
+                </div>
+            </div>
+            <div class="concepts-container" id="file-concepts" style="display: none;">
+                <h4>Key Concepts:</h4>
+                <div class="concept-tags" id="file-concept-tags"></div>
+            </div>
+            <button class="submit-btn" id="submit-file-context">Upload Files <i class="fas fa-spinner fa-spin"
+                    style="display: none;" id="file-spinner"></i></button>
+        </div>
+    </div>
+
+    <!-- Debug Vector Modal -->
+    <div class="modal" id="vector-debug-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Embedding Debug Tool</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="testInput">Test Text</label>
+                <textarea id="testInput" placeholder="Enter text to test embedding..."></textarea>
+            </div>
+            <button class="submit-btn" id="test-vector-btn">Generate Embedding</button>
+            <div class="kernel-output" id="vectorOutput" style="margin-top: 20px; max-height: 300px;"></div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal" id="admin-login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Admin Login</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="admin-username">Username</label>
+                <input type="text" id="admin-username">
+            </div>
+            <div class="input-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password">
+            </div>
+            <button class="submit-btn" id="admin-login-btn">Login</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <section id="admin-dashboard" style="display:none; padding:2rem">
+        <div class="glass-panel">
+            <h2>Admin Dashboard</h2>
+            <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
+            <div style="margin-top:2rem">
+                <h3>Conversation Logs</h3>
+                <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
+                <h3>Frequent Questions</h3>
+                <ul id="frequent-questions"></ul>
+            </div>
+        </div>
+    </section>
+
+    <div id="notification-container"></div>
+
+    <script>
+        // File icon mapping
+        const fileIcons = {
+            pdf: 'fas fa-file-pdf',
+            doc: 'fas fa-file-word',
+            docx: 'fas fa-file-word',
+            txt: 'fas fa-file-alt',
+            ppt: 'fas fa-file-powerpoint',
+            pptx: 'fas fa-file-powerpoint',
+            jpg: 'fas fa-file-image',
+            jpeg: 'fas fa-file-image',
+            png: 'fas fa-file-image',
+            mp4: 'fas fa-file-video',
+            default: 'fas fa-file'
+        };
+
+        // Session management
+        let sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+            sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+            localStorage.setItem('sessionId', sessionId);
+        }
+
+        // Store current answer for adjustments
+        let currentAnswer = "";
+        let currentQuestion = "";
+
+        // DOM elements
+        const textContextModal = document.getElementById('text-context-modal');
+        const fileContextModal = document.getElementById('file-context-modal');
+        const vectorDebugModal = document.getElementById('vector-debug-modal');
+        const adminLoginModal = document.getElementById('admin-login-modal');
+        const closeButtons = document.querySelectorAll('.close-modal');
+        const fileInput = document.getElementById('context-files');
+        const multiFilePreview = document.getElementById('multi-file-preview');
+        const textConcepts = document.getElementById('text-concepts');
+        const textConceptTags = document.getElementById('text-concept-tags');
+        const fileConcepts = document.getElementById('file-concepts');
+        const fileConceptTags = document.getElementById('file-concept-tags');
+        const textSpinner = document.getElementById('text-spinner');
+        const fileSpinner = document.getElementById('file-spinner');
+        const answerActions = document.getElementById('answer-actions');
+        const followUpSuggestions = document.getElementById('follow-up-suggestions');
+        const followUpButtons = document.getElementById('follow-up-buttons');
+        const generationButtons = document.getElementById('generation-buttons');
+        const generatedContent = document.getElementById('generated-content');
+
+        // Crypto animation logic
+        const cryptos = {
+            bitcoin: document.getElementById('bitcoin'),
+            ethereum: document.getElementById('ethereum'),
+            solana: document.getElementById('solana')
+        };
+
+        // Flip animation control
+        function toggleFlip(element, speed) {
+            element.classList.toggle('flipping');
+            if (speed === 'fast') {
+                element.classList.add('flipping-fast');
             } else {
-                element.textContent = fallback;
+                element.classList.remove('flipping-fast');
             }
         }
 
-        // Background animation with Three.js
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up Three.js scene
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({
-                alpha: true
+        // Set up event listeners for each crypto
+        for (const [name, element] of Object.entries(cryptos)) {
+            element.addEventListener('mouseenter', () => toggleFlip(element, 'fast'));
+            element.addEventListener('mouseleave', () => {
+                if (element.classList.contains('flipping')) toggleFlip(element, 'normal');
             });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('bg-canvas').appendChild(renderer.domElement);
-
-            // Create floating geometric elements with chocolate-orange theme
-            const geometries = [
-                new THREE.TetrahedronGeometry(10, 0),
-                new THREE.OctahedronGeometry(7, 0),
-                new THREE.DodecahedronGeometry(5, 0),
-                new THREE.IcosahedronGeometry(8, 0)
-            ];
-
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xff7b33,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.1
+            element.addEventListener('click', () => {
+                if (element.classList.contains('flipping')) {
+                    element.classList.remove('flipping', 'flipping-fast');
+                } else {
+                    toggleFlip(element, 'fast');
+                }
             });
+        }
 
-            const objects = [];
-            const numObjects = 15;
+        // Start with all flipping at normal speed
+        setTimeout(() => {
+            for (const element of Object.values(cryptos)) toggleFlip(element, 'normal');
+        }, 1000);
 
-            for (let i = 0; i < numObjects; i++) {
-                const geo = geometries[Math.floor(Math.random() * geometries.length)];
-                const mesh = new THREE.Mesh(geo, material.clone());
+        // Event listeners for modals
+        document.getElementById('add-text-context').addEventListener('click', () => {
+            textContextModal.style.display = 'flex';
+            setTimeout(() => textContextModal.classList.add('show'), 10);
+        });
 
-                // Set random position
-                mesh.position.x = Math.random() * 100 - 50;
-                mesh.position.y = Math.random() * 100 - 50;
-                mesh.position.z = Math.random() * 100 - 50;
+        document.getElementById('add-file-context').addEventListener('click', () => {
+            fileContextModal.style.display = 'flex';
+            setTimeout(() => fileContextModal.classList.add('show'), 10);
+        });
 
-                // Set random rotation
-                mesh.rotation.x = Math.random() * Math.PI;
-                mesh.rotation.y = Math.random() * Math.PI;
+        document.getElementById('debug-vector-btn').addEventListener('click', () => {
+            vectorDebugModal.style.display = 'flex';
+            setTimeout(() => vectorDebugModal.classList.add('show'), 10);
+        });
 
-                // Set random color in chocolate-orange palette
-                const colors = [0xff7b33, 0xff9d5c, 0xd2691e];
-                mesh.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                textContextModal.classList.remove('show');
+                fileContextModal.classList.remove('show');
+                vectorDebugModal.classList.remove('show');
+                adminLoginModal.classList.remove('show');
+                setTimeout(() => {
+                    textContextModal.style.display = 'none';
+                    fileContextModal.style.display = 'none';
+                    vectorDebugModal.style.display = 'none';
+                    adminLoginModal.style.display = 'none';
+                }, 300);
+            });
+        });
 
-                // Set random size
-                const scale = 0.2 + Math.random() * 0.8;
-                mesh.scale.set(scale, scale, scale);
-
-                scene.add(mesh);
-                objects.push(mesh);
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === textContextModal) {
+                textContextModal.classList.remove('show');
+                setTimeout(() => textContextModal.style.display = 'none', 300);
             }
-
-            camera.position.z = 30;
-
-            // Animation function
-            function animate() {
-                requestAnimationFrame(animate);
-
-                // Rotate objects
-                objects.forEach(obj => {
-                    obj.rotation.x += 0.005;
-                    obj.rotation.y += 0.005;
-
-                    // Gentle floating movement
-                    obj.position.y += Math.sin(Date.now() * 0.001 + obj.position.x) * 0.01;
-                });
-
-                renderer.render(scene, camera);
+            if (e.target === fileContextModal) {
+                fileContextModal.classList.remove('show');
+                setTimeout(() => fileContextModal.style.display = 'none', 300);
             }
+            if (e.target === vectorDebugModal) {
+                vectorDebugModal.classList.remove('show');
+                setTimeout(() => vectorDebugModal.style.display = 'none', 300);
+            }
+            if (e.target === adminLoginModal) {
+                adminLoginModal.classList.remove('show');
+                setTimeout(() => adminLoginModal.style.display = 'none', 300);
+            }
+        });
 
-            animate();
+        // File input handling
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                displayMultiFilePreview(this.files);
+            }
+        });
 
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+        // Drag and drop functionality
+        const fileDropArea = document.getElementById('file-drop-area');
+        fileDropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--orange-primary)';
+            this.style.background = 'rgba(30, 15, 10, 0.7)';
+        });
+
+        fileDropArea.addEventListener('dragleave', function() {
+            this.style.borderColor = 'var(--glass-border)';
+            this.style.background = 'rgba(30, 15, 10, 0.5)';
+        });
+
+        fileDropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--glass-border)';
+            this.style.background = 'rgba(30, 15, 10, 0.5)';
+
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                displayMultiFilePreview(e.dataTransfer.files);
+            }
+        });
+
+        function displayMultiFilePreview(files) {
+            multiFilePreview.innerHTML = '';
+            multiFilePreview.style.display = 'block';
+
+            Array.from(files).forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                const iconClass = fileIcons[ext] || fileIcons.default;
+
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <i class="${iconClass}"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <span class="remove-file" data-file="${file.name}">✕</span>
+                `;
+
+                multiFilePreview.appendChild(fileItem);
             });
 
-            // Scroll animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-file').forEach(button => {
+                button.addEventListener('click', function() {
+                    const fileName = this.getAttribute('data-file');
+                    const dt = new DataTransfer();
+                    const files = fileInput.files;
+
+                    for (let i = 0; i < files.length; i++) {
+                        if (files[i].name !== fileName) {
+                            dt.items.add(files[i]);
+                        }
+                    }
+
+                    fileInput.files = dt.files;
+                    displayMultiFilePreview(dt.files);
+
+                    if (dt.files.length === 0) {
+                        multiFilePreview.style.display = 'none';
                     }
                 });
-            }, {
-                threshold: 0.1
             });
+        }
 
-            document.querySelectorAll('.animate-on-scroll').forEach(element => {
-                observer.observe(element);
+        // Get selected embedding model
+        function getSelectedModel() {
+            return document.getElementById("modelSelect").value || "text-embedding-3-large";
+        }
+
+        // Convert file to Base64
+        async function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsDataURL(file);
             });
+        }
 
-            // Form submission with kernel output
-            document.querySelector('.submit-btn').addEventListener('click', async function() {
+        // Add text context
+        document.getElementById('submit-text-context').addEventListener('click', async() => {
+            const contextText = document.getElementById('context-text').value;
+            const apiKey = document.getElementById('api-key').value;
+            const submitBtn = document.getElementById('submit-text-context');
+            const textSpinner = document.getElementById('text-spinner');
+
+            if (!contextText) {
+                showNotification('Please enter some context text', 'error');
+                return;
+            }
+
+            if (!apiKey) {
+                showNotification('Please enter your API key first', 'error');
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                textSpinner.style.display = 'inline-block';
+                textConcepts.style.display = 'none';
+
+                const model = getSelectedModel();
+                const formData = new FormData();
+                formData.append('text', contextText);
+                formData.append('sessionId', sessionId);
+                formData.append('model', model);
+
+                const response = await fetch('/api/upload_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to add context');
+                }
+
+                const data = await response.json();
+                displayConcepts(textConceptTags, data.concepts || []);
+                textConcepts.style.display = 'block';
+                showNotification('Context added successfully!', 'success', data.concepts);
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                textSpinner.style.display = 'none';
+            }
+        });
+
+        // Upload file context
+        document.getElementById('submit-file-context').addEventListener('click', async() => {
+            const apiKey = document.getElementById('api-key').value;
+            const submitBtn = document.getElementById('submit-file-context');
+            const fileSpinner = document.getElementById('file-spinner');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showNotification('Please select files to upload', 'error');
+                return;
+            }
+
+            if (!apiKey) {
+                showNotification('Please enter your API key first', 'error');
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                fileSpinner.style.display = 'inline-block';
+
+                const model = getSelectedModel();
+                const formData = new FormData();
+                formData.append('sessionId', sessionId);
+                formData.append('model', model);
+
+                // Convert files to Base64 and add to formData
+                for (const file of fileInput.files) {
+                    const base64 = await convertFileToBase64(file);
+                    formData.append('filesBase64', base64);
+                    formData.append('filenames', file.name);
+                }
+
+                const response = await fetch('/api/upload_context', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to upload files');
+                }
+
+                const data = await response.json();
+                displayConcepts(fileConceptTags, data.concepts || []);
+                fileConcepts.style.display = 'block';
+                showNotification('Files uploaded successfully!', 'success', data.concepts);
+                fetchFileHistory();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                fileSpinner.style.display = 'none';
+            }
+        });
+
+        // Form submission with question
+        document.getElementById('submit-btn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('api-key').value;
+            const question = document.getElementById('question').value;
+            const submitBtn = this;
+
+            if (!apiKey) {
+                showNotification('Please enter your API key', 'error');
+                return;
+            }
+
+            if (!question) {
+                showNotification('Please enter a question', 'error');
+                return;
+            }
+
+            submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+            setOutputContent('kernel-answer', "> Processing your question...");
+            generatedContent.style.display = 'none';
+
+            try {
+                const model = getSelectedModel();
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        sessionId: sessionId,
+                        model: model
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || `API request failed: ${response.status}`);
+
+                currentAnswer = data.answer;
+                currentQuestion = data.question;
+                setOutputContent('kernel-answer', data.answer || "No answer found");
+                answerActions.style.display = 'block';
+                generationButtons.style.display = 'flex';
+
+                if (data.follow_ups && data.follow_ups.length > 0) {
+                    followUpButtons.innerHTML = "";
+                    data.follow_ups.forEach(followUp => {
+                        const button = document.createElement('button');
+                        button.className = 'follow-up-btn';
+                        button.textContent = followUp;
+                        button.addEventListener('click', () => {
+                            document.getElementById('question').value = followUp;
+                            document.getElementById('submit-btn').click();
+                        });
+                        followUpButtons.appendChild(button);
+                    });
+                    followUpSuggestions.style.display = 'block';
+                } else {
+                    followUpSuggestions.style.display = 'none';
+                }
+
+                showNotification('Question answered successfully!', 'success');
+            } catch (error) {
+                setOutputContent('kernel-answer', `> Error: ${error.message}`);
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
+                submitBtn.disabled = false;
+                document.getElementById('results').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+
+        // Content generation handler
+        async function generateFromAnswer(type) {
+            const apiKey = document.getElementById('api-key').value;
+            if (!currentAnswer || !apiKey) {
+                showNotification('Please enter API key and submit a question first', 'error');
+                return;
+            }
+
+            try {
+                setOutputContent("kernel-answer", `> Generating ${type}...`);
+                const res = await fetch("/api/generate_content", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        content: currentAnswer,
+                        type: type
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Generation failed");
+
+                if (type === 'video') {
+                    // Handle video generation
+                    generatedContent.innerHTML = `
+                        <iframe 
+                            src="https://vidful.ai/embed?prompt=${encodeURIComponent(data.generated)}" 
+                            width="100%" 
+                            height="500px"
+                            frameborder="0"
+                        ></iframe>
+                    `;
+                    generatedContent.style.display = 'block';
+                } else if (type === 'slides') {
+                    // Handle slides generation
+                    generatedContent.innerHTML = `
+                        <iframe 
+                            src="https://slidesgpt.com/embed?text=${encodeURIComponent(data.generated)}" 
+                            width="100%" 
+                            height="500px"
+                            frameborder="0"
+                        ></iframe>
+                    `;
+                    generatedContent.style.display = 'block';
+                } else {
+                    // Show generated content for other types
+                    setOutputContent("kernel-answer", data.generated);
+                }
+
+                showNotification(`${type} generated successfully`, "success");
+            } catch (err) {
+                showNotification(`Error: ${err.message}`, "error");
+                setOutputContent("kernel-answer", currentAnswer);
+            }
+        }
+
+        // Answer adjustment functionality
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('click', async function() {
                 const apiKey = document.getElementById('api-key').value;
-                const kernelCommand = document.getElementById('kernel-command').value;
-                const kernelReference = document.getElementById('kernel-reference').value;
-                const parameters = document.getElementById('parameters').value;
-                const question = document.getElementById('question').value;
+                const command = this.dataset.command;
+                const lang = this.dataset.lang;
 
-                // Get session ID from hidden input
-                const sessionId = document.getElementById('session-id').value;
+                if (!apiKey) {
+                    showNotification('Please enter your API key first', 'error');
+                    return;
+                }
 
-                // Show loading state
-                this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
-                const kernelOutput = document.getElementById('kernel-output');
-                const kernelAnswer = document.getElementById('kernel-answer');
-                const kernelInsights = document.getElementById('kernel-insights');
-
-                setOutputContent('kernel-output', "> Connecting to Kaggle API...");
-                setOutputContent('kernel-answer', "> Processing your question...");
-                setOutputContent('kernel-insights', "> Analyzing results...");
+                if (!currentAnswer) {
+                    showNotification('No answer to adjust', 'error');
+                    return;
+                }
 
                 try {
-                    // Call backend to execute Kaggle command
-                    const response = await fetch('/api/kaggle/execute', {
+                    const kernelAnswer = document.getElementById('kernel-answer');
+                    kernelAnswer.textContent = "> Adjusting answer...";
+
+                    const response = await fetch('/api/adjust_answer', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${apiKey}`
                         },
                         body: JSON.stringify({
-                            command: kernelCommand,
-                            parameters: parameters,
-                            kernel: kernelReference, // Send kernel reference separately
-                            question: question,
-                            session_id: sessionId // Include session ID in request
+                            answer: currentAnswer,
+                            type: command || 'shorten',
+                            language: lang || 'English'
                         })
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`API request failed: ${response.status}`);
-                    }
-
                     const data = await response.json();
-                    console.log("Response data:", data); // Log response for debugging
+                    if (!response.ok) throw new Error(data.error || `Adjustment failed: ${response.status}`);
 
-                    // Use fallback values for all fields
-                    const insights = data.insights || "No insights found.";
-                    const answer = data.answer || "No answer generated.";
-                    const outputPath = data.output_path || "";
-                    const output = data.output || "No kernel output.";
-
-                    // Update all output sections with fallbacks
-                    document.getElementById('kernel-insights').innerHTML = `<div class="output-line">${insights}</div>`;
-                    document.getElementById('kernel-answer').innerHTML = `<div class="output-line">${answer}</div>`;
-
-                    // Use output_path if available, otherwise fallback to output
-                    if (outputPath) {
-                        setOutputContent('kernel-output', outputPath);
-                    } else {
-                        setOutputContent('kernel-output', output);
-                    }
-
-                    // Show success message
-                    showNotification('Kernel executed successfully! Results updated.', 'success');
-
+                    currentAnswer = data.adjusted_answer;
+                    kernelAnswer.textContent = data.adjusted_answer;
+                    showNotification('Answer adjusted successfully!', 'success');
                 } catch (error) {
-                    console.error('Error executing kernel:', error);
-                    setOutputContent('kernel-output', `> Error: ${error.message}\n> Please check your API key and command syntax`);
-                    setOutputContent('kernel-answer', "> Error processing question");
-                    setOutputContent('kernel-insights', "> Error analyzing results");
                     showNotification(`Error: ${error.message}`, 'error');
-                } finally {
-                    this.innerHTML = 'Execute Kernel <i class="fas fa-arrow-right"></i>';
-
-                    // Scroll to results
-                    document.getElementById('results').scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    setOutputContent('kernel-answer', currentAnswer);
                 }
             });
+        });
 
-            function showNotification(message, type) {
-                const notification = document.createElement('div');
-                notification.textContent = message;
-                notification.style.position = 'fixed';
-                notification.style.bottom = '20px';
-                notification.style.right = '20px';
-                notification.style.padding = '15px 25px';
-                notification.style.background = type === 'success' ?
-                    'rgba(40, 167, 69, 0.9)' :
-                    'rgba(220, 53, 69, 0.9)';
-                notification.style.color = 'white';
-                notification.style.borderRadius = '10px';
-                notification.style.zIndex = '1000';
-                notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-                notification.style.animation = 'fadeIn 0.5s ease-out';
+        // Debug vector tool
+        document.getElementById('test-vector-btn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('api-key').value;
+            const text = document.getElementById('testInput').value.trim();
+            const model = getSelectedModel();
 
-                document.body.appendChild(notification);
-
-                setTimeout(() => {
-                    notification.style.animation = 'fadeOut 0.5s ease-out';
-                    setTimeout(() => {
-                        document.body.removeChild(notification);
-                    }, 500);
-                }, 3000);
+            if (!apiKey) {
+                showNotification('Please enter your API key', 'error');
+                return;
             }
 
-            // Add CSS for fade animations
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
+            if (!text) {
+                showNotification('Please enter some text', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/debug_vector', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        text,
+                        model
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('vectorOutput').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // File History Fetch
+        async function fetchFileHistory() {
+            try {
+                const res = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
+                if (!res.ok) throw new Error('Failed to fetch file history');
+
+                const data = await res.json();
+                const container = document.getElementById('file-history');
+                container.innerHTML = "";
+
+                if (data.length === 0) {
+                    container.innerHTML = "<p>No files uploaded.</p>";
+                    return;
                 }
-                @keyframes fadeOut {
-                    from { opacity: 1; transform: translateY(0); }
-                    to { opacity: 0; transform: translateY(20px); }
+
+                data.forEach(ctx => {
+                    const row = document.createElement("div");
+                    row.className = "memory-entry";
+                    row.innerHTML = `
+                        <div><strong>${ctx.filename}</strong></div>
+                        <div>${new Date(ctx.timestamp).toLocaleString()}</div>
+                        <div class="memory-actions">
+                            <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">Remove</button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Remove context file
+        async function removeContext(contextId) {
+            try {
+                const apiKey = document.getElementById('api-key').value;
+                if (!apiKey) {
+                    showNotification('Please enter API key', 'error');
+                    return;
                 }
-            `;
-            document.head.appendChild(style);
+
+                const response = await fetch("/api/remove_context", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        contextId: contextId
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to remove context');
+                }
+
+                showNotification('Context removed successfully', 'success');
+                fetchFileHistory();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Download conversation
+        function downloadConversation(format) {
+            window.open(`/api/download_conversation?sessionId=${sessionId}&format=${format}`, "_blank");
+        }
+
+        // Admin login functionality
+        document.getElementById('admin-nav').addEventListener('click', () => {
+            adminLoginModal.style.display = 'flex';
+            setTimeout(() => adminLoginModal.classList.add('show'), 10);
+        });
+
+        document.getElementById('admin-login-btn').addEventListener('click', async() => {
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+
+            if (!username || !password) {
+                showNotification('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/admin_login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Login failed');
+
+                showNotification('Admin login successful', 'success');
+                adminLoginModal.classList.remove('show');
+                setTimeout(() => adminLoginModal.style.display = 'none', 300);
+                document.getElementById('admin-dashboard').style.display = 'block';
+                loadAdminDashboard();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Load admin dashboard
+        async function loadAdminDashboard() {
+            try {
+                const convoRes = await fetch("/api/admin/conversations");
+                if (!convoRes.ok) throw new Error('Failed to load conversations');
+
+                const convos = await convoRes.json();
+                const convoContainer = document.getElementById('admin-conversations');
+                convoContainer.textContent = convos.map(c => `[${new Date(c.timestamp).toLocaleString()}]\nQ: ${c.question}\nA: ${c.answer}\n`).join('\n\n');
+
+                const freqRes = await fetch("/api/admin/frequent_questions");
+                if (!freqRes.ok) throw new Error('Failed to load frequent questions');
+
+                const questions = await freqRes.json();
+                const list = document.getElementById('frequent-questions');
+                list.innerHTML = "";
+
+                questions.forEach(q => {
+                    const li = document.createElement('li');
+                    li.textContent = `${q.question} (${q.count} times)`;
+                    list.appendChild(li);
+                });
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Reset database
+        async function resetDatabase() {
+            if (!confirm("Are you sure you want to reset the entire database? This cannot be undone.")) return;
+
+            try {
+                const response = await fetch("/api/admin/reset_db", {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Reset failed');
+
+                showNotification('Database reset successfully', 'success');
+                loadAdminDashboard();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Helper function to set output content
+        function setOutputContent(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) element.textContent = content;
+        }
+
+        // Helper function to display concepts
+        function displayConcepts(container, concepts) {
+            container.innerHTML = '';
+            concepts.forEach(concept => {
+                const tag = document.createElement('span');
+                tag.className = 'concept-tag';
+                tag.textContent = concept;
+                container.appendChild(tag);
+            });
+        }
+
+        // Helper function to show notifications
+        function showNotification(message, type, concepts = []) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            let content = `<div>${message}</div>`;
+            if (concepts && concepts.length > 0) {
+                content += `<div class="concept-tags">`;
+                concepts.forEach(concept => content += `<span class="notification-concept">${concept}</span>`);
+                content += `</div>`;
+            }
+
+            notification.innerHTML = content;
+            container.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Animation on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        // Neural Web Background Animation
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        document.getElementById('bg-canvas').appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        const nodes = [];
+        const connections = [];
+        const nodeCount = 25;
+        const maxConnections = 3;
+        const maxDistance = 250;
+        const pulseSpeed = 0.02;
+
+        class Node {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 4 + 3;
+                this.pulse = Math.random() * Math.PI * 2;
+                this.glow = Math.random() * 0.2 + 0.8;
+                this.color = Math.random() > 0.7 ? '#ff7b33' : '#ff9d5c';
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                this.pulse += pulseSpeed;
+                if (this.pulse > Math.PI * 2) this.pulse -= Math.PI * 2;
+                this.glow = 0.8 + Math.sin(this.pulse) * 0.2;
+            }
+
+            draw() {
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0, this.x, this.y, this.radius * 4
+                );
+                gradient.addColorStop(0, `rgba(255, 123, 51, ${this.glow * 0.6})`);
+                gradient.addColorStop(1, 'rgba(255, 123, 51, 0)');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 4, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        class Connection {
+            constructor(source, target) {
+                this.source = source;
+                this.target = target;
+                this.strength = 0.5 + Math.random() * 0.5;
+                this.pulse = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.pulse += pulseSpeed / 2;
+                if (this.pulse > Math.PI * 2) this.pulse -= Math.PI * 2;
+            }
+
+            draw() {
+                const dx = this.target.x - this.source.x;
+                const dy = this.target.y - this.source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > maxDistance) return;
+                const alpha = this.strength * (0.3 + Math.sin(this.pulse) * 0.1) * (1 - distance / maxDistance);
+                ctx.beginPath();
+                ctx.moveTo(this.source.x, this.source.y);
+                ctx.lineTo(this.target.x, this.target.y);
+                ctx.strokeStyle = `rgba(255, 123, 51, ${alpha})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        function initNeuralNetwork() {
+            for (let i = 0; i < nodeCount; i++) nodes.push(new Node());
+            for (let i = 0; i < nodes.length; i++) {
+                const source = nodes[i];
+                let connectionCount = 0;
+                for (let j = 0; j < nodes.length; j++) {
+                    if (i === j) continue;
+                    const target = nodes[j];
+                    const dx = target.x - source.x;
+                    const dy = target.y - source.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < maxDistance && connectionCount < maxConnections && Math.random() > 0.5) {
+                        connections.push(new Connection(source, target));
+                        connectionCount++;
+                    }
+                }
+            }
+        }
+
+        function animateNeuralNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'lighter';
+            for (const connection of connections) {
+                connection.update();
+                connection.draw();
+            }
+            for (const node of nodes) {
+                node.update();
+                node.draw();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+            requestAnimationFrame(animateNeuralNetwork);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Initialize and fetch file history
+        initNeuralNetwork();
+        animateNeuralNetwork();
+        fetchFileHistory();
+
+        document.getElementById('clear-text-context').addEventListener('click', () => {
+            document.getElementById('context-text').value = '';
+            document.getElementById('text-concepts').style.display = 'none';
+            document.getElementById('text-concept-tags').innerHTML = '';
         });
     </script>
 </body>
