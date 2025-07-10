@@ -5,11 +5,10 @@ db_path = os.path.join(os.path.dirname(__file__), "memory.db")
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
-# --- Drop and recreate the broken table ---
-c.execute("DROP TABLE IF EXISTS context_vectors")
+# --- Create main context tables ---
 c.execute(
     """
-CREATE TABLE context_vectors (
+CREATE TABLE IF NOT EXISTS context_vectors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     context_id TEXT NOT NULL,
     session_id TEXT NOT NULL,
@@ -20,7 +19,6 @@ CREATE TABLE context_vectors (
 """
 )
 
-# --- Other tables without dropping ---
 c.execute(
     """
 CREATE TABLE IF NOT EXISTS session_contexts (
@@ -49,7 +47,33 @@ CREATE TABLE IF NOT EXISTS conversation_history (
 """
 )
 
-# Optional: create indexes for performance
+# --- Admin dashboard & uploads tracking ---
+# conversations table (optionally includes session_id for traceability)
+c.execute(
+    """
+CREATE TABLE IF NOT EXISTS conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    question TEXT,
+    answer TEXT,
+    file TEXT
+)
+"""
+)
+
+# uploads table
+c.execute(
+    """
+CREATE TABLE IF NOT EXISTS uploads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+"""
+)
+
+# --- Indexes for performance ---
 c.execute(
     "CREATE INDEX IF NOT EXISTS idx_content_hash ON session_contexts (content_hash)"
 )
@@ -59,4 +83,5 @@ c.execute(
 
 conn.commit()
 conn.close()
-print("✅ Database initialized or repaired successfully.")
+
+print("✅ Database initialized successfully with unified tables.")

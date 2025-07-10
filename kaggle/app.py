@@ -65,6 +65,7 @@ IMAGE_RATIO_THRESHOLD = 0.5  # >50% images considered image-heavy
 # Initialize database
 def init_db():
     with sqlite3.connect(DB_FILE) as db:
+        # Create tables if they don't exist
         db.execute(
             """
             CREATE TABLE IF NOT EXISTS context_vectors (
@@ -103,17 +104,28 @@ def init_db():
             )
             """
         )
-        # Add columns if missing
-        try:
-            db.execute("ALTER TABLE session_contexts ADD COLUMN content_hash TEXT")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db.execute(
-                "ALTER TABLE session_contexts ADD COLUMN is_active BOOLEAN DEFAULT 1"
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                timestamp TEXT,
+                question TEXT,
+                answer TEXT,
+                file TEXT
             )
-        except sqlite3.OperationalError:
-            pass
+            """
+        )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS uploads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                filename TEXT,
+                timestamp TEXT
+            )
+            """
+        )
         # Create indexes
         db.execute(
             "CREATE INDEX IF NOT EXISTS idx_content_hash ON session_contexts (content_hash)"
@@ -286,11 +298,18 @@ def reset_db():
 def admin_conversations():
     with sqlite3.connect(DB_FILE) as db:
         rows = db.execute(
-            "SELECT session_id, question, answer, timestamp FROM conversation_history ORDER BY timestamp DESC"
+            "SELECT id, session_id, timestamp, question, answer, file FROM conversations ORDER BY timestamp DESC"
         ).fetchall()
     return jsonify(
         [
-            {"session_id": r[0], "question": r[1], "answer": r[2], "timestamp": r[3]}
+            {
+                "id": r[0],
+                "session_id": r[1],
+                "timestamp": r[2],
+                "question": r[3],
+                "answer": r[4],
+                "file": r[5],
+            }
             for r in rows
         ]
     )
@@ -300,9 +319,28 @@ def admin_conversations():
 def frequent_questions():
     with sqlite3.connect(DB_FILE) as db:
         rows = db.execute(
-            "SELECT question, COUNT(*) as count FROM conversation_history GROUP BY question ORDER BY count DESC LIMIT 10"
+            "SELECT question, COUNT(*) as count FROM conversations GROUP BY question ORDER BY count DESC LIMIT 10"
         ).fetchall()
     return jsonify([{"question": r[0], "count": r[1]} for r in rows])
+
+
+@app.route("/api/admin/uploads", methods=["GET"])
+def admin_uploads():
+    with sqlite3.connect(DB_FILE) as db:
+        rows = db.execute(
+            "SELECT id, session_id, filename, timestamp FROM uploads ORDER BY timestamp DESC"
+        ).fetchall()
+    return jsonify(
+        [
+            {
+                "id": r[0],
+                "session_id": r[1],
+                "filename": r[2],
+                "timestamp": r[3],
+            }
+            for r in rows
+        ]
+    )
 
 
 # ===== FILE MANAGEMENT ROUTES =====
@@ -499,6 +537,15 @@ def upload_context():
                 result = process_file(tmp_path, api_key, session_id, model, filename)
                 results.append(result)
 
+                # After successful file processing, log in uploads table
+                if result.get("status") == "success":
+                    with sqlite3.connect(DB_FILE) as db:
+                        db.execute(
+                            "INSERT INTO uploads (session_id, filename, timestamp) VALUES (?, ?, datetime('now'))",
+                            (session_id, filename),
+                        )
+                        db.commit()
+
                 # Clean up temp file
                 os.unlink(tmp_path)
 
@@ -597,6 +644,7 @@ def ask_question():
         relevant_contexts = get_relevant_contexts(
             question, session_contexts, session_id, api_key, model
         )
+        file_str = ", ".join([ctx["id"] for ctx in relevant_contexts])
 
         # Prepare context for GPT
         context_text = "\n\n".join([ctx["content"] for ctx in relevant_contexts[:3]])
@@ -615,12 +663,20 @@ def ask_question():
         )
         answer = response.choices[0].message.content.strip()
 
-        # Store conversation
+        # Store conversation in both tables
         with sqlite3.connect(DB_FILE) as db:
+            # Store in conversation_history (session-based)
             db.execute(
                 "INSERT INTO conversation_history (session_id, question, answer) "
                 "VALUES (?, ?, ?)",
                 (session_id, question, answer),
+            )
+
+            # Also store in conversations (admin dashboard)
+            db.execute(
+                "INSERT INTO conversations (session_id, timestamp, question, answer, file) "
+                "VALUES (?, datetime('now'), ?, ?, ?)",
+                (session_id, question, answer, file_str),
             )
             db.commit()
 
