@@ -19,6 +19,7 @@ from rag_pipeline import (
     extract_with_gpt_vision_base64,
     extract_image_metadata,
     is_image_heavy_pdf,
+    process_and_embed_all_documents,  # Added import
 )
 from flask import Flask, request, jsonify, render_template, send_file
 from io import BytesIO
@@ -35,8 +36,10 @@ template_path = os.path.join(current_dir, "templates")
 DB_FILE = os.path.join(current_dir, "memory.db")
 UPLOAD_FOLDER = "uploads"
 EMBEDDED_FLAGS = "embedded_flags"
+EMBEDDINGS_DIR = "embeddings"  # Added embeddings directory
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(EMBEDDED_FLAGS, exist_ok=True)
+os.makedirs(EMBEDDINGS_DIR, exist_ok=True)  # Ensure embeddings directory exists
 ALLOWED_EXTENSIONS = {
     "txt",
     "pdf",
@@ -241,32 +244,6 @@ def get_relevant_contexts(
 
 
 # File processing functions
-def process_all_uploads_on_start():
-    print("[Startup] Processing files in uploads/ folder...")
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        logging.warning("OPENAI_API_KEY not set. Skipping file auto-processing.")
-        return
-
-    for filename in os.listdir(UPLOAD_FOLDER):
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        if not os.path.isfile(filepath) or not allowed_file(filename):
-            continue
-
-        # Skip already-processed files
-        if check_if_file_embedded(filename):
-            print(f"[Skipped] {filename} already embedded.")
-            continue
-
-        try:
-            print(f"[Processing] Embedding {filename}...")
-            embed_and_store_file(filepath, api_key)
-            mark_file_as_embedded(filename)
-            print(f"[Done] Embedded {filename}.")
-        except Exception as e:
-            print(f"[Error] Failed to embed {filename}: {e}")
-
-
 def check_if_file_embedded(filename):
     return os.path.exists(f"{EMBEDDED_FLAGS}/{filename}.done")
 
@@ -796,5 +773,9 @@ def index():
 
 
 if __name__ == "__main__":
-    process_all_uploads_on_start()  # Auto-process files on startup
+    # Auto-process all files at startup
+    print("🔁 Processing all uploaded documents at startup...")
+    process_and_embed_all_documents()
+
+    # Then launch the app
     app.run(host="0.0.0.0", port=5000, debug=True)

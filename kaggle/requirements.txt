@@ -21,4 +21,5 @@ tiktoken
 werkzeug
 reportlab
 pdf2image
+pdftoppm
 python-dotenv

@@ -9,14 +9,22 @@ from openai import OpenAI
 from pathlib import Path
 import numpy as np
 import base64
+import json
+import faiss
 from pdf2image import convert_from_bytes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Constants
+UPLOAD_DIR = "uploads"
+EMBEDDINGS_DIR = "embeddings"
+DB_DIR = "db"
+os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
+os.makedirs(DB_DIR, exist_ok=True)
 
-# Text extraction from files using GPT when possible
+
 def extract_text_from_file(filepath):
     """Extract text from various file formats with visual analysis"""
     path = Path(filepath)
@@ -25,18 +33,14 @@ def extract_text_from_file(filepath):
 
     try:
         if ext == ".pdf":
-            # First try text extraction
             with pdfplumber.open(filepath) as pdf:
                 text = "\n".join(
                     page.extract_text() for page in pdf.pages if page.extract_text()
                 )
-
-            # If text extraction fails or sparse, use GPT-Vision
             if not text.strip() or is_image_heavy_pdf(filepath):
-                return extract_with_gpt_vision_base64(filepath)
+                return extract_with_gpt_vision_from_pdf(filepath)
 
         elif ext in [".jpg", ".jpeg", ".png"]:
-            # Use GPT Vision API for image text extraction
             return extract_with_gpt_vision_base64(filepath)
 
         elif ext in [".doc", ".docx"]:
@@ -61,26 +65,37 @@ def extract_text_from_file(filepath):
             return ""
 
     except Exception as e:
-        logger.error(f"Text extraction failed: {str(e)}")
+        logger.error(f"Text extraction failed for {filepath}: {str(e)}")
         return f"Error extracting text: {str(e)}"
 
-    return text[:20000]  # Limit to 20k characters
+    return text[:20000]
+
+
+def extract_with_gpt_vision_from_pdf(filepath):
+    try:
+        images = convert_from_bytes(open(filepath, "rb").read())
+        all_text = ""
+        for img in images:
+            temp_path = "temp.jpg"
+            img.save(temp_path, format="JPEG")
+            all_text += extract_with_gpt_vision_base64(temp_path) + "\n"
+            os.remove(temp_path)
+        return all_text
+    except Exception as e:
+        logger.error(f"PDF to image conversion failed: {e}")
+        return extract_with_ocr(filepath)
 
 
 def extract_with_gpt_vision_base64(filepath):
-    """Extract text using GPT Vision API with base64 encoding"""
     try:
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OPENAI_API_KEY not set")
 
         client = OpenAI(api_key=api_key)
-
-        # Read file as base64
         with open(filepath, "rb") as file:
             base64_image = base64.b64encode(file.read()).decode("utf-8")
 
-        # Create prompt
         prompt = (
             "Extract all text and describe visual content. "
             "Include headings, paragraphs, captions, and any visible text. "
@@ -110,7 +125,6 @@ def extract_with_gpt_vision_base64(filepath):
 
     except Exception as e:
         logger.error(f"GPT Vision extraction failed: {str(e)}")
-        # Fallback to OCR
         return extract_with_ocr(filepath)
 
 
@@ -123,11 +137,9 @@ def extract_image_metadata(filepath):
 
         client = OpenAI(api_key=api_key)
 
-        # Read file as base64
         with open(filepath, "rb") as file:
             base64_image = base64.b64encode(file.read()).decode("utf-8")
 
-        # Create detailed analysis prompt
         prompt = (
             "Analyze this image in detail. Describe: "
             "1. All visual elements and their composition "
@@ -163,28 +175,22 @@ def extract_image_metadata(filepath):
         logger.error(f"Image analysis failed: {str(e)}")
         return "Image analysis not available"
 
-
 def extract_with_ocr(filepath):
-    """Fallback to OCR when GPT Vision fails"""
     try:
-        # For PDFs, convert to images first
-        if filepath.lower().endswith(".pdf"):
+        suffix = Path(filepath).suffix.lower()
+        if suffix == ".pdf":
             images = convert_from_bytes(open(filepath, "rb").read())
             text = ""
             for img in images:
                 text += pytesseract.image_to_string(img) + "\n"
             return text
-
-        # For images, use direct OCR
         return pytesseract.image_to_string(Image.open(filepath))
-
     except Exception as e:
         logger.error(f"OCR extraction failed: {str(e)}")
         return "Text extraction failed"
 
 
 def is_image_heavy_pdf(filepath, threshold=0.5):
-    """Check if PDF is image-heavy"""
     try:
         with pdfplumber.open(filepath) as pdf:
             total_pages = len(pdf.pages)
@@ -195,23 +201,19 @@ def is_image_heavy_pdf(filepath, threshold=0.5):
 
 
 def embed_and_store_file(filepath, api_key, model="text-embedding-3-large"):
-    """Process a file: extract text, embed with GPT, and store"""
     try:
-        # 1. Extract text
         text_content = extract_text_from_file(filepath)
         if not text_content.strip():
             raise ValueError(f"No extractable content in file: {filepath}")
 
-        # 2. Generate embedding with GPT
         client = OpenAI(api_key=api_key)
         response = client.embeddings.create(
             model=model,
-            input=[text_content[:8191]],  # Stay within token limits
+            input=[text_content[:8191]],
             encoding_format="float",
         )
         vector = np.array(response.data[0].embedding)
 
-        # 3. Return results for storage
         return {
             "text": text_content,
             "vector": vector,
@@ -223,9 +225,7 @@ def embed_and_store_file(filepath, api_key, model="text-embedding-3-large"):
         raise
 
 
-# GPT-based chunk embedding (if needed for large files)
 def embed_chunks_with_gpt(chunks, api_key, model="text-embedding-3-large"):
-    """Embed text chunks using GPT API"""
     client = OpenAI(api_key=api_key)
     response = client.embeddings.create(
         model=model, input=chunks, encoding_format="float"
@@ -233,8 +233,70 @@ def embed_chunks_with_gpt(chunks, api_key, model="text-embedding-3-large"):
     return [np.array(item.embedding) for item in response.data]
 
 
+def chunk_text(text, max_tokens=500):
+    paragraphs = text.split("\n")
+    chunks, current = [], ""
+    for para in paragraphs:
+        if len(current) + len(para) < max_tokens:
+            current += " " + para
+        else:
+            chunks.append(current.strip())
+            current = para
+    if current:
+        chunks.append(current.strip())
+    return chunks
+
+
+def save_faiss_index(index, mapping, filename_prefix):
+    faiss.write_index(index, f"{DB_DIR}/{filename_prefix}_index.faiss")
+    with open(f"{DB_DIR}/{filename_prefix}_mapping.json", "w", encoding="utf-8") as f:
+        json.dump(mapping, f, indent=2)
+
+
+def process_and_embed_all_documents():
+    index = faiss.IndexFlatL2(1536)
+    all_chunks = []
+    all_text_map = {}
+    file_id = 0
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logger.warning("OPENAI_API_KEY not set. Skipping file auto-processing.")
+        return
+
+    for file in Path(UPLOAD_DIR).iterdir():
+        if not file.is_file() or file.suffix.lower() not in [".txt", ".pdf", ".docx"]:
+            continue
+
+        logger.info(f"\ud83d\udcc4 Processing: {file.name}")
+        try:
+            result = embed_and_store_file(file, api_key)
+            text = result["text"]
+            vector = result["vector"]
+            filename = result["filename"]
+
+            embedding_path = os.path.join(EMBEDDINGS_DIR, f"{filename}.npy")
+            np.save(embedding_path, vector)
+
+            chunks = chunk_text(text)
+            embeddings = embed_chunks_with_gpt(chunks, api_key)
+
+            for i, emb in enumerate(embeddings):
+                index.add(np.array([emb]))
+                all_text_map[len(all_text_map)] = {"file": filename, "chunk": chunks[i]}
+            logger.info(f"✅ Embedded {len(chunks)} chunks from {file.name}")
+
+        except Exception as e:
+            logger.error(f"[!] Error processing {file.name}: {e}")
+
+    if all_text_map:
+        save_faiss_index(index, all_text_map, "combined")
+        logger.info("\ud83d\udce6 Saved combined FAISS index and mapping.")
+    else:
+        logger.info("\u26a0\ufe0f No valid data to embed from uploads.")
+
+
 if __name__ == "__main__":
-    # Test file processing
     test_file = "uploads/sample.pdf"
     if os.path.exists(test_file):
         api_key = os.environ.get("OPENAI_API_KEY")
