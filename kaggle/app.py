@@ -1,14 +1,15 @@
 import os
 import logging
 import hashlib
-import tempfile
-import shutil
-import zipfile
 import json
 import base64
+import subprocess
+import shutil
+import tempfile
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template, send_file, redirect
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 from fpdf import FPDF
@@ -20,11 +21,17 @@ import fitz
 from docx import Document as DocxDoc
 from pptx import Presentation
 import pandas as pd
+import numpy as np
+import faiss
+from collections import Counter
 
 # Config
 UPLOAD_FOLDER = "uploads"
+OUTPUT_FOLDER = "output"
 CONVERSATIONS_FILE = "conversations.json"
+CONTEXT_UPLOADS_FILE = "context_uploads.json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CrossbarApp")
 
@@ -54,9 +61,87 @@ ADMIN_CREDENTIALS = {
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+
+# FAISS Index Management
+class VectorIndex:
+    def __init__(self, dim=3072):
+        self.index = faiss.IndexIDMap(faiss.IndexFlatL2(dim))
+        self.metadata = {}
+        self.next_id = 1
+
+    def add_vector(self, vector, metadata):
+        vector_id = self.next_id
+        self.index.add_with_ids(np.array([vector]), np.array([vector_id]))
+        self.metadata[vector_id] = metadata
+        self.next_id += 1
+        return vector_id
+
+    def remove_vector(self, vector_id):
+        self.index.remove_ids(np.array([vector_id]))
+        if vector_id in self.metadata:
+            del self.metadata[vector_id]
+
+    def search(self, vector, k=5):
+        distances, vector_ids = self.index.search(np.array([vector]), k)
+        results = []
+        for i in range(len(vector_ids[0])):
+            if vector_ids[0][i] >= 0 and vector_ids[0][i] in self.metadata:
+                results.append(
+                    {
+                        **self.metadata[vector_ids[0][i]],
+                        "similarity": 1 - distances[0][i],
+                    }
+                )
+        return results
+
+
+# Initialize index
+vector_index = VectorIndex()
+
+
+# Load existing context
+def load_context_index():
+    global vector_index
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        with open(CONTEXT_UPLOADS_FILE, "r") as f:
+            context_data = json.load(f)
+            for entry in context_data:
+                if "embedding" in entry:
+                    vector_index.add_vector(
+                        np.array(entry["embedding"]),
+                        {
+                            "context_id": entry["context_id"],
+                            "session_id": entry["session_id"],
+                            "filename": entry.get("filename"),
+                            "text": entry.get("text"),
+                            "concepts": entry.get("concepts", []),
+                            "priority": entry.get("priority", 0),
+                            "timestamp": entry["timestamp"],
+                        },
+                    )
+
+
+# Save context to JSON
+def save_context_upload(entry):
+    data = []
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        with open(CONTEXT_UPLOADS_FILE, "r") as f:
+            try:
+                data = json.load(f)
+            except:
+                pass
+
+    # Remove embedding before saving to JSON
+    entry_copy = entry.copy()
+    if "embedding" in entry_copy:
+        del entry_copy["embedding"]
+    data.append(entry_copy)
+
+    with open(CONTEXT_UPLOADS_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+
 # Utilities
-
-
 def allowed_file(filename):
     return Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
 
@@ -65,7 +150,15 @@ def hash_text(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def extract_text_from_file(filepath):
+def is_image_heavy_pdf(filepath):
+    try:
+        doc = fitz.open(filepath)
+        return sum(1 for p in doc if len(p.get_images(full=True)) > 0) / len(doc) > 0.5
+    except:
+        return False
+
+
+def extract_text_from_file(filepath, api_key=None):
     ext = Path(filepath).suffix.lower()
     text = ""
     try:
@@ -112,27 +205,17 @@ def extract_text_from_file(filepath):
         elif ext in [".jpg", ".jpeg", ".png"]:
             text = pytesseract.image_to_string(Image.open(filepath))
         elif ext == ".txt":
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 text = f.read()
     except Exception as e:
         logger.error(f"[extract_text] {filepath} failed: {e}")
     return text[:20000]
 
 
-def is_image_heavy_pdf(filepath):
-    try:
-        doc = fitz.open(filepath)
-        return sum(1 for p in doc if len(p.get_images(full=True)) > 0) / len(doc) > 0.5
-    except:
-        return False
-
-
-def embed(text, api_key):
+def embed(text, api_key, model="text-embedding-3-large"):
     client = OpenAI(api_key=api_key)
     return (
-        client.embeddings.create(
-            model="text-embedding-3-large", input=[text], encoding_format="float"
-        )
+        client.embeddings.create(model=model, input=[text], encoding_format="float")
         .data[0]
         .embedding
     )
@@ -179,6 +262,45 @@ def load_conversation():
     return []
 
 
+def save_context_upload_with_priority(
+    session_id, filename=None, text=None, concepts=[], priority=0
+):
+    context_id = hashlib.md5(
+        f"{session_id}{datetime.utcnow().isoformat()}".encode()
+    ).hexdigest()
+    entry = {
+        "context_id": context_id,
+        "session_id": session_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "concepts": concepts,
+        "priority": priority,
+    }
+    if filename:
+        entry["filename"] = filename
+        entry["type"] = "file"
+    elif text:
+        entry["text"] = text[:100] + "..." if len(text) > 100 else text
+        entry["type"] = "text"
+
+    save_context_upload(entry)
+    return context_id
+
+
+# Admin auth decorator
+def requires_admin_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not (
+            auth.username == ADMIN_CREDENTIALS["username"]
+            and auth.password == ADMIN_CREDENTIALS["password"]
+        ):
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 # Routes
 @app.route("/api/admin_login", methods=["POST"])
 def admin_login():
@@ -192,37 +314,287 @@ def admin_login():
 
 
 @app.route("/api/admin/reset_db", methods=["POST"])
+@requires_admin_auth
 def reset_db():
     shutil.rmtree(UPLOAD_FOLDER, ignore_errors=True)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    shutil.rmtree(OUTPUT_FOLDER, ignore_errors=True)
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     if os.path.exists(CONVERSATIONS_FILE):
         os.remove(CONVERSATIONS_FILE)
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        os.remove(CONTEXT_UPLOADS_FILE)
+    # Reset vector index
+    vector_index.index.reset()
+    vector_index.metadata = {}
+    vector_index.next_id = 1
     return jsonify({"status": "reset complete"})
 
 
 @app.route("/api/ask", methods=["POST"])
-def ask():
+def api_ask():
     data = request.json
     question = data.get("question")
     session_id = data.get("sessionId")
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not question or not api_key:
         return jsonify({"error": "Missing question or API key"}), 400
-    answer = f"Answer to: {question}"  # Replace with real RAG logic
+
+    # Compute question embedding
+    try:
+        q_emb = embed(question, api_key)
+    except Exception as e:
+        return jsonify({"error": f"Embedding failed: {str(e)}"}), 500
+
+    # Retrieve relevant context
+    results = vector_index.search(q_emb, k=5)
+
+    # Sort by priority then similarity
+    results.sort(key=lambda x: (-x.get("priority", 0), -x["similarity"]))
+
+    # Build context string
+    context_str = ""
+    for res in results:
+        if res.get("text"):
+            context_str += f"{res['text']}\n\n"
+        elif res.get("filename"):
+            context_str += f"From {res['filename']}:\n{res.get('text', '')}\n\n"
+
+    # Build prompt with context
+    prompt = f"""
+    Context information:
+    {context_str}
+    
+    Question: {question}
+    Answer:
+    """
+
+    # Send to GPT
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1024,
+        )
+        answer = response.choices[0].message.content.strip()
+    except Exception as e:
+        return jsonify({"error": f"GPT request failed: {str(e)}"}), 500
+
+    # Save conversation
     save_conversation(session_id, question, answer)
+
+    # Generate follow-up questions (dummy for now)
+    follow_ups = ["Can you elaborate?", "Why does this matter?"]
+
     return jsonify(
         {
             "answer": answer,
             "question": question,
-            "follow_ups": ["Can you elaborate?", "Why does this matter?"],
+            "follow_ups": follow_ups,
         }
     )
+
+
+@app.route("/ask", methods=["POST"])
+def ask():
+    question = request.form["question"]
+
+    # Set environment variable for RAG pipeline
+    os.environ["QUESTION"] = question
+
+    # Run RAG pipeline
+    subprocess.run(["python", "rag_pipeline.py"])
+
+    # Return results
+    try:
+        with open(os.path.join(OUTPUT_FOLDER, "result.json"), "r") as f:
+            result = json.load(f)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    files = request.files.getlist("file")
+    for file in files:
+        if file.filename:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+    return redirect("/")
+
+
+@app.route("/api/list_contexts", methods=["GET"])
+def list_contexts():
+    session_id = request.args.get("sessionId")
+    if not session_id:
+        return jsonify({"error": "Missing sessionId"}), 400
+    contexts = []
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        try:
+            with open(CONTEXT_UPLOADS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                contexts = [
+                    entry for entry in data if entry.get("session_id") == session_id
+                ]
+        except Exception as e:
+            app.logger.error(f"Error loading context uploads: {e}")
+    return jsonify({"status": "success", "contexts": contexts})
+
+
+@app.route("/api/upload_context", methods=["POST"])
+def upload_context():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    model = request.form.get("model", "text-embedding-3-large")
+    session_id = request.form.get("sessionId")
+    if not session_id:
+        return jsonify({"error": "Missing sessionId"}), 400
+
+    results = []
+    seen_hashes = set()
+    if "text" in request.form:
+        text = request.form["text"]
+        h = hash_text(text)
+        if h not in seen_hashes:
+            seen_hashes.add(h)
+            try:
+                embedding = embed(text, api_key, model)
+                concepts = extract_concepts(text, api_key).split(", ")
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
+            # Add to vector index
+            metadata = {
+                "context_id": hashlib.md5(
+                    f"{session_id}{datetime.utcnow().isoformat()}".encode()
+                ).hexdigest(),
+                "session_id": session_id,
+                "filename": None,
+                "text": text,
+                "concepts": concepts,
+                "priority": 0,  # Text context has lower priority
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+            vector_id = vector_index.add_vector(embedding, metadata)
+
+            # Save to context uploads
+            entry = {
+                **metadata,
+                "embedding": embedding.tolist(),
+            }
+            save_context_upload(entry)
+
+            results.append(
+                {
+                    "context_id": metadata["context_id"],
+                    "text": text,
+                    "concepts": concepts,
+                }
+            )
+
+    elif "filesBase64" in request.form:
+        files = request.form.getlist("filesBase64")
+        filenames = request.form.getlist("filenames")
+        for i, b64 in enumerate(files):
+            try:
+                _, encoded = b64.split(",", 1)
+                file_bytes = base64.b64decode(encoded)
+                filename = secure_filename(filenames[i])
+                path = os.path.join(UPLOAD_FOLDER, filename)
+                with open(path, "wb") as f:
+                    f.write(file_bytes)
+
+                # Extract text
+                text = extract_text_from_file(path)
+                h = hash_text(text)
+                if h in seen_hashes:
+                    continue
+                seen_hashes.add(h)
+
+                # Embed and extract concepts
+                embedding = embed(text, api_key, model)
+                concepts = extract_concepts(text, api_key).split(", ")
+
+                # Add to vector index
+                metadata = {
+                    "context_id": hashlib.md5(
+                        f"{session_id}{datetime.utcnow().isoformat()}".encode()
+                    ).hexdigest(),
+                    "session_id": session_id,
+                    "filename": filename,
+                    "text": text,
+                    "concepts": concepts,
+                    "priority": 1,  # File context has higher priority
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+                vector_id = vector_index.add_vector(embedding, metadata)
+
+                # Save to context uploads
+                entry = {
+                    **metadata,
+                    "embedding": embedding.tolist(),
+                }
+                save_context_upload(entry)
+
+                results.append(
+                    {
+                        "context_id": metadata["context_id"],
+                        "filename": filename,
+                        "concepts": concepts,
+                    }
+                )
+            except Exception as e:
+                app.logger.error(f"Error processing file {filenames[i]}: {str(e)}")
+                continue
+
+    return jsonify({"status": "success", "results": results})
+
+
+@app.route("/api/remove_context", methods=["POST"])
+def remove_context():
+    data = request.json
+    context_id = data.get("context_id")
+    session_id = data.get("session_id")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not context_id or not session_id:
+        return jsonify({"error": "Missing context_id or session_id"}), 400
+
+    # Remove from vector index
+    vector_id_to_remove = None
+    for vec_id, meta in vector_index.metadata.items():
+        if meta["context_id"] == context_id and meta["session_id"] == session_id:
+            vector_id_to_remove = vec_id
+            break
+
+    if vector_id_to_remove:
+        vector_index.remove_vector(vector_id_to_remove)
+
+    # Update context_uploads.json
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        with open(CONTEXT_UPLOADS_FILE, "r") as f:
+            context_data = json.load(f)
+
+        context_data = [
+            entry for entry in context_data if entry["context_id"] != context_id
+        ]
+
+        with open(CONTEXT_UPLOADS_FILE, "w") as f:
+            json.dump(context_data, f, indent=2)
+
+    return jsonify({"status": "success"})
 
 
 @app.route("/api/download_conversation", methods=["GET"])
 def download():
     fmt = request.args.get("format", "txt")
     session_id = request.args.get("sessionId")
+    if not session_id:
+        return jsonify({"error": "Missing sessionId"}), 400
     convo = [c for c in load_conversation() if c["session_id"] == session_id]
     if not convo:
         return jsonify({"error": "No data"}), 404
@@ -250,45 +622,43 @@ def download():
         return jsonify({"error": "invalid format"}), 400
 
 
-@app.route("/api/upload_context", methods=["POST"])
-def upload_context():
-    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
-    model = request.form.get("model", "text-embedding-3-large")
-    session_id = request.form.get("sessionId")
-    results = []
-    seen_hashes = set()
-    if "text" in request.form:
-        text = request.form["text"]
-        h = hash_text(text)
-        if h not in seen_hashes:
-            seen_hashes.add(h)
-            embedding = embed(text, api_key)
-            concepts = extract_concepts(text, api_key)
-            results.append({"text": text, "concepts": concepts.split(", ")})
-    elif "filesBase64" in request.form:
-        files = request.form.getlist("filesBase64")
-        filenames = request.form.getlist("filenames")
-        for i, b64 in enumerate(files):
-            _, encoded = b64.split(",", 1)
-            file_bytes = base64.b64decode(encoded)
-            path = os.path.join(UPLOAD_FOLDER, secure_filename(filenames[i]))
-            with open(path, "wb") as f:
-                f.write(file_bytes)
-            text = extract_text_from_file(path)
-            h = hash_text(text)
-            if h in seen_hashes:
-                continue
-            seen_hashes.add(h)
-            embedding = embed(text, api_key)
-            concepts = extract_concepts(text, api_key)
-            results.append({"filename": filenames[i], "concepts": concepts.split(", ")})
-    return jsonify({"status": "success", "concepts": [r["concepts"] for r in results]})
+@app.route("/api/admin/uploads", methods=["GET"])
+@requires_admin_auth
+def admin_uploads():
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        with open(CONTEXT_UPLOADS_FILE, "r") as f:
+            return jsonify(json.load(f))
+    return jsonify([])
+
+
+@app.route("/api/admin/conversations", methods=["GET"])
+@requires_admin_auth
+def admin_conversations():
+    if os.path.exists(CONVERSATIONS_FILE):
+        with open(CONVERSATIONS_FILE, "r") as f:
+            return jsonify(json.load(f))
+    return jsonify([])
+
+
+@app.route("/api/admin/frequent_questions", methods=["GET"])
+@requires_admin_auth
+def frequent_questions():
+    n = int(request.args.get("n", 10))
+    if os.path.exists(CONVERSATIONS_FILE):
+        with open(CONVERSATIONS_FILE, "r") as f:
+            conversations = json.load(f)
+            questions = [c["question"] for c in conversations]
+            counter = Counter(questions)
+            top_n = counter.most_common(n)
+            return jsonify([{"question": q, "count": c} for q, c in top_n])
+    return jsonify([])
 
 
 @app.route("/")
 def index():
-    return render_template("kaggleloc.html")
+    return render_template("kaggle.html")
 
 
 if __name__ == "__main__":
+    load_context_index()
     app.run(debug=True)

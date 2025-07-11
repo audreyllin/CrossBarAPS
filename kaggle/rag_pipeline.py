@@ -1,8 +1,7 @@
 import os
-import logging
-import hashlib
 import json
-import base64
+import time
+import logging
 from pathlib import Path
 from datetime import datetime
 import tempfile
@@ -14,21 +13,45 @@ from openai import OpenAI
 from docx import Document as DocxDoc
 from pptx import Presentation
 import pandas as pd
-from fpdf import FPDF
-from docx import Document as DocxWriter
+import numpy as np
+import faiss
+import re
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rag_pipeline")
 
 UPLOAD_FOLDER = "uploads"
-CONVERSATIONS_FILE = "conversations.json"
+OUTPUT_FOLDER = "output"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# ========== Utility Functions ===========
+# Text chunking parameters
+CHUNK_SIZE = 1000  # characters per chunk
+CHUNK_OVERLAP = 200  # overlapping characters between chunks
+EMBEDDING_MODEL = "text-embedding-3-large"
+GPT_MODEL = "gpt-4"
+MIN_CHUNK_LENGTH = 50  # minimum chunk length to consider
 
 
-def hash_text(text):
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+    """Split text into overlapping chunks"""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end])
+        start = end - overlap
+    return chunks
+
+
+def clean_text(text):
+    """Clean and normalize text"""
+    # Remove excessive whitespace
+    text = re.sub(r"\s+", " ", text)
+    # Remove non-printable characters
+    text = "".join(char for char in text if char.isprintable())
+    return text.strip()
 
 
 def is_image_heavy_pdf(filepath):
@@ -37,52 +60,6 @@ def is_image_heavy_pdf(filepath):
         return sum(1 for p in doc if len(p.get_images(full=True)) > 0) / len(doc) > 0.5
     except:
         return False
-
-
-def extract_with_gpt_vision_base64(image_path):
-    try:
-        with open(image_path, "rb") as img:
-            b64_image = base64.b64encode(img.read()).decode("utf-8")
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        response = client.chat.completions.create(
-            model="gpt-4-vision-preview",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Extract all visible text from this image.",
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/png;base64,{b64_image}"},
-                        },
-                    ],
-                }
-            ],
-            max_tokens=1024,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        logger.error(f"GPT Vision extraction failed: {str(e)}")
-        return ""
-
-
-def extract_with_gpt_vision_from_pdf(filepath):
-    try:
-        doc = fitz.open(filepath)
-        combined_text = ""
-        for page in doc:
-            pix = page.get_pixmap()
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
-                pix.save(tmp_img.name)
-                combined_text += extract_with_gpt_vision_base64(tmp_img.name) + "\n"
-                os.unlink(tmp_img.name)
-        return combined_text
-    except Exception as e:
-        logger.error(f"GPT Vision fallback failed: {str(e)}")
-        return ""
 
 
 def extract_text_from_file(filepath):
@@ -95,7 +72,17 @@ def extract_text_from_file(filepath):
                     page.extract_text() for page in pdf.pages if page.extract_text()
                 )
             if not text.strip() or is_image_heavy_pdf(filepath):
-                text = extract_with_gpt_vision_from_pdf(filepath)
+                logger.info(f"Using OCR for PDF: {filepath}")
+                doc = fitz.open(filepath)
+                for page in doc:
+                    pix = page.get_pixmap()
+                    with tempfile.NamedTemporaryFile(
+                        suffix=".png", delete=False
+                    ) as tmp_img:
+                        pix.save(tmp_img.name)
+                        image = Image.open(tmp_img.name)
+                        text += pytesseract.image_to_string(image) + "\n"
+                        os.unlink(tmp_img.name)
         elif ext in [".doc", ".docx"]:
             doc = DocxDoc(filepath)
             text = "\n".join(p.text for p in doc.paragraphs)
@@ -123,85 +110,142 @@ def extract_text_from_file(filepath):
         elif ext in [".jpg", ".jpeg", ".png"]:
             text = pytesseract.image_to_string(Image.open(filepath))
         elif ext == ".txt":
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 text = f.read()
     except Exception as e:
         logger.error(f"[extract_text] {filepath} failed: {e}")
-    return text[:20000]
+
+    return clean_text(text)[:50000]  # Limit to 50k characters
 
 
-def embed(text, api_key):
+def get_embeddings(texts, api_key):
+    """Get embeddings for multiple text chunks"""
     client = OpenAI(api_key=api_key)
-    return (
-        client.embeddings.create(
-            model="text-embedding-3-large", input=[text], encoding_format="float"
-        )
-        .data[0]
-        .embedding
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL, input=texts, encoding_format="float"
     )
+    return [data.embedding for data in response.data]
 
 
-def extract_concepts(text, api_key):
+def create_vector_index(api_key):
+    """Create FAISS vector index from all files in uploads folder"""
+    index = faiss.IndexFlatL2(3072)  # Dimension for text-embedding-3-large
+    metadata = []
+
+    for filepath in Path(UPLOAD_FOLDER).glob("*"):
+        if filepath.is_file():
+            try:
+                logger.info(f"Processing for vector index: {filepath.name}")
+                text = extract_text_from_file(filepath)
+
+                if not text.strip():
+                    logger.warning(f"Skipping empty file: {filepath.name}")
+                    continue
+
+                # Split text into chunks
+                chunks = chunk_text(text)
+                embeddings = get_embeddings(chunks, api_key)
+
+                # Add to index
+                for i, embedding in enumerate(embeddings):
+                    # Only add meaningful chunks
+                    if len(chunks[i]) > MIN_CHUNK_LENGTH:
+                        index.add(np.array([embedding]))
+                        metadata.append(
+                            {
+                                "filename": filepath.name,
+                                "chunk_index": i,
+                                "content": chunks[i][:500],  # Store preview
+                            }
+                        )
+
+                time.sleep(0.1)  # Avoid rate limits
+            except Exception as e:
+                logger.error(f"Error processing {filepath.name}: {str(e)}")
+
+    return index, metadata
+
+
+def search_index(index, metadata, query_embedding, k=5):
+    """Search index for top k results"""
+    distances, indices = index.search(np.array([query_embedding]), k)
+    results = []
+    for i in indices[0]:
+        if i >= 0 and i < len(metadata):
+            results.append(metadata[i])
+    return results
+
+
+def generate_answer(question, context, api_key):
+    """Generate answer using GPT-4 with context"""
     client = OpenAI(api_key=api_key)
-    prompt = (
-        "Extract key concepts and summarize the main ideas from the following text:\n"
-        + text[:4000]
+
+    # Build prompt with context
+    context_str = "\n\n".join(
+        [f"Source {i+1}: {res['content']}..." for i, res in enumerate(context)]
     )
-    return (
-        client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-        )
-        .choices[0]
-        .message.content
+    prompt = f"""
+    Context information:
+    {context_str}
+    
+    Question: {question}
+    Answer:
+    """
+
+    response = client.chat.completions.create(
+        model=GPT_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1024,
+        temperature=0.3,
     )
+    return response.choices[0].message.content.strip()
 
 
-def save_conversation(session_id, question, answer):
-    history = []
-    if os.path.exists(CONVERSATIONS_FILE):
-        with open(CONVERSATIONS_FILE, "r", encoding="utf-8") as f:
-            history = json.load(f)
-    history.append(
-        {
-            "session_id": session_id,
-            "question": question,
-            "answer": answer,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
-    )
-    with open(CONVERSATIONS_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2)
+def process_uploads(api_key):
+    """Process all files in uploads folder and create vector index"""
+    logger.info("Starting uploads processing")
+    return create_vector_index(api_key)
 
 
-def load_conversation():
-    if os.path.exists(CONVERSATIONS_FILE):
-        with open(CONVERSATIONS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+if __name__ == "__main__":
+    # Get API key from environment
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logger.error("OPENAI_API_KEY environment variable not set")
+        exit(1)
 
+    # Step 1: Process uploads and create vector index
+    index, metadata = process_uploads(api_key)
 
-def download_conversation(session_id, fmt="txt"):
-    convo = [c for c in load_conversation() if c["session_id"] == session_id]
-    content = "\n\n".join([f"Q: {c['question']}\nA: {c['answer']}" for c in convo])
-    if fmt == "txt":
-        return content
-    elif fmt == "pdf":
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        for line in content.splitlines():
-            pdf.cell(200, 10, txt=line, ln=1)
-        pdf_path = f"conversation_{session_id}.pdf"
-        pdf.output(pdf_path)
-        return pdf_path
-    elif fmt == "docx":
-        doc = DocxWriter()
-        for q in convo:
-            doc.add_paragraph(f"Q: {q['question']}")
-            doc.add_paragraph(f"A: {q['answer']}\n")
-        doc_path = f"conversation_{session_id}.docx"
-        doc.save(doc_path)
-        return doc_path
-    return None
+    # Step 2: Get question from environment
+    question = os.getenv("QUESTION", "What is our company's mission?")
+    logger.info(f"Processing question: {question}")
+
+    # Step 3: Embed question
+    question_embedding = get_embeddings([question], api_key)[0]
+
+    # Step 4: Search for relevant context
+    context = search_index(index, metadata, question_embedding, k=5)
+
+    # Step 5: Generate answer
+    answer = generate_answer(question, context, api_key)
+
+    # Step 6: Save results
+    result = {
+        "question": question,
+        "answer": answer,
+        "context_sources": [
+            {
+                "filename": res["filename"],
+                "chunk_index": res["chunk_index"],
+                "content_preview": res["content"],
+            }
+            for res in context
+        ],
+        "generated_at": datetime.now().isoformat(),
+    }
+
+    with open(Path(OUTPUT_FOLDER) / "result.json", "w") as f:
+        json.dump(result, f, indent=2)
+
+    logger.info("RAG pipeline completed. Results saved to result.json")
