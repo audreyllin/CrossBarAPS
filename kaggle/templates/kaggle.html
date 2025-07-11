@@ -1563,18 +1563,19 @@
                 textConcepts.style.display = 'none';
 
                 const model = getSelectedModel();
-                const response = await fetch('/api/upload_text_context', {
+                const formData = new FormData();
+                formData.append('text', contextText);
+                formData.append('sessionId', sessionId);
+                formData.append('model', model);
+
+                const response = await fetch('/api/upload_context', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     },
-                    body: JSON.stringify({
-                        text: contextText,
-                        sessionId: sessionId,
-                        model: model
-                    })
+                    body: formData
                 });
+
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -1624,7 +1625,7 @@
                 formData.append('sessionId', sessionId);
                 formData.append('model', model);
 
-                const response = await fetch('/api/upload_file_context', {
+                const response = await fetch('/api/upload_context', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${apiKey}`
