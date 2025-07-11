@@ -609,6 +609,12 @@
             word-break: break-all;
         }
         
+        .file-support {
+            font-size: 0.8rem;
+            color: var(--orange-secondary);
+            margin-top: 5px;
+        }
+        
         .concepts-container {
             margin-top: 1rem;
         }
@@ -1033,6 +1039,50 @@
             overflow: hidden;
             display: none;
         }
+        /* Batch progress styles */
+        
+        #batch-progress {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--chocolate);
+            z-index: 10000;
+            padding: 10px;
+            text-align: center;
+            color: var(--cream);
+        }
+        
+        .batch-progress-bar {
+            height: 5px;
+            background: var(--chocolate-light);
+            margin-top: 10px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .batch-progress-fill {
+            height: 100%;
+            background: var(--orange-primary);
+            width: 50%;
+            transform: translateX(-100%);
+            animation: indeterminate 1.5s infinite linear;
+        }
+        
+        @keyframes indeterminate {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(200%);
+            }
+        }
+        
+        .batch-status {
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
         
         @media (max-width: 900px) {
             .api-container {
@@ -1099,6 +1149,17 @@
     <div class="hex-pattern"></div>
     <div class="bg-elements" id="bg-canvas"></div>
 
+    <!-- Batch Progress Indicator -->
+    <div id="batch-progress">
+        <div class="batch-header">
+            <i class="fas fa-cogs"></i> Processing <span id="batch-count">0</span> files...
+        </div>
+        <div class="batch-progress-bar">
+            <div class="batch-progress-fill"></div>
+        </div>
+        <div class="batch-status">Starting...</div>
+    </div>
+
     <nav>
         <div class="logo">
             <div class="logo-icon">
@@ -1156,6 +1217,7 @@
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context across sessions</p>
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports document and text context additions</p>
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified company knowledge base</p>
+                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Batch processing of ZIP files with mixed content</p>
                     </div>
                 </div>
 
@@ -1320,11 +1382,12 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div class="file-upload">
-                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.csv,.tsv,.odt,.rtf,.zip">
                 <label for="context-files" class="file-label" id="file-drop-area">
-                    <i class="fas fa-cloud-upload-alt"></i>
+                    <i class="fas fa-cloud-upload-alt file-icon"></i>
                     <span>Choose files or drag them here</span>
-                    <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
+                    <small class="file-support">Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, CSV, ZIP,
+                        etc.</small>
                 </label>
                 <div class="multi-file-preview" id="multi-file-preview">
                     <!-- File previews will be added here -->
@@ -1410,18 +1473,24 @@
     <div id="notification-container"></div>
 
     <script>
-        // File icon mapping
+        // Enhanced file icon mapping
         const fileIcons = {
             pdf: 'fas fa-file-pdf',
             doc: 'fas fa-file-word',
             docx: 'fas fa-file-word',
-            txt: 'fas fa-file-alt',
+            xls: 'fas fa-file-excel',
+            xlsx: 'fas fa-file-excel',
             ppt: 'fas fa-file-powerpoint',
             pptx: 'fas fa-file-powerpoint',
+            txt: 'fas fa-file-alt',
+            csv: 'fas fa-file-csv',
+            tsv: 'fas fa-file-csv',
             jpg: 'fas fa-file-image',
             jpeg: 'fas fa-file-image',
             png: 'fas fa-file-image',
-            mp4: 'fas fa-file-video',
+            zip: 'fas fa-file-archive',
+            odt: 'fas fa-file-alt',
+            rtf: 'fas fa-file-alt',
             default: 'fas fa-file'
         };
 
@@ -1706,13 +1775,14 @@
             try {
                 submitBtn.disabled = true;
                 fileSpinner.style.display = 'inline-block';
+                showBatchProgress(fileInput.files.length);
 
                 const model = getSelectedModel();
                 const formData = new FormData();
                 formData.append('sessionId', sessionId);
                 formData.append('model', model);
 
-                // Convert files to Base64 and add to formData
+                // Process all files
                 for (const file of fileInput.files) {
                     const base64 = await convertFileToBase64(file);
                     formData.append('filesBase64', base64);
@@ -1742,6 +1812,7 @@
             } finally {
                 submitBtn.disabled = false;
                 fileSpinner.style.display = 'none';
+                hideBatchProgress();
             }
         });
 
@@ -2179,6 +2250,18 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 5000);
+        }
+
+        // Batch progress functions
+        function showBatchProgress(fileCount) {
+            const batchProgress = document.getElementById('batch-progress');
+            const batchCount = document.getElementById('batch-count');
+            batchCount.textContent = fileCount;
+            batchProgress.style.display = 'block';
+        }
+
+        function hideBatchProgress() {
+            document.getElementById('batch-progress').style.display = 'none';
         }
 
         // Animation on scroll
