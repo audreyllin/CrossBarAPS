@@ -26,6 +26,7 @@ import faiss
 from collections import Counter
 import zipfile
 import magic
+from rag_pipeline import generate_media
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
@@ -797,6 +798,42 @@ def frequent_questions():
             return jsonify([{"question": q, "count": c} for q, c in top_n])
     return jsonify([])
 
+
+@app.route("/api/generate", methods=["POST"])
+def api_generate():
+    data = request.json or {}
+    media_type = data.get("type")
+    answer = data.get("answer", "")
+    session_id = data.get("sessionId")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+    if media_type not in ("video", "poster", "slides", "memo"):
+        return jsonify({"error": "Invalid generation type"}), 400
+
+    try:
+        # delegate to rag_pipeline helper
+        output_path = generate_media(media_type, answer, session_id, api_key)
+        filename = os.path.basename(output_path)
+        url = f"/api/download_generated?file={filename}"
+        return jsonify({"status": "success", "url": url})
+    except Exception as e:
+        logger.error(f"Error generating {media_type}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/download_generated", methods=["GET"])
+def download_generated():
+    file_name = request.args.get("file")
+    if not file_name:
+        return jsonify({"error": "Missing file"}), 400
+
+    fp = os.path.join(OUTPUT_FOLDER, file_name)
+    if not os.path.exists(fp):
+        return jsonify({"error": "Not found"}), 404
+
+    return send_file(fp, as_attachment=True)
 
 # Main route
 @app.route("/")

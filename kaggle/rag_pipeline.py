@@ -1,27 +1,39 @@
+# rag_pipeline.py
 import os
 import json
+import base64
+import subprocess
 import logging
-from pathlib import Path
+import re
+import numpy as np
 from datetime import datetime
+from pathlib import Path
+
+# Document processing imports
 import pytesseract
 import pdfplumber
 import fitz
 from PIL import Image
-from openai import OpenAI
-import numpy as np
+from docx import Document as DocxReader
+from docx import Document as DocxWriter
+from pptx import Presentation
+from pptx.util import Inches
+from fpdf import FPDF
+
+# AI/Vector imports
 import faiss
-import re
+from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("optimized_rag")
 
+# Configuration
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# Configuration
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 300
 EMBEDDING_MODEL = "text-embedding-3-large"
@@ -31,52 +43,25 @@ MAX_FILE_SIZE_MB = 10
 
 
 def clean_text(text):
-    """Optimized text cleaning"""
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+    """Clean and normalize text by removing extra whitespace"""
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def is_image_heavy_pdf(filepath):
-    """Efficient PDF image detection"""
+    """Check if PDF contains mostly images"""
     try:
         doc = fitz.open(filepath)
         image_count = sum(len(page.get_images(full=True)) for page in doc)
         return image_count / len(doc) > 0.5
-    except:
+    except Exception:
         return False
 
 
-def extract_text(filepath):
-    """Optimized text extraction"""
-    ext = Path(filepath).suffix.lower()
-    try:
-        # Skip large files
-        if os.path.getsize(filepath) > MAX_FILE_SIZE_MB * 1024 * 1024:
-            logger.warning(f"Skipping large file: {filepath}")
-            return ""
-
-        if ext == ".pdf":
-            return extract_pdf_text(filepath)
-        elif ext in [".doc", ".docx"]:
-            return extract_docx_text(filepath)
-        elif ext in [".jpg", ".jpeg", ".png"]:
-            return pytesseract.image_to_string(Image.open(filepath))
-        elif ext == ".txt":
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                return clean_text(f.read())[:50000]
-        else:
-            logger.warning(f"Unsupported format: {ext}")
-            return ""
-    except Exception as e:
-        logger.error(f"Extraction error: {str(e)}")
-        return ""
-
-
 def extract_pdf_text(filepath):
-    """Optimized PDF text extraction"""
+    """Extract text from PDF, falling back to OCR if needed"""
     text = ""
     try:
-        # Try text-based extraction first
+        # First try regular text extraction
         with pdfplumber.open(filepath) as pdf:
             for page in pdf.pages:
                 text += page.extract_text() or ""
@@ -89,49 +74,75 @@ def extract_pdf_text(filepath):
                 text += page.get_text() or ""
     except Exception as e:
         logger.error(f"PDF extraction failed: {str(e)}")
-    return clean_text(text)[:50000]
+    return clean_text(text)[:50000]  # Limit to 50k characters
 
 
 def extract_docx_text(filepath):
-    """Efficient DOCX extraction"""
+    """Extract text from Word documents"""
     try:
-        from docx import Document
-
-        doc = Document(filepath)
+        doc = DocxReader(filepath)
         return clean_text("\n".join(p.text for p in doc.paragraphs))
     except Exception as e:
         logger.error(f"DOCX extraction failed: {str(e)}")
         return ""
 
 
-def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
-    """Efficient text chunking with sentence boundary awareness"""
-    if len(text) <= chunk_size:
+def extract_text(filepath):
+    """Main text extraction function that handles different file types"""
+    ext = Path(filepath).suffix.lower()
+
+    # Skip large files
+    if os.path.getsize(filepath) > MAX_FILE_SIZE_MB * 1024 * 1024:
+        logger.warning(f"Skipping large file: {filepath}")
+        return ""
+
+    try:
+        if ext == ".pdf":
+            return extract_pdf_text(filepath)
+        elif ext in [".doc", ".docx"]:
+            return extract_docx_text(filepath)
+        elif ext in [".jpg", ".jpeg", ".png"]:
+            return pytesseract.image_to_string(Image.open(filepath))
+        elif ext == ".txt":
+            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                return clean_text(f.read())[:50000]
+        else:
+            logger.warning(f"Unsupported file format: {ext}")
+            return ""
+    except Exception as e:
+        logger.error(f"Extraction error for {filepath}: {str(e)}")
+        return ""
+
+
+def chunk_text(text):
+    """Split text into chunks with overlap, respecting sentence boundaries"""
+    if len(text) <= CHUNK_SIZE:
         return [text]
 
     chunks = []
     start = 0
-    while start < len(text):
-        end = min(start + chunk_size, len(text))
 
-        # Adjust to nearest sentence boundary
+    while start < len(text):
+        end = min(start + CHUNK_SIZE, len(text))
+
+        # Adjust to nearest sentence boundary if possible
         if end < len(text):
             boundary = max(
                 text.rfind(".", start, end),
                 text.rfind("?", start, end),
                 text.rfind("!", start, end),
             )
-            if boundary > start and (boundary - start) > MIN_CHUNK_LENGTH:
+            if boundary > start + MIN_CHUNK_LENGTH:
                 end = boundary + 1
 
         chunks.append(text[start:end])
-        start = end - overlap
+        start = end - CHUNK_OVERLAP
 
     return chunks
 
 
 def get_embeddings(texts, api_key):
-    """Batch embedding generation with error handling"""
+    """Generate embeddings using OpenAI's API"""
     client = OpenAI(api_key=api_key)
     try:
         response = client.embeddings.create(
@@ -139,102 +150,205 @@ def get_embeddings(texts, api_key):
         )
         return [data.embedding for data in response.data]
     except Exception as e:
-        logger.error(f"Embedding failed: {str(e)}")
+        logger.error(f"Embedding generation failed: {str(e)}")
         return []
 
 
 def create_index(api_key):
-    """Efficient indexing with metadata tracking"""
-    index = faiss.IndexFlatL2(3072)
+    """Create a FAISS index from documents in the upload folder"""
+    index = faiss.IndexFlatL2(3072)  # Dimension for text-embedding-3-large
     metadata = []
-    valid_extensions = [".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx"]
 
     for filepath in Path(UPLOAD_FOLDER).glob("*"):
-        if filepath.suffix.lower() not in valid_extensions:
+        if filepath.suffix.lower() not in [".pdf", ".doc", ".docx", ".txt"]:
             continue
 
-        try:
-            logger.info(f"Processing: {filepath.name}")
-            text = extract_text(filepath)
-            if not text:
-                continue
+        logger.info(f"Processing: {filepath.name}")
+        text = extract_text(str(filepath))
+        if not text:
+            continue
 
-            chunks = chunk_text(text)
-            if not chunks:
-                continue
+        chunks = chunk_text(text)
+        embeddings = get_embeddings(chunks, api_key)
 
-            # Batch processing for efficiency
-            batch_size = 10
-            for i in range(0, len(chunks), batch_size):
-                batch = chunks[i : i + batch_size]
-                embeddings = get_embeddings(batch, api_key)
-
-                for j, emb in enumerate(embeddings):
-                    idx = i + j
-                    if idx < len(chunks) and len(chunks[idx]) > MIN_CHUNK_LENGTH:
-                        index.add(np.array([emb]))
-                        metadata.append(
-                            {
-                                "filename": filepath.name,
-                                "chunk_index": idx,
-                                "content": chunks[idx][:500],
-                            }
-                        )
-        except Exception as e:
-            logger.error(f"Indexing error: {str(e)}")
+        for i, emb in enumerate(embeddings):
+            if len(chunks[i]) > MIN_CHUNK_LENGTH:
+                index.add(np.array([emb]))
+                metadata.append(
+                    {
+                        "filename": filepath.name,
+                        "chunk_index": i,
+                        "content": chunks[i][:500],  # Store snippet for reference
+                    }
+                )
 
     return index, metadata
 
 
 def search_index(index, metadata, query_embedding, k=5):
-    """Efficient FAISS search"""
+    """Search the FAISS index for relevant chunks"""
     distances, indices = index.search(np.array([query_embedding]), k)
     return [metadata[i] for i in indices[0] if i < len(metadata)]
 
 
 def generate_answer(question, context, api_key):
-    """Optimized answer generation"""
+    """Generate an answer using GPT with provided context"""
     client = OpenAI(api_key=api_key)
 
-    # Build context string
+    # Format context for the prompt
     context_str = "\n\n".join(
         f"[Source {i+1}]: {res['content']}" for i, res in enumerate(context)
     )
 
-    # System message for better control
-    system_msg = {
-        "role": "system",
-        "content": "You are a knowledgeable assistant. Use the provided context to answer questions accurately and concisely.",
-    }
-
-    user_msg = {
-        "role": "user",
-        "content": f"Context:\n{context_str}\n\nQuestion: {question}",
-    }
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a knowledgeable assistant. Use the provided context to answer questions accurately and concisely.",
+        },
+        {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {question}"},
+    ]
 
     try:
         response = client.chat.completions.create(
-            model=GPT_MODEL,
-            messages=[system_msg, user_msg],
-            max_tokens=1024,
-            temperature=0.3,
+            model=GPT_MODEL, messages=messages, temperature=0.3, max_tokens=1024
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        logger.error(f"Generation failed: {str(e)}")
+        logger.error(f"Answer generation failed: {str(e)}")
         return "Error generating answer"
 
 
+def generate_media(media_type, text, session_id, api_key):
+    """
+    Generate different media types from text:
+    - 'poster': Image poster (PNG)
+    - 'slides': PowerPoint presentation
+    - 'memo': Word document
+    - 'video': MP4 video (requires external service)
+    """
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    filename = f"{media_type}_{session_id or 'anon'}_{timestamp}"
+    client = OpenAI(api_key=api_key)
+
+    if media_type == "poster":
+        # Generate image using DALL-E
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.png")
+        try:
+            response = client.images.generate(
+                prompt=text[:200],  # First 200 chars as prompt
+                n=1,
+                size="1024x1024",
+                response_format="b64_json",
+            )
+            with open(out_path, "wb") as f:
+                f.write(base64.b64decode(response.data[0].b64_json))
+            return out_path
+        except Exception as e:
+            logger.error(f"Poster generation failed: {str(e)}")
+            return None
+
+    elif media_type == "slides":
+        # Generate PowerPoint slides
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.pptx")
+
+        try:
+            # First have GPT structure the content into slides
+            system_msg = {
+                "role": "system",
+                "content": "Convert this content into 3-5 slides in JSON format: [{'title':..., 'bullets':[...]}]",
+            }
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[system_msg, {"role": "user", "content": text}],
+                temperature=0.2,
+            )
+            slides = json.loads(response.choices[0].message.content)
+
+            # Create actual PowerPoint
+            prs = Presentation()
+            for slide_data in slides:
+                slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title + content
+                slide.shapes.title.text = slide_data.get("title", "Slide")
+                content = slide.shapes.placeholders[1]
+                for bullet in slide_data.get("bullets", []):
+                    content.text_frame.add_paragraph().text = bullet
+
+            prs.save(out_path)
+            return out_path
+
+        except Exception as e:
+            logger.error(f"Slide generation failed: {str(e)}")
+            return None
+
+    elif media_type == "memo":
+        # Generate Word document
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.docx")
+
+        try:
+            # First have GPT format the memo
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Format this as a professional memo:\n\n{text}",
+                    }
+                ],
+                temperature=0.3,
+            )
+            memo_content = response.choices[0].message.content
+
+            # Create Word document
+            doc = DocxWriter()
+            doc.add_heading("Memo", level=1)
+            for paragraph in memo_content.split("\n"):
+                if paragraph.strip():
+                    doc.add_paragraph(paragraph.strip())
+
+            doc.save(out_path)
+            return out_path
+
+        except Exception as e:
+            logger.error(f"Memo generation failed: {str(e)}")
+            return None
+
+    elif media_type == "video":
+        # Generate video (requires external service)
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.mp4")
+        try:
+            subprocess.run(
+                [
+                    "vidful-cli",
+                    "--api_key",
+                    api_key,
+                    "--text",
+                    text,
+                    "--output",
+                    out_path,
+                ],
+                check=True,
+            )
+            return out_path
+        except Exception as e:
+            logger.error(f"Video generation failed: {str(e)}")
+            return None
+
+    else:
+        logger.error(f"Unknown media type: {media_type}")
+        return None
+
+
 def main():
-    # Get API key from environment
+    """Main RAG pipeline execution"""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         logger.error("OPENAI_API_KEY environment variable not set")
         return
 
-    question = os.getenv("QUESTION", "What is our company's mission?")
+    # Get question from environment or use default
+    question = os.getenv("QUESTION", "What is the main topic of these documents?")
 
-    # Create or load index
+    # Check for existing index or create new one
     index_path = Path(OUTPUT_FOLDER) / "index.faiss"
     metadata_path = Path(OUTPUT_FOLDER) / "metadata.json"
 
@@ -250,31 +364,26 @@ def main():
         with open(metadata_path, "w") as f:
             json.dump(metadata, f)
 
-    # Embed question
-    logger.info("Embedding question")
-    q_embedding = get_embeddings([question], api_key)[0]
-
-    # Retrieve context
-    logger.info("Searching for relevant context")
-    context = search_index(index, metadata, q_embedding, k=5)
-
-    # Generate answer
-    logger.info("Generating answer")
+    # Process the question
+    logger.info("Processing question")
+    question_embedding = get_embeddings([question], api_key)[0]
+    context = search_index(index, metadata, question_embedding)
     answer = generate_answer(question, context, api_key)
 
     # Save results
     result = {
         "question": question,
         "answer": answer,
-        "context_sources": [
-            {"filename": res["filename"], "chunk_index": res["chunk_index"]}
-            for res in context
+        "sources": [
+            {"file": item["filename"], "chunk": item["chunk_index"]} for item in context
         ],
-        "generated_at": datetime.now().isoformat(),
+        "timestamp": datetime.now().isoformat(),
     }
 
     with open(Path(OUTPUT_FOLDER) / "result.json", "w") as f:
         json.dump(result, f, indent=2)
+
+    logger.info(f"Answer: {answer}")
     logger.info("RAG pipeline completed")
 
 
