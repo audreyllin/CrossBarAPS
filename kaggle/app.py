@@ -716,15 +716,14 @@ def remove_context():
 
     # Update context_uploads.json
     if os.path.exists(CONTEXT_UPLOADS_FILE):
-        with open(CONTEXT_UPLOADS_FILE, "r") as f:
-            context_data = json.load(f)
-
-        context_data = [
-            entry for entry in context_data if entry["context_id"] != context_id
-        ]
-
-        with open(CONTEXT_UPLOADS_FILE, "w") as f:
-            json.dump(context_data, f, indent=2)
+        try:
+            with open(CONTEXT_UPLOADS_FILE, "r", encoding="utf-8") as f:
+                context_data = json.load(f)
+            context_data = [e for e in context_data if e["context_id"] != context_id]
+            with open(CONTEXT_UPLOADS_FILE, "w", encoding="utf-8") as f:
+                json.dump(context_data, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error removing context from file: {e}")
 
     return jsonify({"status": "success"})
 
