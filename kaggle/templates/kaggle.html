@@ -1119,7 +1119,6 @@
                 </div>
 
                 <div class="glass-panel animate-on-scroll">
-                    <!-- Model selector dropdown -->
                     <div class="model-selector">
                         <label for="modelSelect">Embedding Model:</label>
                         <select id="modelSelect">
@@ -1205,7 +1204,6 @@
                     </div>
                 </div>
 
-                <!-- File History Card -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-folder-open"></i> File History</h3>
                     <div class="kernel-output" id="file-history">
@@ -1213,7 +1211,6 @@
                     </div>
                 </div>
 
-                <!-- Download Conversation Card -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-download"></i> Download Conversation</h3>
                     <div class="answer-actions">
@@ -1505,12 +1502,12 @@
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.innerHTML = `
-                    <div>
-                        <i class="${iconClass}"></i>
-                        <span>${file.name}</span>
-                    </div>
-                    <span class="remove-file" data-file="${file.name}">✕</span>
-                `;
+                <div>
+                    <i class="${iconClass}"></i>
+                    <span>${file.name}</span>
+                </div>
+                <span class="remove-file" data-file="${file.name}">✕</span>
+            `;
 
                 multiFilePreview.appendChild(fileItem);
             });
@@ -1566,17 +1563,17 @@
                 textConcepts.style.display = 'none';
 
                 const model = getSelectedModel();
-                const formData = new FormData();
-                formData.append('text', contextText);
-                formData.append('sessionId', sessionId);
-                formData.append('model', model);
-
-                const response = await fetch('/api/upload_context', {
+                const response = await fetch('/api/upload_text_context', {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     },
-                    body: formData
+                    body: JSON.stringify({
+                        text: contextText,
+                        sessionId: sessionId,
+                        model: model
+                    })
                 });
 
                 if (!response.ok) {
@@ -1588,6 +1585,7 @@
                 displayConcepts(textConceptTags, data.concepts || []);
                 textConcepts.style.display = 'block';
                 showNotification('Context added successfully!', 'success', data.concepts);
+                fetchFileHistory();
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
             } finally {
@@ -1626,7 +1624,7 @@
                 formData.append('sessionId', sessionId);
                 formData.append('model', model);
 
-                const response = await fetch('/api/upload_context', {
+                const response = await fetch('/api/upload_file_context', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${apiKey}`
@@ -1649,6 +1647,8 @@
             } finally {
                 submitBtn.disabled = false;
                 fileSpinner.style.display = 'none';
+                fileInput.value = '';
+                multiFilePreview.style.display = 'none';
             }
         });
 
@@ -1812,33 +1812,56 @@
         // File History Fetch
         async function fetchFileHistory() {
             try {
-                const res = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
-                if (!res.ok) throw new Error('Failed to fetch file history');
+                const response = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
+                if (!response.ok) throw new Error('Failed to fetch file history');
 
-                const data = await res.json();
+                const {
+                    contexts
+                } = await response.json();
                 const container = document.getElementById('file-history');
                 container.innerHTML = "";
 
-                if (data.length === 0) {
-                    container.innerHTML = "<p>No files uploaded.</p>";
+                if (!contexts || contexts.length === 0) {
+                    container.innerHTML = "<p>No context files uploaded yet.</p>";
                     return;
                 }
 
-                data.forEach(ctx => {
+                contexts.forEach(ctx => {
                     const row = document.createElement("div");
                     row.className = "memory-entry";
                     row.innerHTML = `
-                        <div><strong>${ctx.filename}</strong></div>
-                        <div>${new Date(ctx.timestamp).toLocaleString()}</div>
-                        <div class="memory-actions">
-                            <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">Remove</button>
+                    <div class="file-history-item">
+                        <div class="file-history-name">
+                            <i class="${fileIcons[ctx.filename.split('.').pop().toLowerCase()] || fileIcons.default}"></i>
+                            <strong>${ctx.filename}</strong>
                         </div>
-                    `;
+                        <div class="file-history-meta">
+                            <span>${new Date(ctx.timestamp).toLocaleString()}</span>
+                            <span>${ctx.size ? formatFileSize(ctx.size) : ''}</span>
+                        </div>
+                        <div class="memory-actions">
+                            <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
                     container.appendChild(row);
                 });
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
+                document.getElementById('file-history').innerHTML =
+                    `<p>Error loading file history. Please try again later.</p>`;
             }
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         // Remove context file
@@ -1850,6 +1873,10 @@
                     return;
                 }
 
+                if (!confirm('Are you sure you want to remove this context?')) {
+                    return;
+                }
+
                 const response = await fetch("/api/remove_context", {
                     method: "POST",
                     headers: {
@@ -1857,8 +1884,8 @@
                         "Authorization": `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        sessionId: sessionId,
-                        contextId: contextId
+                        session_id: sessionId,
+                        context_id: contextId
                     })
                 });
 
@@ -1873,6 +1900,9 @@
                 showNotification(`Error: ${error.message}`, 'error');
             }
         }
+
+        // Call it once on page load
+        fetchFileHistory();
 
         // Download conversation
         function downloadConversation(format) {
