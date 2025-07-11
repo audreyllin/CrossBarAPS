@@ -609,12 +609,6 @@
             word-break: break-all;
         }
         
-        .file-support {
-            font-size: 0.8rem;
-            color: var(--orange-secondary);
-            margin-top: 5px;
-        }
-        
         .concepts-container {
             margin-top: 1rem;
         }
@@ -1001,88 +995,6 @@
             left: 50%;
             transform: translateX(-50%);
         }
-        /* New styles for generation buttons */
-        
-        .generation-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .generation-btn {
-            background: rgba(255, 157, 92, 0.3);
-            border: 1px solid var(--orange-secondary);
-            color: var(--cream);
-            padding: 10px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .generation-btn:hover {
-            background: rgba(255, 157, 92, 0.5);
-            transform: translateY(-2px);
-        }
-        
-        .generation-btn i {
-            font-size: 1.2em;
-        }
-        
-        .iframe-container {
-            margin-top: 20px;
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            overflow: hidden;
-            display: none;
-        }
-        /* Batch progress styles */
-        
-        #batch-progress {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: var(--chocolate);
-            z-index: 10000;
-            padding: 10px;
-            text-align: center;
-            color: var(--cream);
-        }
-        
-        .batch-progress-bar {
-            height: 5px;
-            background: var(--chocolate-light);
-            margin-top: 10px;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .batch-progress-fill {
-            height: 100%;
-            background: var(--orange-primary);
-            width: 50%;
-            transform: translateX(-100%);
-            animation: indeterminate 1.5s infinite linear;
-        }
-        
-        @keyframes indeterminate {
-            0% {
-                transform: translateX(-100%);
-            }
-            100% {
-                transform: translateX(200%);
-            }
-        }
-        
-        .batch-status {
-            margin-top: 5px;
-            font-size: 0.9rem;
-        }
         
         @media (max-width: 900px) {
             .api-container {
@@ -1138,9 +1050,6 @@
             .glass-panel {
                 padding: 1.8rem;
             }
-            .generation-buttons {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
@@ -1148,17 +1057,6 @@
 <body>
     <div class="hex-pattern"></div>
     <div class="bg-elements" id="bg-canvas"></div>
-
-    <!-- Batch Progress Indicator -->
-    <div id="batch-progress">
-        <div class="batch-header">
-            <i class="fas fa-cogs"></i> Processing <span id="batch-count">0</span> files...
-        </div>
-        <div class="batch-progress-bar">
-            <div class="batch-progress-fill"></div>
-        </div>
-        <div class="batch-status">Starting...</div>
-    </div>
 
     <nav>
         <div class="logo">
@@ -1217,7 +1115,6 @@
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context across sessions</p>
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports document and text context additions</p>
                         <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified company knowledge base</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Batch processing of ZIP files with mixed content</p>
                     </div>
                 </div>
 
@@ -1276,25 +1173,6 @@
                     <div class="kernel-output" id="kernel-answer">
                         // Your answer will appear here after processing
                     </div>
-
-                    <!-- Generation Buttons -->
-                    <div class="generation-buttons" id="generation-buttons" style="display: none;">
-                        <button class="generation-btn" onclick="generateFromAnswer('video')">
-                            <i class="fas fa-video"></i> Generate Video
-                        </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
-                            <i class="fas fa-image"></i> Generate Poster
-                        </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('slides')">
-                            <i class="fas fa-presentation"></i> Generate Slides
-                        </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
-                            <i class="fas fa-file-alt"></i> Generate Memo
-                        </button>
-                    </div>
-
-                    <!-- Iframe Container for Generated Content -->
-                    <div class="iframe-container" id="generated-content"></div>
 
                     <div class="answer-actions" id="answer-actions" style="display: none;">
                         <div class="action-group">
@@ -1382,12 +1260,11 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div class="file-upload">
-                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.csv,.tsv,.odt,.rtf,.zip">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
                 <label for="context-files" class="file-label" id="file-drop-area">
-                    <i class="fas fa-cloud-upload-alt file-icon"></i>
+                    <i class="fas fa-cloud-upload-alt"></i>
                     <span>Choose files or drag them here</span>
-                    <small class="file-support">Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, CSV, ZIP,
-                        etc.</small>
+                    <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
                 </label>
                 <div class="multi-file-preview" id="multi-file-preview">
                     <!-- File previews will be added here -->
@@ -1442,30 +1319,11 @@
         <div class="glass-panel">
             <h2>Admin Dashboard</h2>
             <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
-
             <div style="margin-top:2rem">
-                <h3>Upload History</h3>
-                <table id="admin-uploads" style="width:100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
-                                Filename</th>
-                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
-                                Session ID</th>
-                            <th style="text-align: left; padding: 10px; border-bottom: 1px solid var(--orange-secondary);">
-                                Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody style="font-size: 0.9rem;"></tbody>
-                </table>
-
-                <h3 style="margin-top:2rem">Conversation Logs</h3>
-                <div class="kernel-output" id="admin-conversations" style="max-height:300px; overflow:auto"></div>
-
+                <h3>Conversation Logs</h3>
+                <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
                 <h3>Frequent Questions</h3>
-                <ul id="frequent-questions" style="list-style-type: none; padding-left: 0;">
-                    <!-- Will be populated dynamically -->
-                </ul>
+                <ul id="frequent-questions"></ul>
             </div>
         </div>
     </section>
@@ -1473,24 +1331,18 @@
     <div id="notification-container"></div>
 
     <script>
-        // Enhanced file icon mapping
+        // File icon mapping
         const fileIcons = {
             pdf: 'fas fa-file-pdf',
             doc: 'fas fa-file-word',
             docx: 'fas fa-file-word',
-            xls: 'fas fa-file-excel',
-            xlsx: 'fas fa-file-excel',
+            txt: 'fas fa-file-alt',
             ppt: 'fas fa-file-powerpoint',
             pptx: 'fas fa-file-powerpoint',
-            txt: 'fas fa-file-alt',
-            csv: 'fas fa-file-csv',
-            tsv: 'fas fa-file-csv',
             jpg: 'fas fa-file-image',
             jpeg: 'fas fa-file-image',
             png: 'fas fa-file-image',
-            zip: 'fas fa-file-archive',
-            odt: 'fas fa-file-alt',
-            rtf: 'fas fa-file-alt',
+            mp4: 'fas fa-file-video',
             default: 'fas fa-file'
         };
 
@@ -1522,8 +1374,6 @@
         const answerActions = document.getElementById('answer-actions');
         const followUpSuggestions = document.getElementById('follow-up-suggestions');
         const followUpButtons = document.getElementById('follow-up-buttons');
-        const generationButtons = document.getElementById('generation-buttons');
-        const generatedContent = document.getElementById('generated-content');
 
         // Crypto animation logic
         const cryptos = {
@@ -1693,16 +1543,6 @@
             return document.getElementById("modelSelect").value || "text-embedding-3-large";
         }
 
-        // Convert file to Base64
-        async function convertFileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (e) => reject(e);
-                reader.readAsDataURL(file);
-            });
-        }
-
         // Add text context
         document.getElementById('submit-text-context').addEventListener('click', async() => {
             const contextText = document.getElementById('context-text').value;
@@ -1775,19 +1615,16 @@
             try {
                 submitBtn.disabled = true;
                 fileSpinner.style.display = 'inline-block';
-                showBatchProgress(fileInput.files.length);
 
                 const model = getSelectedModel();
                 const formData = new FormData();
+
+                Array.from(fileInput.files).forEach(file => {
+                    formData.append('files', file);
+                });
+
                 formData.append('sessionId', sessionId);
                 formData.append('model', model);
-
-                // Process all files
-                for (const file of fileInput.files) {
-                    const base64 = await convertFileToBase64(file);
-                    formData.append('filesBase64', base64);
-                    formData.append('filenames', file.name);
-                }
 
                 const response = await fetch('/api/upload_context', {
                     method: 'POST',
@@ -1812,7 +1649,6 @@
             } finally {
                 submitBtn.disabled = false;
                 fileSpinner.style.display = 'none';
-                hideBatchProgress();
             }
         });
 
@@ -1835,7 +1671,6 @@
             submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
             setOutputContent('kernel-answer', "> Processing your question...");
-            generatedContent.style.display = 'none';
 
             try {
                 const model = getSelectedModel();
@@ -1859,7 +1694,6 @@
                 currentQuestion = data.question;
                 setOutputContent('kernel-answer', data.answer || "No answer found");
                 answerActions.style.display = 'block';
-                generationButtons.style.display = 'flex';
 
                 if (data.follow_ups && data.follow_ups.length > 0) {
                     followUpButtons.innerHTML = "";
@@ -1891,65 +1725,6 @@
                 });
             }
         });
-
-        // Content generation handler
-        async function generateFromAnswer(type) {
-            const apiKey = document.getElementById('api-key').value;
-            if (!currentAnswer || !apiKey) {
-                showNotification('Please enter API key and submit a question first', 'error');
-                return;
-            }
-
-            try {
-                setOutputContent("kernel-answer", `> Generating ${type}...`);
-                const res = await fetch("/api/generate_content", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        content: currentAnswer,
-                        type: type
-                    })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "Generation failed");
-
-                if (type === 'video') {
-                    // Handle video generation
-                    generatedContent.innerHTML = `
-                        <iframe 
-                            src="https://vidful.ai/embed?prompt=${encodeURIComponent(data.generated)}" 
-                            width="100%" 
-                            height="500px"
-                            frameborder="0"
-                        ></iframe>
-                    `;
-                    generatedContent.style.display = 'block';
-                } else if (type === 'slides') {
-                    // Handle slides generation
-                    generatedContent.innerHTML = `
-                        <iframe 
-                            src="https://slidesgpt.com/embed?text=${encodeURIComponent(data.generated)}" 
-                            width="100%" 
-                            height="500px"
-                            frameborder="0"
-                        ></iframe>
-                    `;
-                    generatedContent.style.display = 'block';
-                } else {
-                    // Show generated content for other types
-                    setOutputContent("kernel-answer", data.generated);
-                }
-
-                showNotification(`${type} generated successfully`, "success");
-            } catch (err) {
-                showNotification(`Error: ${err.message}`, "error");
-                setOutputContent("kernel-answer", currentAnswer);
-            }
-        }
 
         // Answer adjustment functionality
         document.querySelectorAll('.action-btn').forEach(button => {
@@ -2147,34 +1922,13 @@
         // Load admin dashboard
         async function loadAdminDashboard() {
             try {
-                // Load upload history
-                const uploadRes = await fetch("/api/admin/uploads");
-                if (!uploadRes.ok) throw new Error('Failed to load uploads');
-                const uploads = await uploadRes.json();
-
-                const uploadTable = document.querySelector("#admin-uploads tbody");
-                uploadTable.innerHTML = "";
-                uploads.forEach(upload => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${upload.filename}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${upload.session_id.substring(0, 8)}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid rgba(255,157,92,0.2);">${new Date(upload.timestamp).toLocaleString()}</td>
-                    `;
-                    uploadTable.appendChild(row);
-                });
-
-                // Load conversations
                 const convoRes = await fetch("/api/admin/conversations");
                 if (!convoRes.ok) throw new Error('Failed to load conversations');
+
                 const convos = await convoRes.json();
-
                 const convoContainer = document.getElementById('admin-conversations');
-                convoContainer.textContent = convos.map(c =>
-                    `[${new Date(c.timestamp).toLocaleString()}]\nSession: ${c.session_id.substring(0, 8)}\nQ: ${c.question}\nA: ${c.answer}\nFile: ${c.file || 'None'}`
-                ).join('\n\n');
+                convoContainer.textContent = convos.map(c => `[${new Date(c.timestamp).toLocaleString()}]\nQ: ${c.question}\nA: ${c.answer}\n`).join('\n\n');
 
-                // Load frequent questions
                 const freqRes = await fetch("/api/admin/frequent_questions");
                 if (!freqRes.ok) throw new Error('Failed to load frequent questions');
 
@@ -2184,13 +1938,11 @@
 
                 questions.forEach(q => {
                     const li = document.createElement('li');
-                    li.style.padding = "8px 0";
-                    li.style.borderBottom = "1px solid rgba(255,157,92,0.2)";
                     li.textContent = `${q.question} (${q.count} times)`;
                     list.appendChild(li);
                 });
             } catch (error) {
-                showNotification(`Error: ${error.message}`, "error");
+                showNotification(`Error: ${error.message}`, 'error');
             }
         }
 
@@ -2250,18 +2002,6 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 5000);
-        }
-
-        // Batch progress functions
-        function showBatchProgress(fileCount) {
-            const batchProgress = document.getElementById('batch-progress');
-            const batchCount = document.getElementById('batch-count');
-            batchCount.textContent = fileCount;
-            batchProgress.style.display = 'block';
-        }
-
-        function hideBatchProgress() {
-            document.getElementById('batch-progress').style.display = 'none';
         }
 
         // Animation on scroll
