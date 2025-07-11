@@ -366,6 +366,34 @@
             animation: shine 8s infinite linear;
         }
         
+        .generation-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .generation-buttons.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .generation-btn {
+            background: rgba(255, 157, 92, 0.2);
+            border: 1px solid var(--orange-secondary);
+            color: var(--orange-secondary);
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .generation-btn:disabled {
+            background: rgba(200, 200, 200, 0.2);
+            color: #888;
+            cursor: not-allowed;
+        }
+        
         @keyframes shine {
             0% {
                 transform: rotate(45deg) translateX(-50%);
@@ -1173,6 +1201,22 @@
                         // Your answer will appear here after processing
                     </div>
 
+                    <!-- Generation Buttons -->
+                    <div class="generation-buttons" id="generation-buttons" style="display: none; margin-top:1rem;">
+                        <button class="generation-btn" onclick="generateFromAnswer('video')">
+                            <i class="fas fa-video"></i> Generate Video
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
+                            <i class="fas fa-image"></i> Generate Poster
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('slides')">
+                            <i class="fas fa-presentation"></i> Generate Slides
+                        </button>
+                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
+                            <i class="fas fa-file-alt"></i> Generate Memo
+                        </button>
+                    </div>
+
                     <div class="answer-actions" id="answer-actions" style="display: none;">
                         <div class="action-group">
                             <span class="action-label">Translate:</span>
@@ -1371,6 +1415,7 @@
         const answerActions = document.getElementById('answer-actions');
         const followUpSuggestions = document.getElementById('follow-up-suggestions');
         const followUpButtons = document.getElementById('follow-up-buttons');
+        const genContainer = document.getElementById('generation-buttons');
 
         // Crypto animation logic
         const cryptos = {
@@ -1576,7 +1621,6 @@
                     body: formData
                 });
 
-
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to add context');
@@ -1669,6 +1713,8 @@
                 return;
             }
 
+            // Disable generation buttons while processing
+            genContainer.classList.add('disabled');
             submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
             setOutputContent('kernel-answer', "> Processing your question...");
@@ -1695,6 +1741,10 @@
                 currentQuestion = data.question;
                 setOutputContent('kernel-answer', data.answer || "No answer found");
                 answerActions.style.display = 'block';
+
+                // Reveal generation buttons
+                genContainer.style.display = 'flex';
+                genContainer.classList.remove('disabled');
 
                 if (data.follow_ups && data.follow_ups.length > 0) {
                     followUpButtons.innerHTML = "";
@@ -2175,6 +2225,44 @@
             document.getElementById('text-concepts').style.display = 'none';
             document.getElementById('text-concept-tags').innerHTML = '';
         });
+
+        // Media generation function
+        async function generateFromAnswer(type) {
+            const apiKey = document.getElementById('api-key').value;
+            if (!apiKey) return showNotification('Enter your API key first', 'error');
+            if (!currentAnswer) return showNotification('No answer to generate from', 'error');
+
+            // Disable buttons while working
+            genContainer.classList.add('disabled');
+
+            try {
+                const resp = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        type,
+                        answer: currentAnswer,
+                        sessionId
+                    })
+                });
+                const json = await resp.json();
+                if (!resp.ok) throw new Error(json.error || resp.statusText);
+
+                // Provide download link
+                window.open(json.url, '_blank');
+                showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} ready!`, `success`);
+            } catch (err) {
+                showNotification(`Generation error: ${err.message}`, 'error');
+                // Keep buttons disabled until new question is asked
+                return;
+            } finally {
+                // Optionally re-enable if you want multiple runs per answer:
+                // genContainer.classList.remove('disabled');
+            }
+        }
     </script>
 </body>
 
