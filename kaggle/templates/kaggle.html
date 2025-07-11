@@ -2229,10 +2229,16 @@
         // Media generation function
         async function generateFromAnswer(type) {
             const apiKey = document.getElementById('api-key').value;
-            if (!apiKey) return showNotification('Enter your API key first', 'error');
-            if (!currentAnswer) return showNotification('No answer to generate from', 'error');
+            if (!apiKey) {
+                showNotification('Enter your API key first', 'error');
+                return;
+            }
+            if (!currentAnswer) {
+                showNotification('No answer to generate from', 'error');
+                return;
+            }
 
-            // Disable buttons while working
+            // grey-out all buttons until next question
             genContainer.classList.add('disabled');
 
             try {
@@ -2251,16 +2257,40 @@
                 const json = await resp.json();
                 if (!resp.ok) throw new Error(json.error || resp.statusText);
 
-                // Provide download link
-                window.open(json.url, '_blank');
-                showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} ready!`, `success`);
+                const url = json.url;
+
+                // remove any old download link / preview
+                document.getElementById('download-link') ? .remove();
+                document.getElementById('poster-preview') ? .remove();
+
+                // 1) create download link
+                const link = document.createElement('a');
+                link.id = 'download-link';
+                link.href = url;
+                link.textContent = `⬇️ Download ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                link.target = '_blank';
+                link.style.display = 'block';
+                link.style.marginTop = '1rem';
+                genContainer.after(link);
+
+                // 2) if poster, embed an image preview
+                if (type === 'poster') {
+                    const img = document.createElement('img');
+                    img.id = 'poster-preview';
+                    img.src = url;
+                    img.alt = 'Poster Preview';
+                    img.style.maxWidth = '100%';
+                    img.style.marginTop = '0.5rem';
+                    link.after(img);
+                }
+
+                showNotification(
+                    `${type.charAt(0).toUpperCase() + type.slice(1)} ready!`,
+                    'success'
+                );
             } catch (err) {
                 showNotification(`Generation error: ${err.message}`, 'error');
-                // Keep buttons disabled until new question is asked
-                return;
-            } finally {
-                // Optionally re-enable if you want multiple runs per answer:
-                // genContainer.classList.remove('disabled');
+                // leave genContainer.disabled until next question
             }
         }
     </script>
