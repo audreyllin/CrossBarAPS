@@ -24,10 +24,16 @@
             --hexagon-size: 80px;
         }
         
-        * {
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
         }
         
         body {
@@ -366,34 +372,6 @@
             animation: shine 8s infinite linear;
         }
         
-        .generation-buttons {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1rem;
-        }
-        
-        .generation-buttons.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        
-        .generation-btn {
-            background: rgba(255, 157, 92, 0.2);
-            border: 1px solid var(--orange-secondary);
-            color: var(--orange-secondary);
-            padding: 0.6rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .generation-btn:disabled {
-            background: rgba(200, 200, 200, 0.2);
-            color: #888;
-            cursor: not-allowed;
-        }
-        
         @keyframes shine {
             0% {
                 transform: rotate(45deg) translateX(-50%);
@@ -463,59 +441,6 @@
         .context-btn:hover {
             background: rgba(255, 157, 92, 0.3);
             box-shadow: 0 0 15px rgba(255, 157, 92, 0.2);
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal-content {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 600px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.4s ease;
-        }
-        
-        .modal.show .modal-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            color: var(--cream);
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        
-        .close-modal:hover {
-            color: var(--orange-primary);
         }
         
         .input-group {
@@ -657,14 +582,6 @@
             transform: translateY(-2px);
         }
         
-        .summary-toggle {
-            color: var(--orange-secondary);
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            display: inline-block;
-        }
-        
         .submit-btn {
             background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
             color: var(--white);
@@ -788,11 +705,6 @@
             align-items: center;
             gap: 0.8rem;
             color: var(--orange-secondary);
-        }
-        
-        .result-card p {
-            color: var(--cream);
-            margin-bottom: 1rem;
         }
         
         .kernel-output {
@@ -930,6 +842,59 @@
             backdrop-filter: blur(10px);
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--orange-primary);
+        }
+        
         .notification {
             position: fixed;
             top: 20px;
@@ -1022,6 +987,34 @@
         .vertical-line.center {
             left: 50%;
             transform: translateX(-50%);
+        }
+        
+        .generation-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .generation-buttons.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .generation-btn {
+            background: rgba(255, 157, 92, 0.2);
+            border: 1px solid var(--orange-secondary);
+            color: var(--orange-secondary);
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .generation-btn:disabled {
+            background: rgba(200, 200, 200, 0.2);
+            color: #888;
+            cursor: not-allowed;
         }
         
         @media (max-width: 900px) {
@@ -1201,7 +1194,6 @@
                         // Your answer will appear here after processing
                     </div>
 
-                    <!-- Generation Buttons -->
                     <div class="generation-buttons" id="generation-buttons" style="display: none; margin-top:1rem;">
                         <button class="generation-btn" onclick="generateFromAnswer('video')">
                             <i class="fas fa-video"></i> Generate Video
@@ -1547,12 +1539,12 @@
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.innerHTML = `
-                <div>
-                    <i class="${iconClass}"></i>
-                    <span>${file.name}</span>
-                </div>
-                <span class="remove-file" data-file="${file.name}">✕</span>
-            `;
+            <div>
+                <i class="${iconClass}"></i>
+                <span>${file.name}</span>
+            </div>
+            <span class="remove-file" data-file="${file.name}">✕</span>
+        `;
 
                 multiFilePreview.appendChild(fileItem);
             });
@@ -1881,22 +1873,22 @@
                     const row = document.createElement("div");
                     row.className = "memory-entry";
                     row.innerHTML = `
-                    <div class="file-history-item">
-                        <div class="file-history-name">
-                            <i class="${fileIcons[ctx.filename.split('.').pop().toLowerCase()] || fileIcons.default}"></i>
-                            <strong>${ctx.filename}</strong>
-                        </div>
-                        <div class="file-history-meta">
-                            <span>${new Date(ctx.timestamp).toLocaleString()}</span>
-                            <span>${ctx.size ? formatFileSize(ctx.size) : ''}</span>
-                        </div>
-                        <div class="memory-actions">
-                            <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
-                        </div>
+                <div class="file-history-item">
+                    <div class="file-history-name">
+                        <i class="${fileIcons[ctx.filename.split('.').pop().toLowerCase()] || fileIcons.default}"></i>
+                        <strong>${ctx.filename}</strong>
                     </div>
-                `;
+                    <div class="file-history-meta">
+                        <span>${new Date(ctx.timestamp).toLocaleString()}</span>
+                        <span>${ctx.size ? formatFileSize(ctx.size) : ''}</span>
+                    </div>
+                    <div class="memory-actions">
+                        <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
                     container.appendChild(row);
                 });
             } catch (error) {
@@ -2226,19 +2218,13 @@
             document.getElementById('text-concept-tags').innerHTML = '';
         });
 
-        // Media generation function
+        // Media generation function (with URL check and button re-enable)
         async function generateFromAnswer(type) {
             const apiKey = document.getElementById('api-key').value;
-            if (!apiKey) {
-                showNotification('Enter your API key first', 'error');
-                return;
-            }
-            if (!currentAnswer) {
-                showNotification('No answer to generate from', 'error');
-                return;
-            }
+            if (!apiKey) return showNotification('Enter your API key first', 'error');
+            if (!currentAnswer) return showNotification('No answer to generate from', 'error');
 
-            // grey-out all buttons until next question
+            // Disable buttons while working
             genContainer.classList.add('disabled');
 
             try {
@@ -2255,42 +2241,29 @@
                     })
                 });
                 const json = await resp.json();
-                if (!resp.ok) throw new Error(json.error || resp.statusText);
 
-                const url = json.url;
-
-                // remove any old download link / preview
-                document.getElementById('download-link') ? .remove();
-                document.getElementById('poster-preview') ? .remove();
-
-                // 1) create download link
-                const link = document.createElement('a');
-                link.id = 'download-link';
-                link.href = url;
-                link.textContent = `⬇️ Download ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                link.target = '_blank';
-                link.style.display = 'block';
-                link.style.marginTop = '1rem';
-                genContainer.after(link);
-
-                // 2) if poster, embed an image preview
-                if (type === 'poster') {
-                    const img = document.createElement('img');
-                    img.id = 'poster-preview';
-                    img.src = url;
-                    img.alt = 'Poster Preview';
-                    img.style.maxWidth = '100%';
-                    img.style.marginTop = '0.5rem';
-                    link.after(img);
+                // Handle HTTP errors
+                if (!resp.ok) {
+                    throw new Error(json.error || resp.statusText);
                 }
 
+                // Guard against missing or null URL
+                if (!json.url) {
+                    throw new Error('No download URL returned from server.');
+                }
+
+                // Open the generated media
+                window.open(json.url, '_blank');
                 showNotification(
                     `${type.charAt(0).toUpperCase() + type.slice(1)} ready!`,
                     'success'
                 );
             } catch (err) {
+                console.error('Media generation failed:', err);
                 showNotification(`Generation error: ${err.message}`, 'error');
-                // leave genContainer.disabled until next question
+            } finally {
+                // Re-enable buttons so user can retry if needed
+                genContainer.classList.remove('disabled');
             }
         }
     </script>
