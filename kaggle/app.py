@@ -9,7 +9,16 @@ import tempfile
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template, send_file, redirect
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    render_template,
+    send_file,
+    redirect,
+    url_for,
+    current_app,
+)
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 from fpdf import FPDF
@@ -801,7 +810,7 @@ def frequent_questions():
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    data = request.json or {}
+    data = request.get_json() or {}
     media_type = data.get("type")
     answer = data.get("answer", "")
     session_id = data.get("sessionId")
@@ -810,16 +819,28 @@ def api_generate():
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
     if media_type not in ("video", "poster", "slides", "memo"):
-        return jsonify({"error": "Invalid generation type"}), 400
+        return jsonify({"error": f"Invalid type '{media_type}'"}), 400
 
     try:
-        # delegate to rag_pipeline helper
         output_path = generate_media(media_type, answer, session_id, api_key)
+
+        # SECOND SAFETY CHECK
+        if not output_path or not os.path.isfile(output_path):
+            current_app.logger.error(
+                "generate_media returned invalid path: %r", output_path
+            )
+            return (
+                jsonify({"error": "Generation succeeded but no file was created"}),
+                500,
+            )
+
         filename = os.path.basename(output_path)
-        url = f"/api/download_generated?file={filename}"
-        return jsonify({"status": "success", "url": url})
+        # Build a fully‐qualified URL to your download endpoint
+        download_url = url_for("download_generated", file=filename, _external=True)
+        return jsonify({"url": download_url})
+
     except Exception as e:
-        logger.error(f"Error generating {media_type}: {e}")
+        current_app.logger.exception("Error generating media")
         return jsonify({"error": str(e)}), 500
 
 
@@ -834,6 +855,7 @@ def download_generated():
         return jsonify({"error": "Not found"}), 404
 
     return send_file(fp, as_attachment=True)
+
 
 # Main route
 @app.route("/")
