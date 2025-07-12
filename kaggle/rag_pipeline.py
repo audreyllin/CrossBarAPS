@@ -1,4 +1,3 @@
-# rag_pipeline.py
 import os
 import json
 import base64
@@ -19,6 +18,7 @@ from docx import Document as DocxWriter
 from pptx import Presentation
 from pptx.util import Inches
 from fpdf import FPDF
+from openai import OpenAI
 
 # AI/Vector imports
 import faiss
@@ -221,72 +221,75 @@ def generate_answer(question, context, api_key):
 def generate_media(media_type, text, session_id, api_key):
     """
     Generate different media types from text:
-    - 'poster': Image poster (PNG)
-    - 'slides': PowerPoint presentation
-    - 'memo': Word document
-    - 'video': MP4 video (requires external service)
+    - 'poster': PNG image
+    - 'slides': PPTX presentation
+    - 'memo': DOCX memo
+    - 'video': MP4 video
+    Returns the absolute file path. Raises on any failure.
     """
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    filename = f"{media_type}_{session_id or 'anon'}_{timestamp}"
+    safe_session = session_id or "anon"
+    filename_base = f"{media_type}_{safe_session}_{timestamp}"
     client = OpenAI(api_key=api_key)
 
+    def verify(path):
+        if not os.path.isfile(path):
+            raise RuntimeError(
+                f"{media_type.capitalize()} generation failed: no file at {path!r}"
+            )
+        return os.path.abspath(path)
+
+    # 1) POSTER
     if media_type == "poster":
-        # Generate image using DALL-E
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.png")
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.png")
         try:
-            response = client.images.generate(
-                prompt=text[:200],  # First 200 chars as prompt
+            resp = client.images.generate(
+                prompt=text[:200],
                 n=1,
                 size="1024x1024",
                 response_format="b64_json",
             )
+            image_data = resp.data[0].b64_json
             with open(out_path, "wb") as f:
-                f.write(base64.b64decode(response.data[0].b64_json))
-            return out_path
+                f.write(base64.b64decode(image_data))
         except Exception as e:
-            logger.error(f"Poster generation failed: {str(e)}")
-            return None
+            logger.error(f"Poster generation error: {e}")
+            raise
+        return verify(out_path)
 
+    # 2) SLIDES
     elif media_type == "slides":
-        # Generate PowerPoint slides
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.pptx")
-
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.pptx")
         try:
-            # First have GPT structure the content into slides
             system_msg = {
                 "role": "system",
-                "content": "Convert this content into 3-5 slides in JSON format: [{'title':..., 'bullets':[...]}]",
+                "content": "Convert this content into 3-5 slides in JSON format: "
+                "[{'title':..., 'bullets':[...]}]",
             }
-            response = client.chat.completions.create(
+            resp = client.chat.completions.create(
                 model="gpt-4",
                 messages=[system_msg, {"role": "user", "content": text}],
                 temperature=0.2,
             )
-            slides = json.loads(response.choices[0].message.content)
-
-            # Create actual PowerPoint
+            slides = json.loads(resp.choices[0].message.content)
             prs = Presentation()
             for slide_data in slides:
-                slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title + content
-                slide.shapes.title.text = slide_data.get("title", "Slide")
-                content = slide.shapes.placeholders[1]
+                slide = prs.slides.add_slide(prs.slide_layouts[1])
+                slide.shapes.title.text = slide_data.get("title", "")
+                tf = slide.shapes.placeholders[1].text_frame
                 for bullet in slide_data.get("bullets", []):
-                    content.text_frame.add_paragraph().text = bullet
-
+                    tf.add_paragraph().text = bullet
             prs.save(out_path)
-            return out_path
-
         except Exception as e:
-            logger.error(f"Slide generation failed: {str(e)}")
-            return None
+            logger.error(f"Slide generation error: {e}")
+            raise
+        return verify(out_path)
 
+    # 3) MEMO
     elif media_type == "memo":
-        # Generate Word document
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.docx")
-
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.docx")
         try:
-            # First have GPT format the memo
-            response = client.chat.completions.create(
+            resp = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {
@@ -296,25 +299,21 @@ def generate_media(media_type, text, session_id, api_key):
                 ],
                 temperature=0.3,
             )
-            memo_content = response.choices[0].message.content
-
-            # Create Word document
+            memo_content = resp.choices[0].message.content
             doc = DocxWriter()
             doc.add_heading("Memo", level=1)
-            for paragraph in memo_content.split("\n"):
-                if paragraph.strip():
-                    doc.add_paragraph(paragraph.strip())
-
+            for para in memo_content.splitlines():
+                if para.strip():
+                    doc.add_paragraph(para.strip())
             doc.save(out_path)
-            return out_path
-
         except Exception as e:
-            logger.error(f"Memo generation failed: {str(e)}")
-            return None
+            logger.error(f"Memo generation error: {e}")
+            raise
+        return verify(out_path)
 
+    # 4) VIDEO
     elif media_type == "video":
-        # Generate video (requires external service)
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename}.mp4")
+        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.mp4")
         try:
             subprocess.run(
                 [
@@ -328,14 +327,13 @@ def generate_media(media_type, text, session_id, api_key):
                 ],
                 check=True,
             )
-            return out_path
         except Exception as e:
-            logger.error(f"Video generation failed: {str(e)}")
-            return None
+            logger.error(f"Video generation error: {e}")
+            raise
+        return verify(out_path)
 
     else:
-        logger.error(f"Unknown media type: {media_type}")
-        return None
+        raise ValueError(f"Unknown media type: {media_type!r}")
 
 
 def main():
