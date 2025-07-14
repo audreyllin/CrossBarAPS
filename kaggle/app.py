@@ -830,11 +830,20 @@ def api_generate():
 
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
-    if media_type not in ("video", "poster", "slides", "memo"):
+
+    # Updated accepted media types
+    if media_type not in ("video", "poster", "memo", "gamma_slides", "slidesgpt"):
         return jsonify({"error": f"Invalid type '{media_type}'"}), 400
 
     try:
-        output_path = generate_media(media_type, answer, session_id, api_key)
+        # Route to appropriate generation function
+        if media_type == "gamma_slides":
+            output_path = generate_gamma_slides(answer, session_id, api_key)
+        elif media_type == "slidesgpt":
+            output_path = generate_slidesgpt(answer, session_id, api_key)
+        else:
+            # Fallback to original handler for video/poster/memo
+            output_path = generate_media(media_type, answer, session_id, api_key)
 
         # SECOND SAFETY CHECK
         if not output_path or not os.path.isfile(output_path):
@@ -847,7 +856,6 @@ def api_generate():
             )
 
         filename = os.path.basename(output_path)
-        # Build a fully‐qualified URL to your download endpoint
         download_url = url_for("download_generated", file=filename, _external=True)
         return jsonify({"url": download_url})
 

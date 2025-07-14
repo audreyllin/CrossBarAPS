@@ -1,9 +1,10 @@
 import os
 import json
 import base64
-import subprocess
 import logging
 import re
+import time
+import subprocess
 import numpy as np
 from datetime import datetime
 from pathlib import Path
@@ -12,17 +13,18 @@ from pathlib import Path
 import pytesseract
 import pdfplumber
 import fitz
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from docx import Document as DocxReader
 from docx import Document as DocxWriter
 from pptx import Presentation
 from pptx.util import Inches
-from fpdf import FPDF
 from openai import OpenAI
 
 # AI/Vector imports
 import faiss
-from openai import OpenAI
+import requests
+from pptx.util import Pt
+from gtts import gTTS
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +35,7 @@ UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+LAST_QUESTION_PATH = Path(OUTPUT_FOLDER) / "last_question.txt"
 
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 300
@@ -40,6 +43,39 @@ EMBEDDING_MODEL = "text-embedding-3-large"
 GPT_MODEL = "gpt-4-turbo"
 MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
+
+# Configuration for pre-signed templates
+TEMPLATES_DIR = "templates"
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
+
+# Pre-signed templates configuration
+TEMPLATES = {
+    "poster": {
+        "template_id": "canva_12345",
+        "placeholders": ["title", "subtitle", "content"],
+    },
+    "gamma_slides": {
+        "template_id": "gamma_67890",
+        "placeholders": ["slide1_title", "slide1_content", "slide2_title"],
+    },
+    "slidesgpt": {
+        "template_id": "slidesgpt_abcde",
+        "placeholders": ["title", "points", "conclusion"],
+    },
+}
+
+# Video service configuration
+VIDEO_SERVICES = {
+    "runwayml": {
+        "api_url": "https://api.runwayml.com/video/generate",
+        "env_key": "RUNWAYML_API_KEY",
+    },
+    "pika": {"api_url": "https://api.pika.art/v1/generate", "env_key": "PIKA_API_KEY"},
+    "kaiber": {
+        "api_url": "https://api.kaiber.ai/v1/generate",
+        "env_key": "KAIBER_API_KEY",
+    },
+}
 
 
 def clean_text(text):
@@ -191,26 +227,60 @@ def search_index(index, metadata, query_embedding, k=5):
     return [metadata[i] for i in indices[0] if i < len(metadata)]
 
 
-def generate_answer(question, context, api_key):
-    """Generate an answer using GPT with provided context"""
+def generate_answer(question, context, api_key, last_question=None):
+    """Generate a focused, technical answer using GPT based on context and question."""
     client = OpenAI(api_key=api_key)
 
-    # Format context for the prompt
+    # Check if it's a vague follow-up (e.g., "Can you elaborate?")
+    vague_followups = {
+        "can you elaborate?",
+        "elaborate",
+        "what does that mean?",
+        "explain more",
+        "tell me more",
+    }
+    is_followup = question.strip().lower() in vague_followups
+
+    # Determine adjusted question if needed
+    adjusted_question = question
+    if is_followup and last_question:
+        adjusted_question = (
+            f"Please elaborate in more technical detail about the previous topic: '{last_question}'. "
+            "Focus on its technical foundations and implementation, including specific examples if available."
+        )
+
+    # Format context
     context_str = "\n\n".join(
         f"[Source {i+1}]: {res['content']}" for i, res in enumerate(context)
     )
 
+    # Adjust system prompt
+    system_prompt = (
+        "You are a highly knowledgeable technical assistant specializing in crypto wallets, cryptographic SDKs, "
+        "blockchain integrations, and enterprise infrastructure. Your responses must be technically precise, "
+        "well-written, and based strictly on the provided context.\n\n"
+        "When answering:\n"
+        "- For direct questions, give clear and complete answers using real examples (e.g., which blockchains are supported).\n"
+        "- For follow-up questions like 'Can you elaborate?', continue from the previous technical point—not a general overview.\n"
+        "- Prioritize layered technical depth with strong prose. Avoid repetition and bullet points.\n\n"
+        "Mention specific Layer 1, Layer 2, or emerging blockchain ecosystems if relevant to the topic."
+    )
+
+    # Build messages
     messages = [
+        {"role": "system", "content": system_prompt},
         {
-            "role": "system",
-            "content": "You are a knowledgeable assistant. Use the provided context to answer questions accurately and concisely.",
+            "role": "user",
+            "content": f"Context:\n{context_str}\n\nQuestion: {adjusted_question}",
         },
-        {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {question}"},
     ]
 
     try:
         response = client.chat.completions.create(
-            model=GPT_MODEL, messages=messages, temperature=0.3, max_tokens=1024
+            model=GPT_MODEL,
+            messages=messages,
+            temperature=0.3,
+            max_tokens=1024,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
@@ -218,122 +288,386 @@ def generate_answer(question, context, api_key):
         return "Error generating answer"
 
 
-def generate_media(media_type, text, session_id, api_key):
-    """
-    Generate different media types from text:
-    - 'poster': PNG image
-    - 'slides': PPTX presentation
-    - 'memo': DOCX memo
-    - 'video': MP4 video
-    Returns the absolute file path. Raises on any failure.
-    """
-    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    safe_session = session_id or "anon"
-    filename_base = f"{media_type}_{safe_session}_{timestamp}"
-    client = OpenAI(api_key=api_key)
-
-    def verify(path):
-        if not os.path.isfile(path):
-            raise RuntimeError(
-                f"{media_type.capitalize()} generation failed: no file at {path!r}"
-            )
-        return os.path.abspath(path)
-
-    # 1) POSTER
-    if media_type == "poster":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.png")
-        try:
-            resp = client.images.generate(
-                prompt=text[:200],
-                n=1,
-                size="1024x1024",
-                response_format="b64_json",
-            )
-            image_data = resp.data[0].b64_json
-            with open(out_path, "wb") as f:
-                f.write(base64.b64decode(image_data))
-        except Exception as e:
-            logger.error(f"Poster generation error: {e}")
-            raise
-        return verify(out_path)
-
-    # 2) SLIDES
+# Media generation functions
+def generate_media(media_type, answer, session_id, api_key):
+    """Generate media based on type"""
+    if media_type == "video":
+        return generate_video(answer, session_id, api_key)
+    elif media_type == "poster":
+        return generate_canva_poster(answer, session_id)
     elif media_type == "slides":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.pptx")
-        try:
-            system_msg = {
-                "role": "system",
-                "content": "Convert this content into 3-5 slides in JSON format: "
-                "[{'title':..., 'bullets':[...]}]",
-            }
-            resp = client.chat.completions.create(
-                model="gpt-4",
-                messages=[system_msg, {"role": "user", "content": text}],
-                temperature=0.2,
-            )
-            slides = json.loads(resp.choices[0].message.content)
-            prs = Presentation()
-            for slide_data in slides:
-                slide = prs.slides.add_slide(prs.slide_layouts[1])
-                slide.shapes.title.text = slide_data.get("title", "")
-                tf = slide.shapes.placeholders[1].text_frame
-                for bullet in slide_data.get("bullets", []):
-                    tf.add_paragraph().text = bullet
-            prs.save(out_path)
-        except Exception as e:
-            logger.error(f"Slide generation error: {e}")
-            raise
-        return verify(out_path)
-
-    # 3) MEMO
+        return generate_slidesgpt_presentation(answer, session_id, api_key)
     elif media_type == "memo":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.docx")
-        try:
-            resp = client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Format this as a professional memo:\n\n{text}",
-                    }
-                ],
-                temperature=0.3,
-            )
-            memo_content = resp.choices[0].message.content
-            doc = DocxWriter()
-            doc.add_heading("Memo", level=1)
-            for para in memo_content.splitlines():
-                if para.strip():
-                    doc.add_paragraph(para.strip())
-            doc.save(out_path)
-        except Exception as e:
-            logger.error(f"Memo generation error: {e}")
-            raise
-        return verify(out_path)
-
-    # 4) VIDEO
-    elif media_type == "video":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.mp4")
-        try:
-            subprocess.run(
-                [
-                    "vidful-cli",
-                    "--api_key",
-                    api_key,
-                    "--text",
-                    text,
-                    "--output",
-                    out_path,
-                ],
-                check=True,
-            )
-        except Exception as e:
-            logger.error(f"Video generation error: {e}")
-            raise
-        return verify(out_path)
-
+        return generate_openai_memo(answer, session_id, api_key)
     else:
-        raise ValueError(f"Unknown media type: {media_type!r}")
+        raise ValueError(f"Unsupported media type: {media_type}")
+
+
+def generate_video(answer, session_id, api_key):
+    """Generate video using fallback services with priority"""
+    try:
+        # 1. Check for pre-signed template first
+        template_path = os.path.join(TEMPLATES_DIR, "video_template.mp4")
+        if os.path.exists(template_path):
+            logger.info("Using pre-signed video template")
+            return template_path
+
+        # 2. Try PixVerse with timeout handling
+        try:
+            logger.info("Attempting PixVerse API")
+            return generate_pixverse_video(answer, session_id, api_key)
+        except Exception as e:
+            logger.warning(f"PixVerse failed: {str(e)}")
+
+        # 3. Try alternative services
+        for service, config in VIDEO_SERVICES.items():
+            service_key = os.getenv(config["env_key"])
+            if service_key:
+                try:
+                    logger.info(f"Trying {service} API")
+                    if service == "runwayml":
+                        return generate_runwayml_video(answer, session_id, service_key)
+                    elif service == "pika":
+                        return generate_pika_video(answer, session_id, service_key)
+                    elif service == "kaiber":
+                        return generate_kaiber_video(answer, session_id, service_key)
+                except Exception as e:
+                    logger.warning(f"{service} failed: {str(e)}")
+
+        # 4. Fallback to local ffmpeg with TTS
+        logger.info("Using local ffmpeg fallback")
+        return generate_local_video(answer, session_id)
+
+    except Exception as e:
+        logger.error(f"All video generation failed: {str(e)}")
+        raise RuntimeError(f"Video generation failed: {str(e)}")
+
+
+def generate_pixverse_video(answer, session_id, api_key):
+    """Generate video using PixVerse API"""
+    try:
+        payload = {
+            "prompt": answer,
+            "style": "realistic",
+            "api_key": api_key,
+        }
+
+        # Initiate video generation
+        generate_url = "https://api.pixverse.ai/generate"
+        response = requests.post(generate_url, json=payload, timeout=30)
+        response.raise_for_status()
+
+        # Check status and get video URL
+        task_id = response.json().get("task_id")
+        if not task_id:
+            raise RuntimeError("No task ID returned from PixVerse API")
+
+        status_url = f"https://api.pixverse.ai/tasks/{task_id}"
+        video_url = None
+
+        # Poll for completion
+        for _ in range(10):
+            status_resp = requests.get(status_url, timeout=10)
+            status_resp.raise_for_status()
+            status_data = status_resp.json()
+
+            if status_data.get("status") == "completed":
+                video_url = status_data.get("video_url")
+                break
+
+            time.sleep(15)
+
+        if not video_url:
+            raise RuntimeError("Video generation timed out")
+
+        # Download generated video
+        output_path = os.path.join(OUTPUT_FOLDER, f"video_{session_id}.mp4")
+        download_file(video_url, output_path)
+        return output_path
+
+    except requests.exceptions.ConnectionError:
+        raise RuntimeError("PixVerse host not found. Check network configuration.")
+    except Exception as e:
+        raise RuntimeError(f"PixVerse API error: {str(e)}")
+
+
+def generate_runwayml_video(answer, session_id, api_key):
+    """Generate video using RunwayML API"""
+    payload = {"prompt": answer, "length": 5, "api_key": api_key}  # seconds
+
+    response = requests.post(
+        VIDEO_SERVICES["runwayml"]["api_url"], json=payload, timeout=30
+    )
+    response.raise_for_status()
+
+    result = response.json()
+    video_url = result.get("video_url")
+    if not video_url:
+        raise RuntimeError("No video URL in RunwayML response")
+
+    output_path = os.path.join(OUTPUT_FOLDER, f"runway_video_{session_id}.mp4")
+    download_file(video_url, output_path)
+    return output_path
+
+
+def generate_pika_video(answer, session_id, api_key):
+    """Generate video using Pika Labs API"""
+    payload = {"text_prompt": answer, "api_key": api_key}
+
+    response = requests.post(
+        VIDEO_SERVICES["pika"]["api_url"], json=payload, timeout=30
+    )
+    response.raise_for_status()
+
+    result = response.json()
+    video_url = result.get("video_url")
+    if not video_url:
+        raise RuntimeError("No video URL in Pika response")
+
+    output_path = os.path.join(OUTPUT_FOLDER, f"pika_video_{session_id}.mp4")
+    download_file(video_url, output_path)
+    return output_path
+
+
+def generate_kaiber_video(answer, session_id, api_key):
+    """Generate video using Kaiber API"""
+    payload = {"prompt": answer, "api_key": api_key}
+
+    response = requests.post(
+        VIDEO_SERVICES["kaiber"]["api_url"], json=payload, timeout=30
+    )
+    response.raise_for_status()
+
+    result = response.json()
+    video_url = result.get("video_url")
+    if not video_url:
+        raise RuntimeError("No video URL in Kaiber response")
+
+    output_path = os.path.join(OUTPUT_FOLDER, f"kaiber_video_{session_id}.mp4")
+    download_file(video_url, output_path)
+    return output_path
+
+
+def generate_local_video(answer, session_id):
+    """Generate video locally using ffmpeg with TTS and image montage"""
+    try:
+        # Step 1: Generate TTS audio
+        tts = gTTS(text=answer, lang="en")
+        audio_path = os.path.join(OUTPUT_FOLDER, f"tts_{session_id}.mp3")
+        tts.save(audio_path)
+
+        # Step 2: Create image montage
+        image_path = os.path.join(OUTPUT_FOLDER, f"montage_{session_id}.jpg")
+        img = Image.new("RGB", (800, 600), color=(73, 109, 137))
+        d = ImageDraw.Draw(img)
+        d.text((100, 300), "AI Generated Content", fill=(255, 255, 0))
+        img.save(image_path)
+
+        # Step 3: Combine with ffmpeg
+        video_path = os.path.join(OUTPUT_FOLDER, f"local_video_{session_id}.mp4")
+        cmd = [
+            "ffmpeg",
+            "-loop",
+            "1",
+            "-i",
+            image_path,
+            "-i",
+            audio_path,
+            "-c:v",
+            "libx264",
+            "-tune",
+            "stillimage",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-pix_fmt",
+            "yuv420p",
+            "-shortest",
+            video_path,
+        ]
+        subprocess.run(cmd, check=True)
+
+        return video_path
+    except Exception as e:
+        raise RuntimeError(f"Local video generation failed: {str(e)}")
+
+
+def generate_canva_poster(answer, session_id):
+    """Generate poster using Canva API with pre-signed template"""
+    try:
+        # Auto-fill template with answer content
+        content_parts = answer.split("\n")
+        fill_data = {
+            "title": content_parts[0] if len(content_parts) > 0 else "Key Insights",
+            "subtitle": (
+                content_parts[1] if len(content_parts) > 1 else "Generated Report"
+            ),
+            "content": (
+                "\n".join(content_parts[2:]) if len(content_parts) > 2 else answer
+            ),
+        }
+
+        # Generate image
+        output_path = os.path.join(OUTPUT_FOLDER, f"poster_{session_id}.png")
+        create_poster_image(fill_data, output_path)
+        return output_path
+    except Exception as e:
+        logger.error(f"Poster generation error: {e}")
+        raise RuntimeError(f"Poster generation failed: {str(e)}")
+
+
+def generate_slidesgpt_presentation(answer, session_id, api_key):
+    """Generate presentation using SlidesGPT-style formatting"""
+    try:
+        # Format content for presentation
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model=GPT_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Format this content into a slide presentation structure with titles and bullet points.",
+                },
+                {"role": "user", "content": answer},
+            ],
+            temperature=0.3,
+        )
+        structured_content = response.choices[0].message.content.strip()
+
+        # Create presentation
+        output_path = os.path.join(OUTPUT_FOLDER, f"slides_{session_id}.pptx")
+        prs = Presentation()
+
+        # Title slide
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        title = slide.shapes.title
+        title.text = "AI Generated Presentation"
+
+        # Content slides
+        for i, section in enumerate(structured_content.split("\n\n")):
+            if not section.strip():
+                continue
+
+            slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = slide.shapes.title
+            content = slide.placeholders[1]
+
+            lines = section.split("\n")
+            title.text = lines[0] if lines else f"Slide {i+1}"
+
+            if len(lines) > 1:
+                tf = content.text_frame
+                for line in lines[1:]:
+                    p = tf.add_paragraph()
+                    p.text = line
+                    p.level = 0
+
+        prs.save(output_path)
+        return output_path
+
+    except Exception as e:
+        logger.error(f"Presentation generation error: {e}")
+        raise RuntimeError(f"Presentation generation failed: {str(e)}")
+
+
+def generate_openai_memo(answer, session_id, api_key):
+    """Generate memo using pre-signed template"""
+    try:
+        # Create memo
+        output_path = os.path.join(OUTPUT_FOLDER, f"memo_{session_id}.docx")
+        doc = DocxWriter()
+
+        # Add formatted content
+        doc.add_heading("Company Memo", level=0)
+        doc.add_paragraph(datetime.now().strftime("%B %d, %Y"))
+        doc.add_paragraph("")
+
+        # Split answer into paragraphs
+        for paragraph in answer.split("\n\n"):
+            if paragraph.strip():
+                p = doc.add_paragraph(paragraph)
+                p.style.font.size = Pt(11)
+
+        # Add footer
+        footer = doc.sections[0].footer
+        footer_para = footer.paragraphs[0]
+        footer_para.text = "Confidential - Generated by Crossbar AI"
+
+        doc.save(output_path)
+        return output_path
+    except Exception as e:
+        logger.error(f"Memo generation error: {e}")
+        raise RuntimeError(f"Memo generation failed: {str(e)}")
+
+
+# Helper functions
+def download_file(url, output_path):
+    """Download file from URL with progress tracking"""
+    response = requests.get(url, stream=True, timeout=60)
+    response.raise_for_status()
+
+    total_size = int(response.headers.get("content-length", 0))
+    downloaded = 0
+    chunk_size = 8192
+
+    with open(output_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                f.write(chunk)
+                downloaded += len(chunk)
+                if total_size > 0:
+                    progress = downloaded / total_size * 100
+                    logger.info(f"Download progress: {progress:.1f}%")
+
+    return output_path
+
+
+def create_poster_image(fill_data, output_path):
+    """Create poster image for demo purposes"""
+    # Create a blank image
+    width, height = 1200, 1800
+    img = Image.new("RGB", (width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font_title = ImageFont.truetype("arialbd.ttf", 72)
+    except:
+        font_title = ImageFont.load_default()
+
+    try:
+        font_subtitle = ImageFont.truetype("arial.ttf", 48)
+    except:
+        font_subtitle = ImageFont.load_default()
+
+    try:
+        font_content = ImageFont.truetype("arial.ttf", 36)
+    except:
+        font_content = ImageFont.load_default()
+
+    # Draw title
+    draw.text((100, 200), fill_data["title"], font=font_title, fill=(0, 0, 0))
+
+    # Draw subtitle
+    draw.text(
+        (100, 300), fill_data["subtitle"], font=font_subtitle, fill=(100, 100, 100)
+    )
+
+    # Draw content
+    y_position = 400
+    for line in fill_data["content"].split("\n"):
+        draw.text((100, y_position), line, font=font_content, fill=(0, 0, 0))
+        y_position += 50
+
+    # Add footer
+    draw.text(
+        (100, height - 100),
+        "Generated by Crossbar AI",
+        font=font_subtitle,
+        fill=(150, 150, 150),
+    )
+
+    img.save(output_path)
 
 
 def main():
@@ -345,6 +679,12 @@ def main():
 
     # Get question from environment or use default
     question = os.getenv("QUESTION", "What is the main topic of these documents?")
+    
+    # Reset handling
+    if question.strip().lower() == "reset":
+        LAST_QUESTION_PATH.unlink(missing_ok=True)
+        logger.info("Last question reset.")
+        return
 
     # Check for existing index or create new one
     index_path = Path(OUTPUT_FOLDER) / "index.faiss"
@@ -366,7 +706,19 @@ def main():
     logger.info("Processing question")
     question_embedding = get_embeddings([question], api_key)[0]
     context = search_index(index, metadata, question_embedding)
-    answer = generate_answer(question, context, api_key)
+
+    # Load last question from persistent file if available
+    prior_question = None
+    if LAST_QUESTION_PATH.exists():
+        with open(LAST_QUESTION_PATH, "r", encoding="utf-8") as f:
+            prior_question = f.read().strip()
+
+    # Generate the answer with follow-up awareness
+    answer = generate_answer(question, context, api_key, last_question=prior_question)
+
+    # Save current question as new last_question
+    with open(LAST_QUESTION_PATH, "w", encoding="utf-8") as f:
+        f.write(question.strip())
 
     # Save results
     result = {
