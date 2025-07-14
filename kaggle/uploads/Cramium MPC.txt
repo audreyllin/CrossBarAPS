@@ -1,0 +1,61 @@
+Cramium MPC SDK v0.8 – Executive & Investor Analysis
+Overview
+Cramium MPC SDK v0.8, developed by CrossBar, Inc., represents a next-generation cryptographic platform optimized for mobile environments. It enables secure multi-party computation (MPC) across diverse platforms and applications. Designed with an emphasis on regulatory compliance, cryptographic robustness, and operational flexibility, the SDK supports secure key management, decentralized transaction signing, and advanced authentication. Its target audiences include fintech developers, consumer wallet apps, decentralized finance (DeFi) platforms, and institutional custodians seeking to balance security, scalability, and user experience in the management of digital assets.
+
+Authentication Architecture
+Cramium offers a versatile authentication architecture that accommodates both cutting-edge and legacy systems. It supports FIDO2-based passkeys, enabling biometric, passwordless authentication directly through mobile operating systems. This significantly reduces the risk of phishing and credential theft, enhancing both security and usability. API key-based access remains supported for backend systems, allowing integration with traditional enterprise authentication models. In addition, social second-factor authentication (2FA) using providers like Google Authenticator or Authy enhances security without undermining user convenience.
+
+This multi-tiered approach ensures Cramium is compatible with a wide range of user profiles and enterprise needs. From a business perspective, this flexibility simplifies user onboarding and broadens market reach, making the SDK suitable for both mass-market consumer applications and high-assurance institutional products.
+
+Dual-Mode MPC Operation
+A core strength of Cramium’s SDK lies in its support for two MPC modes. The Full MPC model ensures that private key material is never fully reconstructed at any single point in time. Instead, operations are distributed across multiple devices or services, significantly reducing the risk of compromise. The Mnemonic-compatible MPC mode, by contrast, allows integration with standard BIP39 mnemonics, enabling seamless migration from legacy wallets or services.
+
+This dual-mode architecture balances uncompromising security with practical interoperability. It empowers institutions requiring strict key isolation while offering developers an accessible on-ramp for users transitioning from conventional crypto wallets. For investors, this hybrid approach demonstrates market awareness and a readiness to serve both the secure custody and mass adoption segments.
+
+Flexible MPC Quorum Schemes
+Cramium’s SDK supports a variety of quorum configurations, enabling adaptable threshold signing models. Options include 2-of-2 (mobile and cloud), 2-of-3 (mobile, browser, and cloud), and even T-of-N setups involving multiple mobile devices, browsers, and hardware wallets. This flexibility allows product teams to define governance rules around key access and signing—crucial for applications ranging from personal wallets to institutional shared custody solutions.
+
+For enterprise customers, this configurability supports complex access control policies, while for end-users it means the ability to recover or rotate keys securely. These cryptographic quorum designs provide strategic defense against single-point failure and malicious collusion.
+
+Multi-Chain Blockchain Compatibility
+As of version 0.8, the SDK supports over 30 blockchains, with a roadmap targeting 50+ by year-end. The integration spans major Layer 1 and Layer 2 networks, including Bitcoin, Ethereum, Solana, Tron, and XRP, as well as DeFi-centric platforms like Polygon, Arbitrum, Optimism, Base, and Binance Smart Chain. Support also extends to emerging ecosystems such as TON.
+
+This broad compatibility positions Cramium as a critical infrastructure provider for multi-chain wallet applications, DeFi aggregators, and enterprise custodians. It eliminates the need for siloed blockchain-specific tooling, offering product teams and institutions a unified, future-proof platform for asset management across the decentralized landscape.
+
+Cloud-Native Backup and Recovery
+Cramium implements full cloud-based backup of key shares, storing them on user-specific iCloud (for iOS) or Google Cloud (for Android). This approach enables secure recovery of distributed key shares without centralizing the private key, preserving the integrity of the MPC framework. This model is vital for ensuring a non-custodial experience that remains resilient in real-world usage scenarios, such as device loss or upgrade.
+
+From a user trust and retention standpoint, robust backup and recovery options are non-negotiable. This feature enhances reliability and user confidence—two critical pillars for adoption at both the consumer and institutional levels.
+
+Developer SDK Coverage and Portability
+The SDK is available for iOS (Swift), Android (Kotlin), Flutter, and browser extensions (JavaScript/TypeScript), covering the majority of development platforms used in the fintech and Web3 industries today. This broad compatibility accelerates time-to-market for application builders and reduces integration friction, allowing teams to deploy secure wallet features within both native and cross-platform apps.
+
+The emphasis on developer enablement ensures that the cryptographic sophistication of the platform does not come at the cost of usability. This approach is critical to attracting ecosystem partners and driving community-led growth.
+
+Advanced Cryptographic Engine
+Under the hood, Cramium’s cryptographic library supports industry-leading threshold signature schemes. For ECDSA, it includes optimized implementations of GG18, GG20, and the more recent DKLs23—offering both maturity and efficiency. For EdDSA, it adopts FROST, a modern, high-performance linear threshold signature algorithm ideal for scalable, low-latency applications such as DeFi transaction signing or multi-party wallet approvals.
+
+These cryptographic innovations are not just theoretical: they directly impact throughput, latency, and security guarantees in production environments. For technical stakeholders and cryptographic auditors, this establishes Cramium as a platform rooted in applied cryptographic research.
+
+Cloud Infrastructure and Regulatory Hosting
+The SDK is built on Google Cloud’s global infrastructure, ensuring high scalability and performance across regions. It also leverages iCloud support to better integrate into the Apple ecosystem. In addition, Cramium is working toward supporting browser-based MPC operations, which would reduce dependency on native mobile apps and further broaden accessibility.
+
+For regulated institutions, this infrastructure strategy offers a balance between reliability and jurisdictional control. It aligns well with the infrastructure needs of financial institutions operating across multiple regulatory environments.
+
+Comprehensive Wallet and Transaction Layer
+Cramium offers a full-featured wallet framework, including hierarchical deterministic (HD) key derivation via BIP32, and import/export functionality for mnemonic-compatible wallets. It integrates seamlessly with WalletConnect for DApp access and supports built-in DeFi features like token swaps. The platform also offers multi-wallet support, key rotation, and resharing capabilities—essential features for institutional deployments.
+
+Furthermore, transaction policy enforcement adds a compliance layer, allowing for whitelisting, spending limits, and time-based controls. This capability is particularly valuable for custodians and financial service providers who must comply with internal or regulatory controls over crypto operations.
+
+Product Roadmap and Strategic Differentiators
+According to the roadmap, Cramium aims to support runtime algorithm switching, a browser-native MPC SDK, and integration with hardware-secure elements such as ReRAM-based secure ICs. It is also targeting support for Ethereum’s evolving EIP-7702 standard for smart EOAs and composable wallet policies. Planned implementation of linear signature schemes, such as those used in EdDSA and Schnorr signatures, will further reduce on-chain costs and improve compatibility with modern blockchain protocols.
+
+These developments highlight a clear long-term vision: to provide infrastructure for the next generation of self-custodial, compliant, and composable crypto applications. Cramium is positioning itself as not just a library, but a platform for secure digital identity and asset management.
+
+Business Applications and Market Relevance
+Cramium’s modular design and enterprise-ready features make it applicable across a wide spectrum of verticals. In consumer wallets, it offers seamless onboarding, secure cloud recovery, and dApp connectivity. For institutional custody, it provides advanced policy enforcement, MPC-based access controls, and high auditability. In DeFi and Web3 platforms, its multi-chain support and low-latency signing are key enablers of cross-protocol activity. Even hardware wallet vendors can benefit from its IC-ready roadmap and standards-compliant authentication stack.
+
+This breadth of applicability ensures that Cramium is not confined to a niche—it is structurally positioned to be a foundational cryptographic infrastructure for the broader digital asset ecosystem.
+
+Conclusion
+Cramium MPC SDK v0.8 is a strategically mature, technically sophisticated cryptographic middleware that bridges usability and high assurance. With native support for mobile and browser-based platforms, a robust roadmap, advanced threshold signature protocols, and broad blockchain compatibility, it addresses some of the most pressing challenges in digital asset security, custody, and user experience. For investors, it represents a high-leverage platform play—offering infrastructure that can be embedded across the full stack of Web3, fintech, and decentralized identity applications.
