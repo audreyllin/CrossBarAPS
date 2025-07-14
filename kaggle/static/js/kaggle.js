@@ -253,9 +253,9 @@ document.getElementById('submit-text-context').addEventListener('click', async()
         }
 
         const data = await response.json();
-        displayConcepts(textConceptTags, data.concepts || []);
+        displayConcepts(textConceptTags, Array.isArray(data.concepts) ? data.concepts : []);
         textConcepts.style.display = 'block';
-        showNotification('Context added successfully!', 'success', data.concepts);
+        showNotification('Context added successfully!', 'success', Array.isArray(data.concepts) ? data.concepts : []);
         fetchFileHistory();
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
@@ -309,9 +309,9 @@ document.getElementById('submit-file-context').addEventListener('click', async()
         }
 
         const data = await response.json();
-        displayConcepts(fileConceptTags, data.concepts || []);
+        displayConcepts(fileConceptTags, Array.isArray(data.concepts) ? data.concepts : []);
         fileConcepts.style.display = 'block';
-        showNotification('Files uploaded successfully!', 'success', data.concepts);
+        showNotification('Files uploaded successfully!', 'success', Array.isArray(data.concepts) ? data.concepts : []);
         fetchFileHistory();
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
@@ -492,9 +492,7 @@ async function fetchFileHistory() {
         const response = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
         if (!response.ok) throw new Error('Failed to fetch file history');
 
-        const {
-            contexts
-        } = await response.json();
+        const { contexts } = await response.json();
         const container = document.getElementById('file-history');
         container.innerHTML = "";
 
@@ -506,11 +504,17 @@ async function fetchFileHistory() {
         contexts.forEach(ctx => {
             const row = document.createElement("div");
             row.className = "memory-entry";
+
+            // Safely get file extension
+            const fileExt = ctx.filename ?
+                ctx.filename.split('.').pop().toLowerCase() :
+                'default';
+
             row.innerHTML = `
                 <div class="file-history-item">
                     <div class="file-history-name">
-                        <i class="${fileIcons[ctx.filename.split('.').pop().toLowerCase()] || fileIcons.default}"></i>
-                        <strong>${ctx.filename}</strong>
+                        <i class="${fileIcons[fileExt] || fileIcons.default}"></i>
+                        <strong>${ctx.filename || 'Text Context'}</strong>
                     </div>
                     <div class="file-history-meta">
                         <span>${new Date(ctx.timestamp).toLocaleString()}</span>
@@ -681,6 +685,8 @@ function setOutputContent(elementId, content) {
 // Helper function to display concepts
 function displayConcepts(container, concepts) {
     container.innerHTML = '';
+    if (!Array.isArray(concepts)) return;
+
     concepts.forEach(concept => {
         const tag = document.createElement('span');
         tag.className = 'concept-tag';
@@ -696,7 +702,7 @@ function showNotification(message, type, concepts = []) {
     notification.className = `notification ${type}`;
 
     let content = `<div>${message}</div>`;
-    if (concepts && concepts.length > 0) {
+    if (concepts && Array.isArray(concepts) && concepts.length > 0) {
         content += `<div class="concept-tags">`;
         concepts.forEach(concept => content += `<span class="notification-concept">${concept}</span>`);
         content += `</div>`;
