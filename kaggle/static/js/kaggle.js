@@ -20,6 +20,19 @@ if (!sessionId) {
     localStorage.setItem('sessionId', sessionId);
 }
 
+// Safe JSON parsing utility
+async function safeJsonParse(response) {
+    const contentType = response.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+        return await response.json();
+    } else {
+        const text = await response.text();
+        console.error("⚠️ Expected JSON but received non-JSON response:\n", text.slice(0, 500));
+        throw new Error("Unexpected response format. Please try again.");
+    }
+}
+
 // Store current answer for adjustments
 let currentAnswer = "";
 let currentQuestion = "";
@@ -247,12 +260,11 @@ document.getElementById('submit-text-context').addEventListener('click', async()
             body: formData
         });
 
+        const data = await safeJsonParse(response);
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to add context');
+            throw new Error(data.error || 'Failed to add context');
         }
 
-        const data = await response.json();
         displayConcepts(textConceptTags, Array.isArray(data.concepts) ? data.concepts : []);
         textConcepts.style.display = 'block';
         showNotification('Context added successfully!', 'success', Array.isArray(data.concepts) ? data.concepts : []);
@@ -303,12 +315,11 @@ document.getElementById('submit-file-context').addEventListener('click', async()
             body: formData
         });
 
+        const data = await safeJsonParse(response);
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to upload files');
+            throw new Error(data.error || 'Failed to upload files');
         }
 
-        const data = await response.json();
         displayConcepts(fileConceptTags, Array.isArray(data.concepts) ? data.concepts : []);
         fileConcepts.style.display = 'block';
         showNotification('Files uploaded successfully!', 'success', Array.isArray(data.concepts) ? data.concepts : []);
@@ -360,7 +371,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
             })
         });
 
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         if (!response.ok) throw new Error(data.error || `API request failed: ${response.status}`);
 
         currentAnswer = data.answer;
@@ -437,7 +448,7 @@ document.querySelectorAll('.action-btn').forEach(button => {
                 })
             });
 
-            const data = await response.json();
+            const data = await safeJsonParse(response);
             if (!response.ok) throw new Error(data.error || `Adjustment failed: ${response.status}`);
 
             currentAnswer = data.adjusted_answer;
@@ -479,7 +490,7 @@ document.getElementById('test-vector-btn').addEventListener('click', async funct
             })
         });
 
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         document.getElementById('vectorOutput').textContent = JSON.stringify(data, null, 2);
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
@@ -492,7 +503,7 @@ async function fetchFileHistory() {
         const response = await fetch(`/api/list_contexts?sessionId=${sessionId}`);
         if (!response.ok) throw new Error('Failed to fetch file history');
 
-        const { contexts } = await response.json();
+        const { contexts } = await safeJsonParse(response);
         const container = document.getElementById('file-history');
         container.innerHTML = "";
 
@@ -571,7 +582,7 @@ async function removeContext(contextId) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await safeJsonParse(response);
             throw new Error(errorData.error || 'Failed to remove context');
         }
 
@@ -617,7 +628,7 @@ document.getElementById('admin-login-btn').addEventListener('click', async() => 
             })
         });
 
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         if (!response.ok) throw new Error(data.error || 'Login failed');
 
         showNotification('Admin login successful', 'success');
@@ -636,14 +647,14 @@ async function loadAdminDashboard() {
         const convoRes = await fetch("/api/admin/conversations");
         if (!convoRes.ok) throw new Error('Failed to load conversations');
 
-        const convos = await convoRes.json();
+        const convos = await safeJsonParse(convoRes);
         const convoContainer = document.getElementById('admin-conversations');
         convoContainer.textContent = convos.map(c => `[${new Date(c.timestamp).toLocaleString()}]\nQ: ${c.question}\nA: ${c.answer}\n`).join('\n\n');
 
         const freqRes = await fetch("/api/admin/frequent_questions");
         if (!freqRes.ok) throw new Error('Failed to load frequent questions');
 
-        const questions = await freqRes.json();
+        const questions = await safeJsonParse(freqRes);
         const list = document.getElementById('frequent-questions');
         list.innerHTML = "";
 
@@ -666,7 +677,7 @@ async function resetDatabase() {
             method: "POST"
         });
 
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         if (!response.ok) throw new Error(data.error || 'Reset failed');
 
         showNotification('Database reset successfully', 'success');
@@ -889,7 +900,7 @@ async function generateFromAnswer(type) {
             })
         });
 
-        const json = await resp.json();
+        const json = await safeJsonParse(resp);
 
         // Handle HTTP errors
         if (!resp.ok) {
