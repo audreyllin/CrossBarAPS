@@ -282,15 +282,12 @@ def extract_concepts(text, api_key):
         "Extract key concepts and summarize the main ideas from the following text:\n"
         + text[:4000]
     )
-    return (
-        client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-        )
-        .choices[0]
-        .message.content
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=300,
     )
+    return response.choices[0].message.content
 
 
 def save_conversation(session_id, question, answer):
@@ -522,7 +519,12 @@ def upload_file():
 
             # Embed and extract concepts
             embedding = embed(text, api_key, model)
-            concepts = extract_concepts(text, api_key).split(", ")
+            concepts_raw = extract_concepts(text, api_key)
+            # Ensure concepts is always a list
+            if isinstance(concepts_raw, str):
+                concepts = [c.strip() for c in concepts_raw.split(",") if c.strip()]
+            else:
+                concepts = []
 
             # Add to vector index
             metadata = {
@@ -541,7 +543,7 @@ def upload_file():
             # Save to context uploads
             entry = {
                 **metadata,
-                "embedding": embedding.tolist(),
+                "embedding": embedding,  # Removed .tolist()
             }
             save_context_upload(entry)
 
@@ -609,7 +611,12 @@ def upload_context():
             seen_hashes.add(h)
             try:
                 embedding = embed(text, api_key, model)
-                concepts = extract_concepts(text, api_key).split(", ")
+                concepts_raw = extract_concepts(text, api_key)
+                # Ensure concepts is always a list
+                if isinstance(concepts_raw, str):
+                    concepts = [c.strip() for c in concepts_raw.split(",") if c.strip()]
+                else:
+                    concepts = []
 
                 # Add to vector index
                 metadata = {
@@ -628,7 +635,7 @@ def upload_context():
                 # Save to context uploads
                 entry = {
                     **metadata,
-                    "embedding": embedding.tolist(),
+                    "embedding": embedding,  # Removed .tolist()
                 }
                 save_context_upload(entry)
 
@@ -666,7 +673,12 @@ def upload_context():
 
                 # Embed and extract concepts
                 embedding = embed(text, api_key, model)
-                concepts = extract_concepts(text, api_key).split(", ")
+                concepts_raw = extract_concepts(text, api_key)
+                # Ensure concepts is always a list
+                if isinstance(concepts_raw, str):
+                    concepts = [c.strip() for c in concepts_raw.split(",") if c.strip()]
+                else:
+                    concepts = []
 
                 # Add to vector index
                 metadata = {
@@ -685,7 +697,7 @@ def upload_context():
                 # Save to context uploads
                 entry = {
                     **metadata,
-                    "embedding": embedding.tolist(),
+                    "embedding": embedding,  # Removed .tolist()
                 }
                 save_context_upload(entry)
 
