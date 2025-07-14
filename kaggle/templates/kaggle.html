@@ -130,28 +130,28 @@
                     </div>
 
                     <div class="generation-buttons" id="generation-buttons" style="display: none; margin-top:1rem;">
-                        <!-- Video: Use Vidnoz -->
-                        <button class="generation-btn" onclick="generateFromAnswer('video', 'vidnoz')">
-                            <i class="fas fa-video"></i> Vidnoz Video
+                        <!-- Video: Pixverse -->
+                        <button class="generation-btn" onclick="generateFromAnswer('video')">
+                            <i class="fas fa-video"></i> Pixverse Video
                         </button>
 
-                        <!-- Poster: Use OpenAI (default image model) -->
-                        <button class="generation-btn" onclick="generateFromAnswer('poster', 'openai')">
-                            <i class="fas fa-image"></i> OpenAI Poster
+                        <!-- Poster: Canva -->
+                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
+                            <i class="fas fa-image"></i> Canva Poster
                         </button>
 
-                        <!-- Slides: Use SlidesGPT -->
-                        <button class="generation-btn" onclick="generateFromAnswer('slides', 'slidesgpt')">
-                            <i class="fas fa-presentation"></i> SlidesGPT
+                        <!-- Slides: Gamma -->
+                        <button class="generation-btn" onclick="generateFromAnswer('gamma_slides')">
+                            <i class="fas fa-presentation"></i> Gamma Slides
                         </button>
 
-                        <!-- Presentation: Use Gamma -->
-                        <button class="generation-btn" onclick="generateFromAnswer('presentation', 'gamma')">
-                            <i class="fas fa-file-powerpoint"></i> Gamma Presentation
+                        <!-- Slides: SlidesGPT -->
+                        <button class="generation-btn" onclick="generateFromAnswer('slidesgpt')">
+                            <i class="fas fa-chalkboard"></i> SlidesGPT
                         </button>
 
-                        <!-- Memo: Use OpenAI (e.g. DOCX/Word output) -->
-                        <button class="generation-btn" onclick="generateFromAnswer('memo', 'openai')">
+                        <!-- Memo: OpenAI -->
+                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
                             <i class="fas fa-file-alt"></i> OpenAI Memo
                         </button>
                     </div>
@@ -240,7 +240,7 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div class="file-upload">
-                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png">
                 <label for="context-files" class="file-label" id="file-drop-area">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Choose files or drag them here</span>
