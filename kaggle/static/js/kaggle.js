@@ -858,7 +858,15 @@ document.getElementById('clear-text-context').addEventListener('click', () => {
     document.getElementById('text-concept-tags').innerHTML = '';
 });
 
-// Media generation function (with URL check and button re-enable)
+const toolMapping = {
+    video: "pixverse",
+    poster: "canva",
+    gamma_slides: "gamma",
+    slidesgpt: "slidesgpt",
+    memo: "openai"
+};
+
+// Media generation function
 async function generateFromAnswer(type) {
     const apiKey = document.getElementById('api-key').value;
     if (!apiKey) return showNotification('Enter your API key first', 'error');
@@ -875,11 +883,12 @@ async function generateFromAnswer(type) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                type,
+                type: type,
                 answer: currentAnswer,
                 sessionId
             })
         });
+
         const json = await resp.json();
 
         // Handle HTTP errors
@@ -895,7 +904,7 @@ async function generateFromAnswer(type) {
         // Open the generated media
         window.open(json.url, '_blank');
         showNotification(
-            `${type.charAt(0).toUpperCase() + type.slice(1)} ready!`,
+            `${type.charAt(0).toUpperCase() + type.slice(1)} generated successfully!`,
             'success'
         );
     } catch (err) {
