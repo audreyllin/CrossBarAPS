@@ -7,7 +7,7 @@
     <title>Crossbar | AI-Powered Company Q&A</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/kaggle.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kaggle.css') }}">
 </head>
 
 <body>
@@ -130,17 +130,29 @@
                     </div>
 
                     <div class="generation-buttons" id="generation-buttons" style="display: none; margin-top:1rem;">
-                        <button class="generation-btn" onclick="generateFromAnswer('video')">
-                            <i class="fas fa-video"></i> Generate Video
+                        <!-- Video: Use Vidnoz -->
+                        <button class="generation-btn" onclick="generateFromAnswer('video', 'vidnoz')">
+                            <i class="fas fa-video"></i> Vidnoz Video
                         </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
-                            <i class="fas fa-image"></i> Generate Poster
+
+                        <!-- Poster: Use OpenAI (default image model) -->
+                        <button class="generation-btn" onclick="generateFromAnswer('poster', 'openai')">
+                            <i class="fas fa-image"></i> OpenAI Poster
                         </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('slides')">
-                            <i class="fas fa-presentation"></i> Generate Slides
+
+                        <!-- Slides: Use SlidesGPT -->
+                        <button class="generation-btn" onclick="generateFromAnswer('slides', 'slidesgpt')">
+                            <i class="fas fa-presentation"></i> SlidesGPT
                         </button>
-                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
-                            <i class="fas fa-file-alt"></i> Generate Memo
+
+                        <!-- Presentation: Use Gamma -->
+                        <button class="generation-btn" onclick="generateFromAnswer('presentation', 'gamma')">
+                            <i class="fas fa-file-powerpoint"></i> Gamma Presentation
+                        </button>
+
+                        <!-- Memo: Use OpenAI (e.g. DOCX/Word output) -->
+                        <button class="generation-btn" onclick="generateFromAnswer('memo', 'openai')">
+                            <i class="fas fa-file-alt"></i> OpenAI Memo
                         </button>
                     </div>
 
@@ -298,7 +310,7 @@
 
     <div id="notification-container"></div>
 
-    <script src="js/kaggle.js"></script>
+    <script src="{{ url_for('static', filename='js/kaggle.js') }}"></script>
 </body>
 
 </html>
