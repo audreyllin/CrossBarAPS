@@ -55,6 +55,10 @@ const answerActions = document.getElementById('answer-actions');
 const followUpSuggestions = document.getElementById('follow-up-suggestions');
 const followUpButtons = document.getElementById('follow-up-buttons');
 const genContainer = document.getElementById('generation-buttons');
+const copyBtn = document.getElementById('copy-answer-btn'); // Added to DOM elements
+
+// Disable copy button initially
+copyBtn.disabled = true;
 
 // Crypto animation logic
 const cryptos = {
@@ -252,7 +256,7 @@ document.getElementById('submit-text-context').addEventListener('click', async()
         formData.append('sessionId', sessionId);
         formData.append('model', model);
 
-        // B. Add role to upload context
+        // Add role to upload context
         const role = document.getElementById("roleSelect").value;
         formData.append('sessionProfile', role);
 
@@ -311,7 +315,7 @@ document.getElementById('submit-file-context').addEventListener('click', async()
         formData.append('sessionId', sessionId);
         formData.append('model', model);
 
-        // B. Add role to upload context
+        // Add role to upload context
         const role = document.getElementById("roleSelect").value;
         formData.append('sessionProfile', role);
 
@@ -367,7 +371,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
     try {
         const model = getSelectedModel();
 
-        // B. Get role from dropdown
+        // Get role from dropdown
         const role = document.getElementById("roleSelect").value;
 
         const response = await fetch('/api/ask', {
@@ -380,7 +384,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
                 question: question,
                 sessionId: sessionId,
                 model: model,
-                sessionProfile: role // B. Include role in request
+                sessionProfile: role // Include role in request
             })
         });
 
@@ -390,7 +394,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
         currentAnswer = data.answer;
         currentQuestion = data.question;
 
-        // A. Display matched chunks with answer
+        // Display matched chunks with answer
         setOutputContent('kernel-answer', data.answer || "No answer found", data);
 
         answerActions.style.display = 'block';
@@ -448,10 +452,15 @@ document.querySelectorAll('.action-btn').forEach(button => {
         }
 
         try {
-            const kernelAnswer = document.getElementById('kernel-answer');
-            kernelAnswer.textContent = "> Adjusting answer...";
+            // Preserve kernel-answer-text element
+            const answerTextEl = document.getElementById('kernel-answer-text');
+            if (answerTextEl) {
+                answerTextEl.innerText = '> Adjusting answer…'; // keep child alive
+            } else {
+                document.getElementById('kernel-answer').textContent = '> Adjusting answer…';
+            }
 
-            // C. Translation fix
+            // Translation fix
             let messages;
             if (command === "translate") {
                 messages = [
@@ -483,8 +492,16 @@ document.querySelectorAll('.action-btn').forEach(button => {
             const data = await safeJsonParse(response);
             if (!response.ok) throw new Error(data.error || `Adjustment failed: ${response.status}`);
 
+            // Update adjusted answer while preserving element
             currentAnswer = data.adjusted_answer;
-            kernelAnswer.textContent = data.adjusted_answer;
+
+            const answerTextEl2 = document.getElementById('kernel-answer-text');
+            if (answerTextEl2) {
+                answerTextEl2.innerText = data.adjusted_answer; // update in‑place
+            } else {
+                document.getElementById('kernel-answer').textContent = data.adjusted_answer;
+            }
+
             showNotification('Answer adjusted successfully!', 'success');
         } catch (error) {
             showNotification(`Error: ${error.message}`, 'error');
@@ -553,7 +570,6 @@ async function fetchFileHistory() {
                         ctx.filename.split('.').pop().toLowerCase() :
                         'default';
 
-                    // In fetchFileHistory function
                     row.innerHTML = `
                 <div class="file-history-item">
                     <div class="file-history-name">
@@ -725,19 +741,29 @@ function setOutputContent(elementId, content, data = null) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
-    let outputHTML = content;
+    // Clear container first
+    element.innerHTML = '';
 
-    // A. Display matched chunks if available
+    // Add answer block (ensure plain text for copy)
+    const answerDiv = document.createElement('div');
+    answerDiv.id = 'kernel-answer-text';
+    answerDiv.innerText = content; // use innerText to avoid HTML tags
+    element.appendChild(answerDiv);
+
+    // Enable copy button when answer is rendered
+    copyBtn.disabled = false;
+
+    // Append matched context chunks
     if (data && data.matched_chunks) {
         data.matched_chunks.forEach(chunk => {
-            outputHTML += `<details class="matched-chunk">
+            const chunkHTML = document.createElement('details');
+            chunkHTML.className = 'matched-chunk';
+            chunkHTML.innerHTML = `
                 <summary>📄 View context retrieved from ${chunk.file && chunk.page ? `${chunk.file}, page ${chunk.page}` : (chunk.file || "added text context")}</summary>
-                <pre>${chunk.text}</pre>
-            </details>`;
+                <pre>${chunk.text}</pre>`;
+            element.appendChild(chunkHTML);
         });
     }
-
-    element.innerHTML = outputHTML;
 }
 
 // Helper function to display concepts
@@ -916,17 +942,40 @@ document.getElementById('clear-text-context').addEventListener('click', () => {
     document.getElementById('text-concept-tags').innerHTML = '';
 });
 
-document.getElementById('copy-answer-btn').addEventListener('click', () => {
-    const content = document.getElementById('kernel-answer').innerText;
-    navigator.clipboard.writeText(content)
-        .then(() => showNotification('Copied answer to clipboard!', 'success'))
-        .catch(err => showNotification(`Copy failed: ${err}`, 'error'));
+// ────────────────────────────────────────────────────────────────
+// Copy answer to clipboard with button guard (UPDATED)
+// ────────────────────────────────────────────────────────────────
+copyBtn.addEventListener('click', async () => {
+    const adjustButtons = document.querySelectorAll('#answer-actions .action-btn');
+
+    // Disable all adjustment buttons during copy process
+    adjustButtons.forEach(btn => (btn.disabled = true));
+
+    try {
+        // Prefer currentAnswer, then DOM element, then fallback to empty
+        const answerElement = document.getElementById('kernel-answer-text');
+        const textToCopy =
+            (typeof currentAnswer === 'string' && currentAnswer.trim()) ||
+            (answerElement && answerElement.innerText.trim()) ||
+            '';
+
+        if (!textToCopy) {
+            throw new Error('No answer content available to copy');
+        }
+
+        await navigator.clipboard.writeText(textToCopy);
+        showNotification('Copied answer to clipboard!', 'success');
+    } catch (err) {
+        showNotification(`Copy failed: ${err.message}`, 'error');
+    } finally {
+        // Re-enable buttons after copy attempt
+        adjustButtons.forEach(btn => (btn.disabled = false));
+    }
 });
 
 const toolMapping = {
-    video: "pixverse",
-    poster: "canva",
-    gamma_slides: "gamma",
+    video: "replicate",
+    poster: "replicate",
     slidesgpt: "slidesgpt",
     memo: "openai"
 };
@@ -941,7 +990,7 @@ async function generateFromAnswer(type) {
     genContainer.classList.add('disabled');
 
     try {
-        // D. Apply media prompt template for posters
+        // Apply media prompt template for posters
         let answer = currentAnswer;
         if (type === "poster") {
             answer = `Summarize visually with a bold headline, one subtitle, and 3 key points:\n\n${answer}`;
@@ -989,7 +1038,7 @@ async function generateFromAnswer(type) {
 
 // Initialize session role dropdown
 document.addEventListener('DOMContentLoaded', () => {
-    // B. Add session role dropdown to UI
+    // Add session role dropdown to UI
     const roleSelectHtml = `
         <div class="role-selector">
             <label for="roleSelect">Session Role:</label>
