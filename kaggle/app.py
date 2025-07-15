@@ -1,3 +1,4 @@
+# app.py (Flask backend)
 import os
 import logging
 import hashlib
@@ -165,6 +166,25 @@ def save_context_upload(entry):
         json.dump(data, f, indent=2)
 
 
+# Helper function for tagging
+def update_tags(filename, tags):
+    """Update tags for a generated output file"""
+    tags_file = os.path.join(ADMIN_OUTPUTS, "tags.json")
+    tag_data = {}
+
+    if os.path.exists(tags_file):
+        try:
+            with open(tags_file, "r") as f:
+                tag_data = json.load(f)
+        except:
+            pass
+
+    tag_data[filename] = tags
+
+    with open(tags_file, "w") as f:
+        json.dump(tag_data, f, indent=2)
+
+
 # Utility functions
 def allowed_file(filename):
     return Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
@@ -184,6 +204,7 @@ def is_image_heavy_pdf(filepath):
 
 
 def extract_text_from_zip(zip_path):
+    """Extract text from zip archive"""
     extracted_text = ""
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for file in zip_ref.namelist():
@@ -915,16 +936,79 @@ def api_generate():
             )
 
         # E. Media Output Routing - Save copy to admin_outputs
-        admin_output_path = os.path.join(ADMIN_OUTPUTS, os.path.basename(output_path))
+        filename = os.path.basename(output_path)
+        admin_output_path = os.path.join(ADMIN_OUTPUTS, filename)
         shutil.copy(output_path, admin_output_path)
 
-        filename = os.path.basename(output_path)
+        # Initialize tags
+        update_tags(filename, [])
+
         download_url = url_for("download_generated", file=filename, _external=True)
         return jsonify({"url": download_url})
 
     except Exception as e:
         current_app.logger.exception("Error generating media")
         return jsonify({"error": str(e)}), 500
+
+
+# Admin gallery endpoints
+@app.route("/api/admin/gallery", methods=["GET"])
+@requires_admin_auth
+def admin_gallery():
+    """List generated outputs with tags"""
+    outputs = []
+    tags_file = os.path.join(ADMIN_OUTPUTS, "tags.json")
+    tag_data = {}
+
+    if os.path.exists(tags_file):
+        try:
+            with open(tags_file, "r") as f:
+                tag_data = json.load(f)
+        except:
+            pass
+
+    for filename in os.listdir(ADMIN_OUTPUTS):
+        if filename == "tags.json":
+            continue
+
+        filepath = os.path.join(ADMIN_OUTPUTS, filename)
+        if os.path.isfile(filepath):
+            outputs.append(
+                {
+                    "filename": filename,
+                    "created": datetime.fromtimestamp(
+                        os.path.getctime(filepath)
+                    ).isoformat(),
+                    "size": os.path.getsize(filepath),
+                    "tags": tag_data.get(filename, []),
+                }
+            )
+
+    return jsonify(outputs)
+
+
+@app.route("/api/admin/tag", methods=["POST"])
+@requires_admin_auth
+def admin_tag():
+    """Update tags for a generated output"""
+    data = request.json
+    filename = data.get("filename")
+    tags = data.get("tags", [])
+
+    if not filename:
+        return jsonify({"error": "Missing filename"}), 400
+
+    filepath = os.path.join(ADMIN_OUTPUTS, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+
+    # Validate tags
+    valid_tags = ["usable", "inaccurate", "needs fix"]
+    if any(tag not in valid_tags for tag in tags):
+        return jsonify({"error": "Invalid tag"}), 400
+
+    update_tags(filename, tags)
+    return jsonify({"status": "success"})
 
 
 @app.route("/api/download_generated", methods=["GET"])
