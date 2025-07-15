@@ -5,7 +5,7 @@ import subprocess
 import logging
 import re
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import requests
 
@@ -18,6 +18,7 @@ from docx import Document as DocxReader
 from docx import Document as DocxWriter
 from pptx import Presentation
 import replicate
+from replicate.exceptions import ReplicateError
 from openai import OpenAI
 
 # AI/Vector imports
@@ -40,6 +41,38 @@ GPT_MODEL = "gpt-4-turbo"
 MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
+POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram/ideogram-v3-turbo")  # No version pin
+
+# Initialize OpenAI client
+client_oa = OpenAI()
+
+
+def _run_replicate(model_ref: str, prompt: str) -> str:
+    """Run a Replicate text-to-image model and return the first URL."""
+    return replicate.run(model_ref, input={"prompt": prompt})[0]
+
+
+def _run_dalle(prompt: str) -> str:
+    """Fallback to DALL-E 3 if Replicate fails"""
+    rsp = client_oa.images.generate(
+        model="dall-e-3", prompt=prompt, size="1024x1024", n=1
+    )
+    return rsp.data[0].url
+
+
+def _download(url: str, session_id: str, media_type: str) -> str:
+    """Download remote image to /output and return local path."""
+    safe_session = session_id or "anon"
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    fn = f"{media_type}_{safe_session}_{timestamp}.png"
+    out_path = os.path.join(OUTPUT_FOLDER, fn)
+
+    with requests.get(url, stream=True, timeout=30) as r:
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            for chunk in r.iter_content(8192):
+                f.write(chunk)
+    return os.path.abspath(out_path)
 
 
 def clean_text(text):
@@ -221,8 +254,8 @@ def generate_answer(question, context, api_key):
 
 def generate_media(media_type, text, session_id, api_key=None):
     """
-    Generate different media types from text using Replicate API or OpenAI:
-    - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate)
+    Generate different media types from text:
+    - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate) with auto-retry and DALL·E fallback
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
     - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
@@ -231,53 +264,48 @@ def generate_media(media_type, text, session_id, api_key=None):
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     safe_session = session_id or "anon"
     filename_base = f"{media_type}_{safe_session}_{timestamp}"
-    out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.{media_type}")
-
-    # Replicate API token required for poster and video
-    if media_type in ["poster", "video"] and not REPLICATE_API_TOKEN:
-        raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
 
     # OpenAI API key required for slides and memo
     if media_type in ["slides", "memo"] and not api_key:
         raise RuntimeError("OpenAI API key is required for slides and memo generation")
 
-    # Generate poster using Ideogram
+    # Generate poster with auto-retry and fallback
     if media_type == "poster":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.png")
+        if not REPLICATE_API_TOKEN:
+            raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
+
+        prompt = text.strip()[:400]  # Keep prompt short
         try:
-            output = replicate.run(
-                "ideogram/ideogram-v3-turbo:7e6f1d5c2f3e3f9bccf1d3e6e1e1f6c1a7a8b5c3d0a5a5a5a5a5a5a5a5a5a5a5a5",
-                input={
-                    "prompt": text[:500],  # Truncate to 500 characters
-                    "width": 1024,
-                    "height": 1024,
-                    "num_outputs": 1,
-                    "guidance_scale": 7.5,
-                },
-            )
-
-            # Download the generated image
-            image_url = output[0]
-            response = requests.get(image_url)
-            response.raise_for_status()
-            with open(out_path, "wb") as f:
-                f.write(response.content)
-
-            return os.path.abspath(out_path)
-
-        except Exception as e:
-            logger.error(f"Poster generation error: {e}")
-            raise RuntimeError(f"Poster generation failed: {str(e)}")
+            # First try without version pin
+            url = _run_replicate(POSTER_MODEL, prompt)
+        except ReplicateError as e:
+            # Handle version mismatch (422 status)
+            if getattr(e, "status", None) == 422:
+                try:
+                    # Get latest model version
+                    model = replicate.models.get(POSTER_MODEL)
+                    latest_version = model.versions.list()[0].id
+                    # Retry with latest version
+                    url = _run_replicate(f"{POSTER_MODEL}:{latest_version}", prompt)
+                except Exception:
+                    # Final fallback to DALL-E 3
+                    url = _run_dalle(prompt)
+            else:
+                raise RuntimeError(f"Poster generation failed: {e}") from e
+        return _download(url, session_id, "poster")
 
     # Generate video using Seedance
     elif media_type == "video":
         out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.mp4")
+        if not REPLICATE_API_TOKEN:
+            raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
+
         try:
             output = replicate.run(
                 "bytedance/seedance-1-lite:5d4d1a9f6c8b2d7c3d1d3e3f3d3f3d3f3d3f3d3f3d3f3d3f",
                 input={
-                    "prompt": text[:500],  # Truncate to 500 characters
-                    "video_length": "5s",  # 5 seconds video
+                    "prompt": text[:500],
+                    "video_length": "5s",
                     "fps": 24,
                     "seed": 42,
                 },
