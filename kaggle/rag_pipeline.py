@@ -41,15 +41,23 @@ GPT_MODEL = "gpt-4-turbo"
 MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
-POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram/ideogram-v3-turbo")  # No version pin
+POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram-ai/ideogram-v3-turbo")
 
 # Initialize OpenAI client
 client_oa = OpenAI()
 
 
 def _run_replicate(model_ref: str, prompt: str) -> str:
-    """Run a Replicate text-to-image model and return the first URL."""
-    return replicate.run(model_ref, input={"prompt": prompt})[0]
+    """Run a Replicate text-to-image model with auto-correction for Ideogram model references."""
+    try:
+        return replicate.run(model_ref, input={"prompt": prompt})[0]
+    except ReplicateError as e:
+        # Auto-correct Ideogram model references
+        if "ideogram/" in model_ref and "/ideogram-" in model_ref:
+            new_ref = model_ref.replace("ideogram/", "ideogram-ai/")
+            logger.info(f"Auto-correcting model reference to: {new_ref}")
+            return replicate.run(new_ref, input={"prompt": prompt})[0]
+        raise
 
 
 def _run_dalle(prompt: str) -> str:
@@ -61,10 +69,11 @@ def _run_dalle(prompt: str) -> str:
 
 
 def _download(url: str, session_id: str, media_type: str) -> str:
-    """Download remote image to /output and return local path."""
+    """Download remote media to /output and return local path."""
     safe_session = session_id or "anon"
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    fn = f"{media_type}_{safe_session}_{timestamp}.png"
+    ext = ".mp4" if media_type == "video" else ".png"
+    fn = f"{media_type}_{safe_session}_{timestamp}{ext}"
     out_path = os.path.join(OUTPUT_FOLDER, fn)
 
     with requests.get(url, stream=True, timeout=30) as r:
@@ -296,7 +305,6 @@ def generate_media(media_type, text, session_id, api_key=None):
 
     # Generate video using Seedance
     elif media_type == "video":
-        out_path = os.path.join(OUTPUT_FOLDER, f"{filename_base}.mp4")
         if not REPLICATE_API_TOKEN:
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
 
@@ -313,12 +321,7 @@ def generate_media(media_type, text, session_id, api_key=None):
 
             # Download the generated video
             video_url = output["video"]
-            response = requests.get(video_url)
-            response.raise_for_status()
-            with open(out_path, "wb") as f:
-                f.write(response.content)
-
-            return os.path.abspath(out_path)
+            return _download(video_url, session_id, "video")
 
         except Exception as e:
             logger.error(f"Video generation error: {e}")
