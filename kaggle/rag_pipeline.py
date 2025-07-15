@@ -224,7 +224,7 @@ def generate_media(media_type, text, session_id, api_key=None):
     Generate different media types from text using Replicate API or OpenAI:
     - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate)
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
-    - 'slides': PPTX presentation (using OpenAI GPT and python-pptx)
+    - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
     Returns the absolute file path. Raises on any failure.
     """
