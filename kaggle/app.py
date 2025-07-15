@@ -38,8 +38,8 @@ import zipfile
 import magic
 from rag_pipeline import (
     generate_media,
-    generate_gamma_slides,
-) 
+    generate_slidesgpt,
+)
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
@@ -917,9 +917,7 @@ def api_generate():
 
     try:
         # Route to appropriate generation function
-        if media_type == "gamma_slides":
-            output_path = generate_gamma_slides(answer, session_id, api_key)
-        elif media_type == "slidesgpt":
+        if media_type == "slidesgpt":
             output_path = generate_slidesgpt(answer, session_id, api_key)
         else:
             # Fallback to original handler for video/poster/memo
