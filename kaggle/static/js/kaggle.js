@@ -252,6 +252,10 @@ document.getElementById('submit-text-context').addEventListener('click', async()
         formData.append('sessionId', sessionId);
         formData.append('model', model);
 
+        // B. Add role to upload context
+        const role = document.getElementById("roleSelect").value;
+        formData.append('sessionProfile', role);
+
         const response = await fetch('/api/upload_context', {
             method: 'POST',
             headers: {
@@ -307,6 +311,10 @@ document.getElementById('submit-file-context').addEventListener('click', async()
         formData.append('sessionId', sessionId);
         formData.append('model', model);
 
+        // B. Add role to upload context
+        const role = document.getElementById("roleSelect").value;
+        formData.append('sessionProfile', role);
+
         const response = await fetch('/api/upload_context', {
             method: 'POST',
             headers: {
@@ -358,6 +366,10 @@ document.getElementById('submit-btn').addEventListener('click', async function()
 
     try {
         const model = getSelectedModel();
+
+        // B. Get role from dropdown
+        const role = document.getElementById("roleSelect").value;
+
         const response = await fetch('/api/ask', {
             method: 'POST',
             headers: {
@@ -367,7 +379,8 @@ document.getElementById('submit-btn').addEventListener('click', async function()
             body: JSON.stringify({
                 question: question,
                 sessionId: sessionId,
-                model: model
+                model: model,
+                sessionProfile: role // B. Include role in request
             })
         });
 
@@ -376,7 +389,10 @@ document.getElementById('submit-btn').addEventListener('click', async function()
 
         currentAnswer = data.answer;
         currentQuestion = data.question;
-        setOutputContent('kernel-answer', data.answer || "No answer found");
+
+        // A. Display matched chunks with answer
+        setOutputContent('kernel-answer', data.answer || "No answer found", data);
+
         answerActions.style.display = 'block';
 
         // Reveal generation buttons
@@ -434,6 +450,22 @@ document.querySelectorAll('.action-btn').forEach(button => {
         try {
             const kernelAnswer = document.getElementById('kernel-answer');
             kernelAnswer.textContent = "> Adjusting answer...";
+
+            // C. Translation fix
+            let messages;
+            if (command === "translate") {
+                messages = [
+                    { role: "system", content: `Translate this into ${lang}.` },
+                    { role: "user", content: currentAnswer }
+                ];
+            } else {
+                messages = [{
+                    role: "user",
+                    content: `${command === "shorten" ? "Shorten this" :
+                            command === "reword" ? "Rephrase this" :
+                                "Elaborate on this"}: ${currentAnswer}`
+                }];
+            }
 
             const response = await fetch('/api/adjust_answer', {
                 method: 'POST',
@@ -689,9 +721,23 @@ async function resetDatabase() {
 }
 
 // Helper function to set output content
-function setOutputContent(elementId, content) {
+function setOutputContent(elementId, content, data = null) {
     const element = document.getElementById(elementId);
-    if (element) element.textContent = content;
+    if (!element) return;
+
+    let outputHTML = content;
+
+    // A. Display matched chunks if available
+    if (data && data.matched_chunks) {
+        data.matched_chunks.forEach(chunk => {
+            outputHTML += `<details class="matched-chunk">
+                <summary>View context excerpt from ${chunk.file}</summary>
+                <pre>${chunk.text}</pre>
+            </details>`;
+        });
+    }
+
+    element.innerHTML = outputHTML;
 }
 
 // Helper function to display concepts
@@ -888,6 +934,12 @@ async function generateFromAnswer(type) {
     genContainer.classList.add('disabled');
 
     try {
+        // D. Apply media prompt template for posters
+        let answer = currentAnswer;
+        if (type === "poster") {
+            answer = `Summarize visually with a bold headline, one subtitle, and 3 key points:\n\n${answer}`;
+        }
+
         const resp = await fetch('/api/generate', {
             method: 'POST',
             headers: {
@@ -896,7 +948,7 @@ async function generateFromAnswer(type) {
             },
             body: JSON.stringify({
                 type: type,
-                answer: currentAnswer,
+                answer: answer,
                 sessionId: sessionId // Fix parameter name
             })
         });
@@ -927,3 +979,20 @@ async function generateFromAnswer(type) {
         genContainer.classList.remove('disabled');
     }
 }
+
+// Initialize session role dropdown
+document.addEventListener('DOMContentLoaded', () => {
+    // B. Add session role dropdown to UI
+    const roleSelectHtml = `
+        <div class="role-selector">
+            <label for="roleSelect">Session Role:</label>
+            <select id="roleSelect">
+                <option value="general">General</option>
+                <option value="engineering">Engineering</option>
+                <option value="marketing">Marketing</option>
+                <option value="public">Public</option>
+            </select>
+        </div>
+    `;
+    document.querySelector('.api-key-container').insertAdjacentHTML('afterend', roleSelectHtml);
+});
