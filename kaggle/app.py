@@ -35,15 +35,21 @@ import faiss
 from collections import Counter
 import zipfile
 import magic
-from rag_pipeline import generate_media
+from rag_pipeline import (
+    generate_media,
+    generate_gamma_slides,
+    generate_slidesgpt,
+)  # Updated import
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
+ADMIN_OUTPUTS = "admin_outputs"  # Added for requirement E
 CONVERSATIONS_FILE = "conversations.json"
 CONTEXT_UPLOADS_FILE = "context_uploads.json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+os.makedirs(ADMIN_OUTPUTS, exist_ok=True)  # Added for requirement E
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DocumentAIApp")
 
@@ -414,6 +420,7 @@ def api_ask():
     question = data.get("question")
     session_id = data.get("sessionId")
     model = data.get("model", "text-embedding-3-large")
+    role = data.get("sessionProfile", "general")  # B. Role-based context
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
 
     if not question or not api_key:
@@ -424,21 +431,41 @@ def api_ask():
         q_emb = embed(question, api_key, model)
 
         # Retrieve relevant context
-        results = vector_index.search(q_emb, k=5)
+        results = vector_index.search(q_emb, k=10)  # Increased k for better context
 
-        # Sort by priority then similarity
+        # A. Context Traceability: Create matched_chunks list
+        matched_chunks = [
+            {
+                "file": r.get("filename"),
+                "text": r.get("text"),
+                "page": r.get("page", "?"),
+            }
+            for r in results
+        ]
+
+        # C. Concept Boost Logic
+        concept_boost = 0.1
+        for r in results:
+            if "concepts" in r and "blockchain" in r["concepts"]:
+                r["similarity"] += concept_boost
+
+        # Sort by priority then similarity (with boost)
         results.sort(key=lambda x: (-x.get("priority", 0), -x["similarity"]))
 
-        # Build context string
+        # Build context string with source info (A)
         context_str = ""
-        for res in results:
+        for res in results[:5]:  # Use top 5 results
             if res.get("text"):
                 context_str += f"{res['text']}\n\n"
             elif res.get("filename"):
                 context_str += f"From {res['filename']}:\n{res.get('text', '')}\n\n"
 
-        # Build prompt with context
+            # Add source info (A)
+            context_str += f"[source: {res.get('filename', 'unknown')}, page: {res.get('page', '?')}]\n\n"
+
+        # B. Add role to prompt
         prompt = f"""
+        [Role: {role}]
         Context information:
         {context_str}
         
@@ -458,19 +485,41 @@ def api_ask():
         # Save conversation
         save_conversation(session_id, question, answer)
 
-        # Generate follow-up questions
-        follow_ups = [
-            "Can you elaborate on this?",
-            "What are the key points from this answer?",
-            "How does this relate to other documents?",
-        ]
+        # D. Admin Q&A Benchmarking - Save usage log
+        qa_log = {
+            "session_id": session_id,
+            "question": question,
+            "answer": answer,
+            "timestamp": datetime.utcnow().isoformat(),
+            "matched_chunks": matched_chunks,  # A
+            "files": list(
+                set(r.get("filename") for r in results if r.get("filename"))
+            ),  # D
+        }
+
+        # Save to admin_outputs directory (D)
+        qa_log_path = os.path.join(ADMIN_OUTPUTS, "qa_logs.json")
+        if os.path.exists(qa_log_path):
+            with open(qa_log_path, "r") as f:
+                qa_logs = json.load(f)
+        else:
+            qa_logs = []
+
+        qa_logs.append(qa_log)
+        with open(qa_log_path, "w") as f:
+            json.dump(qa_logs, f, indent=2)
 
         return jsonify(
             {
                 "answer": answer,
                 "question": question,
-                "follow_ups": follow_ups,
+                "follow_ups": [
+                    "Can you elaborate on this?",
+                    "What are the key points from this answer?",
+                    "How does this relate to other documents?",
+                ],
                 "context_used": [r.get("filename") or "text snippet" for r in results],
+                "matched_chunks": matched_chunks,  # A
             }
         )
 
@@ -820,6 +869,21 @@ def frequent_questions():
     return jsonify([])
 
 
+# D. Admin Q&A Benchmark endpoint
+@app.route("/api/admin/qa_stats", methods=["GET"])
+@requires_admin_auth
+def get_qa_stats():
+    try:
+        qa_log_path = os.path.join(ADMIN_OUTPUTS, "qa_logs.json")
+        if not os.path.exists(qa_log_path):
+            return jsonify([])
+
+        with open(qa_log_path, "r") as f:
+            return jsonify(json.load(f))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
     data = request.get_json() or {}
@@ -831,10 +895,6 @@ def api_generate():
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
 
-    # Updated accepted media types
-    if media_type not in ("video", "poster", "memo", "gamma_slides", "slidesgpt"):
-        return jsonify({"error": f"Invalid type '{media_type}'"}), 400
-
     try:
         # Route to appropriate generation function
         if media_type == "gamma_slides":
@@ -845,7 +905,6 @@ def api_generate():
             # Fallback to original handler for video/poster/memo
             output_path = generate_media(media_type, answer, session_id, api_key)
 
-        # SECOND SAFETY CHECK
         if not output_path or not os.path.isfile(output_path):
             current_app.logger.error(
                 "generate_media returned invalid path: %r", output_path
@@ -854,6 +913,10 @@ def api_generate():
                 jsonify({"error": "Generation succeeded but no file was created"}),
                 500,
             )
+
+        # E. Media Output Routing - Save copy to admin_outputs
+        admin_output_path = os.path.join(ADMIN_OUTPUTS, os.path.basename(output_path))
+        shutil.copy(output_path, admin_output_path)
 
         filename = os.path.basename(output_path)
         download_url = url_for("download_generated", file=filename, _external=True)
@@ -905,8 +968,11 @@ def adjust_answer():
         elif adj_type == "translate":
             # Use OpenAI to translate
             messages = [
-                {"role": "system", "content": f"Translate the following text into {language}."},
-                {"role": "user", "content": answer}
+                {
+                    "role": "system",
+                    "content": f"Translate the following text into {language}.",
+                },
+                {"role": "user", "content": answer},
             ]
         else:
             return jsonify({"error": "Invalid adjustment type"}), 400
@@ -925,6 +991,7 @@ def adjust_answer():
     except Exception as e:
         logger.error(f"Error in adjust_answer: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 # Main route
 @app.route("/")

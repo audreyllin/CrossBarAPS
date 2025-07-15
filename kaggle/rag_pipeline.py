@@ -30,9 +30,10 @@ from gtts import gTTS
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("optimized_rag")
 
-# Configuration
-UPLOAD_FOLDER = "uploads"
-OUTPUT_FOLDER = "output"
+# Configuration - Updated to relative paths
+UPLOAD_FOLDER = "./uploads"
+OUTPUT_FOLDER = "./output"
+TEMPLATES_DIR = "./templates"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 LAST_QUESTION_PATH = Path(OUTPUT_FOLDER) / "last_question.txt"
@@ -43,10 +44,6 @@ EMBEDDING_MODEL = "text-embedding-3-large"
 GPT_MODEL = "gpt-4-turbo"
 MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
-
-# Configuration for pre-signed templates
-TEMPLATES_DIR = "templates"
-os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 # Pre-signed templates configuration
 TEMPLATES = {
@@ -78,6 +75,38 @@ VIDEO_SERVICES = {
 }
 
 
+def preprocess_image_for_ocr(img_path):
+    """Preprocess image to improve OCR accuracy"""
+    img = Image.open(img_path).convert("L")
+    img = img.point(lambda x: 0 if x < 150 else 255)
+    return img
+
+
+def fallback_with_vision(image_path, api_key):
+    """Fallback to GPT-4 Vision when OCR fails"""
+    client = OpenAI(api_key=api_key)
+    with open(image_path, "rb") as img_file:
+        result = client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Describe the diagram in detail."},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64.b64encode(img_file.read()).decode()}"
+                            },
+                        },
+                    ],
+                }
+            ],
+            max_tokens=500,
+        )
+    return result.choices[0].message.content
+
+
 def clean_text(text):
     """Clean and normalize text by removing extra whitespace"""
     return re.sub(r"\s+", " ", text).strip()
@@ -107,7 +136,19 @@ def extract_pdf_text(filepath):
             logger.info(f"Using OCR for PDF: {filepath}")
             doc = fitz.open(filepath)
             for page in doc:
-                text += page.get_text() or ""
+                pix = page.get_pixmap()
+                tmp_img = Path(UPLOAD_FOLDER) / f"temp_{page.number}.png"
+                pix.save(tmp_img)
+
+                try:
+                    # Try regular OCR first
+                    img = preprocess_image_for_ocr(tmp_img)
+                    text += pytesseract.image_to_string(img)
+                except Exception as ocr_error:
+                    logger.warning(f"OCR failed, trying vision fallback: {ocr_error}")
+                    text += fallback_with_vision(tmp_img, os.getenv("OPENAI_API_KEY"))
+
+                tmp_img.unlink(missing_ok=True)
     except Exception as e:
         logger.error(f"PDF extraction failed: {str(e)}")
     return clean_text(text)[:50000]  # Limit to 50k characters
@@ -138,7 +179,12 @@ def extract_text(filepath):
         elif ext in [".doc", ".docx"]:
             return extract_docx_text(filepath)
         elif ext in [".jpg", ".jpeg", ".png"]:
-            return pytesseract.image_to_string(Image.open(filepath))
+            try:
+                img = preprocess_image_for_ocr(filepath)
+                return pytesseract.image_to_string(img)
+            except Exception as ocr_error:
+                logger.warning(f"OCR failed, trying vision fallback: {ocr_error}")
+                return fallback_with_vision(filepath, os.getenv("OPENAI_API_KEY"))
         elif ext == ".txt":
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 return clean_text(f.read())[:50000]
@@ -288,7 +334,6 @@ def generate_answer(question, context, api_key, last_question=None):
         return "Error generating answer"
 
 
-# Media generation functions
 def generate_media(media_type, answer, session_id, api_key):
     """Generate media based on type"""
     if media_type == "video":
@@ -601,7 +646,6 @@ def generate_openai_memo(answer, session_id, api_key):
         raise RuntimeError(f"Memo generation failed: {str(e)}")
 
 
-# Helper functions
 def download_file(url, output_path):
     """Download file from URL with progress tracking"""
     response = requests.get(url, stream=True, timeout=60)
@@ -679,7 +723,7 @@ def main():
 
     # Get question from environment or use default
     question = os.getenv("QUESTION", "What is the main topic of these documents?")
-    
+
     # Reset handling
     if question.strip().lower() == "reset":
         LAST_QUESTION_PATH.unlink(missing_ok=True)
