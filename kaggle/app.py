@@ -877,6 +877,46 @@ def download_generated():
     return send_file(fp, as_attachment=True)
 
 
+@app.route("/api/adjust_answer", methods=["POST"])
+def adjust_answer():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    try:
+        data = request.get_json()
+        answer = data.get("answer")
+        adj_type = data.get("type")
+        language = data.get("language", "English")
+
+        if not answer or not adj_type:
+            return jsonify({"error": "Missing answer or type"}), 400
+
+        # Build prompt based on adjustment type
+        if adj_type == "shorten":
+            prompt = f"Shorten this text: {answer}"
+        elif adj_type == "elaborate":
+            prompt = f"Elaborate on this: {answer}"
+        elif adj_type == "reword":
+            prompt = f"Rephrase this: {answer}"
+        else:
+            return jsonify({"error": "Invalid adjustment type"}), 400
+
+        # Call OpenAI API
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1024,
+        )
+        adjusted_answer = response.choices[0].message.content.strip()
+
+        return jsonify({"adjusted_answer": adjusted_answer})
+
+    except Exception as e:
+        logger.error(f"Error in adjust_answer: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # Main route
 @app.route("/")
 def index():
