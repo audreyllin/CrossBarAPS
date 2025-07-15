@@ -101,7 +101,6 @@
                             <input type="password" id="api-key" placeholder="Enter your access key">
                         </div>
 
-                        <!-- A. Added Role Select Dropdown -->
                         <div class="input-group">
                             <label for="roleSelect">Session Profile:</label>
                             <select id="roleSelect">
@@ -135,7 +134,12 @@
             <div class="results-grid">
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-comments"></i> Comprehensive Answer</h3>
-                    <p>Detailed response to your specific query:</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <p>Detailed response to your specific query:</p>
+                        <button id="copy-answer-btn" class="action-btn" style="margin-left: auto;">
+                            <i class="fas fa-copy"></i> Copy All
+                        </button>
+                    </div>
                     <div class="kernel-output" id="kernel-answer">
                         // Your answer will appear here after processing
                     </div>
@@ -168,12 +172,12 @@
                     </div>
 
                     <div class="answer-actions" id="answer-actions" style="display: none;">
-                        <div class="action-group">
+                        <!-- <div class="action-group">
                             <span class="action-label">Translation:</span>
                             <button class="action-btn" data-lang="zh">Mandarin Chinese</button>
                             <button class="action-btn" data-lang="es">Spanish</button>
                             <button class="action-btn" data-lang="ru">Russian</button>
-                        </div>
+                        </div> -->
 
                         <div class="action-group">
                             <span class="action-label">Adjust:</span>
