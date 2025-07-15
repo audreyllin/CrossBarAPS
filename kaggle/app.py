@@ -242,14 +242,14 @@ def extract_text_from_file(filepath, api_key=None):
         elif ext in [".xls", ".xlsx"]:
             df = pd.read_excel(filepath, sheet_name=None)
             text = "\n".join(
-                df[sheet].astype(str).apply(" | ".join, axis=1).str.cat(sep="\n")
+                df[sheet].ast(str).apply(" | ".join, axis=1).str.cat(sep="\n")
                 for sheet in df
             )
 
         elif ext in [".csv", ".tsv"]:
             text = (
                 pd.read_csv(filepath)
-                .astype(str)
+                .ast(str)
                 .apply(" | ".join, axis=1)
                 .str.cat(sep="\n")
             )
@@ -886,7 +886,7 @@ def adjust_answer():
     try:
         data = request.get_json()
         answer = data.get("answer")
-        adj_type = data.get("type")
+        adj_type = data.get("type", "shorten").lower()
         language = data.get("language", "English")
 
         if not answer or not adj_type:
@@ -895,10 +895,19 @@ def adjust_answer():
         # Build prompt based on adjustment type
         if adj_type == "shorten":
             prompt = f"Shorten this text: {answer}"
+            messages = [{"role": "user", "content": prompt}]
         elif adj_type == "elaborate":
             prompt = f"Elaborate on this: {answer}"
+            messages = [{"role": "user", "content": prompt}]
         elif adj_type == "reword":
             prompt = f"Rephrase this: {answer}"
+            messages = [{"role": "user", "content": prompt}]
+        elif adj_type == "translate":
+            # Use OpenAI to translate
+            messages = [
+                {"role": "system", "content": f"Translate the following text into {language}."},
+                {"role": "user", "content": answer}
+            ]
         else:
             return jsonify({"error": "Invalid adjustment type"}), 400
 
@@ -906,7 +915,7 @@ def adjust_answer():
         client = OpenAI(api_key=api_key)
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             max_tokens=1024,
         )
         adjusted_answer = response.choices[0].message.content.strip()
