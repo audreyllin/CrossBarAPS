@@ -1025,32 +1025,19 @@ def adjust_answer():
 
     try:
         data = request.get_json()
-        answer = data.get("answer")
+        answer   = data.get("answer")
         adj_type = data.get("type", "shorten").lower()
-        language = data.get("language", "English")
 
         if not answer or not adj_type:
             return jsonify({"error": "Missing answer or type"}), 400
 
-        # Build prompt based on adjustment type
+        # Build prompt for the supported adjustment types
         if adj_type == "shorten":
-            prompt = f"Shorten this text: {answer}"
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": f"Shorten this text:\n\n{answer}"}]
         elif adj_type == "elaborate":
-            prompt = f"Elaborate on this: {answer}"
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": f"Elaborate on this:\n\n{answer}"}]
         elif adj_type == "reword":
-            prompt = f"Rephrase this: {answer}"
-            messages = [{"role": "user", "content": prompt}]
-        elif adj_type == "translate":
-            # Use OpenAI to translate
-            messages = [
-                {
-                    "role": "system",
-                    "content": f"Translate the following text into {language}.",
-                },
-                {"role": "user", "content": answer},
-            ]
+            messages = [{"role": "user", "content": f"Rephrase this:\n\n{answer}"}]
         else:
             return jsonify({"error": "Invalid adjustment type"}), 400
 
@@ -1066,9 +1053,8 @@ def adjust_answer():
         return jsonify({"adjusted_answer": adjusted_answer})
 
     except Exception as e:
-        logger.error(f"Error in adjust_answer: {str(e)}")
+        logger.error(f"Error in adjust_answer: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 # Main route
 @app.route("/")
