@@ -36,20 +36,17 @@ import faiss
 from collections import Counter
 import zipfile
 import magic
-from rag_pipeline import (
-    generate_media,
-    generate_slidesgpt,
-)
+from rag_pipeline import generate_media  # Fixed import
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
-ADMIN_OUTPUTS = "admin_outputs"  # Added for requirement E
+ADMIN_OUTPUTS = "admin_outputs"
 CONVERSATIONS_FILE = "conversations.json"
 CONTEXT_UPLOADS_FILE = "context_uploads.json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-os.makedirs(ADMIN_OUTPUTS, exist_ok=True)  # Added for requirement E
+os.makedirs(ADMIN_OUTPUTS, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DocumentAIApp")
 
@@ -916,12 +913,11 @@ def api_generate():
         return jsonify({"error": "Missing API key"}), 401
 
     try:
-        # Route to appropriate generation function
+        # Map slidesgpt to slides
         if media_type == "slidesgpt":
-            output_path = generate_slidesgpt(answer, session_id, api_key)
-        else:
-            # Fallback to original handler for video/poster/memo
-            output_path = generate_media(media_type, answer, session_id, api_key)
+            media_type = "slides"
+            
+        output_path = generate_media(media_type, answer, session_id, api_key)
 
         if not output_path or not os.path.isfile(output_path):
             current_app.logger.error(
