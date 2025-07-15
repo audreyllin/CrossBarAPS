@@ -28,7 +28,7 @@ async function safeJsonParse(response) {
         return await response.json();
     } else {
         const text = await response.text();
-        console.error("⚠️ Expected JSON but received non-JSON response:\n", text.slice(0, 500));
+        console.warn("⚠️ Non-JSON response:", text.slice(0, 500));
         throw new Error("Unexpected response format. Please try again.");
     }
 }
@@ -513,15 +513,16 @@ async function fetchFileHistory() {
         }
 
         contexts.forEach(ctx => {
-            const row = document.createElement("div");
-            row.className = "memory-entry";
+                    const row = document.createElement("div");
+                    row.className = "memory-entry";
 
-            // Safely get file extension
-            const fileExt = ctx.filename ?
-                ctx.filename.split('.').pop().toLowerCase() :
-                'default';
+                    // Safely get file extension
+                    const fileExt = ctx.filename ?
+                        ctx.filename.split('.').pop().toLowerCase() :
+                        'default';
 
-            row.innerHTML = `
+                    // In fetchFileHistory function
+                    row.innerHTML = `
                 <div class="file-history-item">
                     <div class="file-history-name">
                         <i class="${fileIcons[fileExt] || fileIcons.default}"></i>
@@ -529,7 +530,7 @@ async function fetchFileHistory() {
                     </div>
                     <div class="file-history-meta">
                         <span>${new Date(ctx.timestamp).toLocaleString()}</span>
-                        <span>${ctx.size ? formatFileSize(ctx.size) : ''}</span>
+                        ${ctx.size ? `<span>${formatFileSize(ctx.size)}</span>` : ''}
                     </div>
                     <div class="memory-actions">
                         <button class="memory-action-btn" onclick="removeContext('${ctx.context_id}')">
@@ -576,7 +577,7 @@ async function removeContext(contextId) {
                 "Authorization": `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                session_id: sessionId,
+                session_id: sessionId, // Fix parameter name
                 context_id: contextId
             })
         });
@@ -607,7 +608,7 @@ document.getElementById('admin-nav').addEventListener('click', () => {
     setTimeout(() => adminLoginModal.classList.add('show'), 10);
 });
 
-document.getElementById('admin-login-btn').addEventListener('click', async() => {
+document.getElementById('admin-login-btn').addEventListener('click', async () => {
     const username = document.getElementById('admin-username').value;
     const password = document.getElementById('admin-password').value;
 
@@ -896,7 +897,7 @@ async function generateFromAnswer(type) {
             body: JSON.stringify({
                 type: type,
                 answer: currentAnswer,
-                sessionId
+                sessionId: sessionId // Fix parameter name
             })
         });
 
