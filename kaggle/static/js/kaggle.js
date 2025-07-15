@@ -462,8 +462,8 @@ document.querySelectorAll('.action-btn').forEach(button => {
                 messages = [{
                     role: "user",
                     content: `${command === "shorten" ? "Shorten this" :
-                            command === "reword" ? "Rephrase this" :
-                                "Elaborate on this"}: ${currentAnswer}`
+                        command === "reword" ? "Rephrase this" :
+                            "Elaborate on this"}: ${currentAnswer}`
                 }];
             }
 
@@ -731,7 +731,7 @@ function setOutputContent(elementId, content, data = null) {
     if (data && data.matched_chunks) {
         data.matched_chunks.forEach(chunk => {
             outputHTML += `<details class="matched-chunk">
-                <summary>View context excerpt from ${chunk.file}</summary>
+                <summary>📄 View context retrieved from ${chunk.file && chunk.page ? `${chunk.file}, page ${chunk.page}` : (chunk.file || "added text context")}</summary>
                 <pre>${chunk.text}</pre>
             </details>`;
         });
@@ -914,6 +914,13 @@ document.getElementById('clear-text-context').addEventListener('click', () => {
     document.getElementById('context-text').value = '';
     document.getElementById('text-concepts').style.display = 'none';
     document.getElementById('text-concept-tags').innerHTML = '';
+});
+
+document.getElementById('copy-answer-btn').addEventListener('click', () => {
+    const content = document.getElementById('kernel-answer').innerText;
+    navigator.clipboard.writeText(content)
+        .then(() => showNotification('Copied answer to clipboard!', 'success'))
+        .catch(err => showNotification(`Copy failed: ${err}`, 'error'));
 });
 
 const toolMapping = {
