@@ -101,6 +101,17 @@
                             <input type="password" id="api-key" placeholder="Enter your access key">
                         </div>
 
+                        <!-- A. Added Role Select Dropdown -->
+                        <div class="input-group">
+                            <label for="roleSelect">Session Profile:</label>
+                            <select id="roleSelect">
+                                <option value="general">General</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="public">Public</option>
+                            </select>
+                        </div>
+
                         <div class="input-group">
                             <label for="question">Your Question</label>
                             <input type="text" id="question" placeholder="Ask about the company...">
@@ -304,6 +315,52 @@
                 <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
                 <h3>Frequent Questions</h3>
                 <ul id="frequent-questions"></ul>
+
+                <!-- B. Extended Admin Panel -->
+                <div style="margin-top:2rem">
+                    <h3>Q&A Accuracy Tags</h3>
+                    <div class="tagging-controls">
+                        <button class="action-btn">Mark Correct</button>
+                        <button class="action-btn">Mark Inaccurate</button>
+                        <button class="action-btn">Flag for Review</button>
+                    </div>
+                </div>
+
+                <div style="margin-top:2rem">
+                    <h3>Export Logs</h3>
+                    <div class="answer-actions">
+                        <button class="action-btn" onclick="downloadConversation('csv')">.CSV</button>
+                        <button class="action-btn" onclick="downloadConversation('txt')">.TXT</button>
+                        <button class="action-btn" onclick="downloadConversation('pdf')">.PDF</button>
+                        <button class="action-btn" onclick="downloadConversation('docx')">.DOCX</button>
+                    </div>
+                </div>
+
+                <div style="margin-top:2rem">
+                    <h3>Benchmark Summary</h3>
+                    <table class="kernel-output" style="width:100%; max-width:600px;">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Avg. Response Time</td>
+                                <td>2.1s</td>
+                            </tr>
+                            <tr>
+                                <td>Tokens per Answer</td>
+                                <td>308</td>
+                            </tr>
+                            <tr>
+                                <td>Embedding Coverage</td>
+                                <td>98%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
