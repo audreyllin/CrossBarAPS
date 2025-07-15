@@ -4,16 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crossbar | AI-Powered Company Q&A</title>
+    <title>Crossbar | AI‑Powered Company Q&A</title>
+
+    <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Main stylesheet (provided separately) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/kaggle.css') }}">
 </head>
 
 <body>
+    <!-- Background elements -->
     <div class="hex-pattern"></div>
     <div class="bg-elements" id="bg-canvas"></div>
 
+    <!-- ========== GLOBAL NAVIGATION ========== -->
     <nav>
         <div class="logo">
             <div class="logo-icon">
@@ -23,86 +29,98 @@
         </div>
         <div class="nav-links">
             <a href="#features">Features</a>
-            <a href="#api">Ask Question</a>
+            <a href="#api">Ask&nbsp;Question</a>
             <a href="#results">Results</a>
             <a href="#" id="admin-nav">Admin</a>
         </div>
     </nav>
 
+    <!-- ========== HERO ========== -->
     <section class="hero">
         <div class="container">
             <h1>Crossbar Knowledge Hub</h1>
-            <p>Access company insights instantly with our AI-powered knowledge assistant</p>
+            <p>Access company insights instantly with our AI‑powered knowledge assistant</p>
 
+            <!-- Decorative crypto mascots -->
             <div class="crypto-container">
                 <div class="mascot">
-                    <div class="crypto bitcoin" id="bitcoin">
-                        <i class="fab fa-bitcoin"></i>
-                    </div>
+                    <div class="crypto bitcoin" id="bitcoin"><i class="fab fa-bitcoin"></i></div>
                     <div class="crypto-name">Bitcoin</div>
                 </div>
                 <div class="mascot">
-                    <div class="crypto ethereum" id="ethereum">
-                        <i class="fab fa-ethereum"></i>
-                    </div>
+                    <div class="crypto ethereum" id="ethereum"><i class="fab fa-ethereum"></i></div>
                     <div class="crypto-name">Ethereum</div>
                 </div>
                 <div class="mascot">
-                    <div class="crypto solana" id="solana">
-                        <i class="fas fa-coins"></i>
-                    </div>
+                    <div class="crypto solana" id="solana"><i class="fas fa-coins"></i></div>
                     <div class="crypto-name">Solana</div>
                 </div>
             </div>
 
-            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior: 'smooth'})">
+            <button class="cta-button" onclick="document.getElementById('api').scrollIntoView({behavior:'smooth'})">
                 Explore Knowledge
             </button>
         </div>
     </section>
 
+    <!-- ========== FEATURES SECTION (nav target) ========== -->
+    <section id="features" class="features-section">
+        <div class="container animate-on-scroll">
+            <h2><i class="fas fa-star"></i> Key Platform Features</h2>
+            <ul class="feature-bullets">
+                <li><i class="fas fa-file-import" style="color:var(--orange-primary);"></i> Multi‑format file upload (PDF, Office, images, archives)</li>
+                <li><i class="fas fa-language" style="color:var(--orange-primary);"></i> Multi‑language extraction, summarization & translation</li>
+                <li><i class="fas fa-share-nodes" style="color:var(--orange-primary);"></i> One‑click video, poster, slides & memo generation</li>
+                <li><i class="fas fa-chart-line" style="color:var(--orange-primary);"></i> Real‑time embedding debug & performance metrics</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ========== Q&A / API SECTION ========== -->
     <section class="api-section" id="api">
         <div class="container">
             <div class="api-container">
+                <!-- Left: explanatory copy -->
                 <div class="api-info animate-on-scroll">
-                    <h2>Intelligent Q&A System</h2>
-                    <p>Ask any question about our operations, products, or services and receive precise answers powered by our AI assistant.</p>
+                    <h2>Intelligent&nbsp;Q&A System</h2>
+                    <p>Ask anything about our operations, products, or services and receive precise answers powered by our AI assistant.</p>
                     <div class="feature-list">
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Maintains conversation context across sessions</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Supports document and text context additions</p>
-                        <p><i class="fas fa-check-circle" style="color: var(--orange-primary);"></i> Fallback to verified company knowledge base</p>
+                        <p><i class="fas fa-check-circle" style="color:var(--orange-primary);"></i> Maintains conversation context across sessions</p>
+                        <p><i class="fas fa-check-circle" style="color:var(--orange-primary);"></i> Supports document and text context additions</p>
+                        <p><i class="fas fa-check-circle" style="color:var(--orange-primary);"></i> Intelligent fallback to verified knowledge base</p>
                     </div>
                 </div>
 
+                <!-- Right: interactive glass panel -->
                 <div class="glass-panel animate-on-scroll">
+                    <!-- Model selector -->
                     <div class="model-selector">
-                        <label for="modelSelect">Embedding Model:</label>
+                        <label for="modelSelect">Embedding&nbsp;Model:</label>
                         <select id="modelSelect">
-                            <option value="text-embedding-3-large" selected>text-embedding-3-large (default)</option>
-                            <option value="text-embedding-3-small">text-embedding-3-small</option>
+                            <option value="text-embedding-3-large" selected>text‑embedding‑3‑large (default)</option>
+                            <option value="text-embedding-3-small">text‑embedding‑3‑small</option>
                         </select>
                     </div>
 
+                    <!-- Context action buttons -->
                     <div class="context-actions">
-                        <button class="context-btn" id="add-text-context">
-                            <i class="fas fa-comment"></i> Add Text Context
-                        </button>
-                        <button class="context-btn" id="add-file-context">
-                            <i class="fas fa-file-upload"></i> Upload File
-                        </button>
-                        <button class="context-btn" id="debug-vector-btn">
-                            <i class="fas fa-bug"></i> Debug Embeddings
-                        </button>
+                        <button class="context-btn" id="add-text-context"><i class="fas fa-comment"></i>
+                            Add Text Context</button>
+                        <button class="context-btn" id="add-file-context"><i class="fas fa-file-upload"></i>
+                            Upload&nbsp;File</button>
+                        <button class="context-btn" id="debug-vector-btn"><i class="fas fa-bug"></i>
+                            Debug Embeddings</button>
                     </div>
 
+                    <!-- Inputs -->
                     <div class="input-container">
                         <div class="input-group">
-                            <label for="api-key">API Key</label>
-                            <input type="password" id="api-key" placeholder="Enter your access key">
+                            <label for="api-key">API Key</label>
+                            <input type="password" id="api-key" placeholder="Enter your OpenAI key">
                         </div>
 
                         <div class="input-group">
-                            <label for="roleSelect">Session Profile:</label>
+                            <label for="roleSelect">Session Profile:</label>
                             <select id="roleSelect">
                                 <option value="general">General</option>
                                 <option value="engineering">Engineering</option>
@@ -112,11 +130,11 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="question">Your Question</label>
-                            <input type="text" id="question" placeholder="Ask about the company...">
+                            <label for="question">Your Question</label>
+                            <input type="text" id="question" placeholder="Ask about the company…">
                         </div>
 
-                        <button class="submit-btn" id="submit-btn">Ask Question <i
+                        <button class="submit-btn" id="submit-btn">Ask Question <i
                                 class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
@@ -124,6 +142,7 @@
         </div>
     </section>
 
+    <!-- ========== RESULTS SECTION ========== -->
     <section class="results-section" id="results">
         <div class="container">
             <div class="results-header animate-on-scroll">
@@ -132,53 +151,40 @@
             </div>
 
             <div class="results-grid">
+                <!-- Answer card -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-comments"></i> Comprehensive Answer</h3>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
                         <p>Detailed response to your specific query:</p>
-                        <button id="copy-answer-btn" class="action-btn" style="margin-left: auto;">
-                            <i class="fas fa-copy"></i> Copy All
-                        </button>
+                        <button id="copy-answer-btn" class="action-btn"><i class="fas fa-copy"></i>
+                            Copy&nbsp;All</button>
                     </div>
                     <div class="kernel-output" id="kernel-answer">
-                        // Your answer will appear here after processing
+                        <!-- Answer injected here -->
                     </div>
 
-                    <div class="generation-buttons" id="generation-buttons" style="display: none; margin-top:1rem;">
-                        <!-- Video: Pixverse -->
-                        <button class="generation-btn" onclick="generateFromAnswer('video')">
-                            <i class="fas fa-video"></i> Pixverse Video
-                        </button>
-
-                        <!-- Poster: Canva -->
-                        <button class="generation-btn" onclick="generateFromAnswer('poster')">
-                            <i class="fas fa-image"></i> Canva Poster
-                        </button>
-
-                        <!-- Slides: Gamma -->
-                        <button class="generation-btn" onclick="generateFromAnswer('gamma_slides')">
-                            <i class="fas fa-presentation"></i> Gamma Slides
-                        </button>
-
-                        <!-- Slides: SlidesGPT -->
-                        <button class="generation-btn" onclick="generateFromAnswer('slidesgpt')">
-                            <i class="fas fa-chalkboard"></i> SlidesGPT
-                        </button>
-
-                        <!-- Memo: OpenAI -->
-                        <button class="generation-btn" onclick="generateFromAnswer('memo')">
-                            <i class="fas fa-file-alt"></i> OpenAI Memo
-                        </button>
+                    <!-- Generation buttons (shown after answer) -->
+                    <div class="generation-buttons" id="generation-buttons" style="display:none;margin-top:1rem;">
+                        <button class="generation-btn" onclick="generateFromAnswer('video')"><i
+                                class="fas fa-video"></i> Pixverse&nbsp;Video</button>
+                        <button class="generation-btn" onclick="generateFromAnswer('poster')"><i
+                                class="fas fa-image"></i> Canva&nbsp;Poster</button>
+                        <button class="generation-btn" onclick="generateFromAnswer('slides')"><i
+                                class="fas fa-presentation"></i> PPTX&nbsp;Slides</button>
+                        <button class="generation-btn" onclick="generateFromAnswer('slidesgpt')"><i
+                                class="fas fa-chalkboard"></i> SlidesGPT</button>
+                        <button class="generation-btn" onclick="generateFromAnswer('memo')"><i
+                                class="fas fa-file-alt"></i> OpenAI&nbsp;Memo</button>
                     </div>
 
-                    <div class="answer-actions" id="answer-actions" style="display: none;">
-                        <!-- <div class="action-group">
-                            <span class="action-label">Translation:</span>
-                            <button class="action-btn" data-lang="zh">Mandarin Chinese</button>
-                            <button class="action-btn" data-lang="es">Spanish</button>
-                            <button class="action-btn" data-lang="ru">Russian</button>
-                        </div> -->
-
+                    <!-- Answer adjust / translate -->
+                    <div class="answer-actions" id="answer-actions" style="display:none;">
+                        <div class="action-group">
+                            <span class="action-label">Translate:</span>
+                            <button class="action-btn" data-lang="Mandarin Chinese">Mandarin</button>
+                            <button class="action-btn" data-lang="Spanish">Spanish</button>
+                            <button class="action-btn" data-lang="Russian">Russian</button>
+                        </div>
                         <div class="action-group">
                             <span class="action-label">Adjust:</span>
                             <button class="action-btn" data-command="shorten">Shorten</button>
@@ -187,14 +193,14 @@
                         </div>
                     </div>
 
-                    <div class="follow-up-suggestions" id="follow-up-suggestions" style="display: none;">
-                        <h4>Follow-up Questions:</h4>
-                        <div class="follow-up-buttons" id="follow-up-buttons">
-                            <!-- Follow-up buttons will be added here -->
-                        </div>
+                    <!-- Follow‑up suggestions -->
+                    <div class="follow-up-suggestions" id="follow-up-suggestions" style="display:none;">
+                        <h4>Follow‑up Questions:</h4>
+                        <div class="follow-up-buttons" id="follow-up-buttons"></div>
                     </div>
                 </div>
 
+                <!-- Conversation history -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-history"></i> Conversation History</h3>
                     <div class="kernel-output" id="user-memories">
@@ -202,6 +208,7 @@
                     </div>
                 </div>
 
+                <!-- File history -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-folder-open"></i> File History</h3>
                     <div class="kernel-output" id="file-history">
@@ -209,6 +216,7 @@
                     </div>
                 </div>
 
+                <!-- Download conversation -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-download"></i> Download Conversation</h3>
                     <div class="answer-actions">
@@ -221,80 +229,82 @@
         </div>
     </section>
 
+    <!-- ========== FOOTER ========== -->
     <footer>
-        <p>© 2023 Crossbar AI | Transforming Enterprise Knowledge</p>
+        <p>© 2025 Crossbar AI | Transforming Enterprise Knowledge</p>
     </footer>
 
-    <!-- Context Modals -->
+    <!-- ========== TEXT CONTEXT MODAL ========== -->
     <div class="modal" id="text-context-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Text Context</h3>
+                <h3>Add Text Context</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="input-group">
                 <label for="context-text">Enter additional context</label>
-                <textarea id="context-text" placeholder="Product A is a component used in Product B..."></textarea>
+                <textarea id="context-text" placeholder="Product A is a component used in Product B…"></textarea>
             </div>
-            <div class="concepts-container" id="text-concepts" style="display: none;">
+            <div class="concepts-container" id="text-concepts" style="display:none;">
                 <h4>Key Concepts:</h4>
                 <div class="concept-tags" id="text-concept-tags"></div>
             </div>
-            <button class="submit-btn" id="submit-text-context">Add Context <i class="fas fa-spinner fa-spin"
-                    style="display: none;" id="text-spinner"></i></button>
-            <button class="context-btn" id="clear-text-context" style="margin-top: 1rem;">
-                <i class="fas fa-eraser"></i> Clear Text
+            <button class="submit-btn" id="submit-text-context">
+                Add Context <i class="fas fa-spinner fa-spin" style="display:none;" id="text-spinner"></i>
+            </button>
+            <button class="context-btn" id="clear-text-context" style="margin-top:1rem;">
+                <i class="fas fa-eraser"></i> Clear Text
             </button>
         </div>
     </div>
 
+    <!-- ========== FILE CONTEXT MODAL ========== -->
     <div class="modal" id="file-context-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Upload Context File</h3>
+                <h3>Upload Context File</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="file-upload">
-                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <input type="file" id="context-files" class="file-input" multiple accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.tsv,.jpg,.jpeg,.png,.zip">
                 <label for="context-files" class="file-label" id="file-drop-area">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Choose files or drag them here</span>
-                    <small>Supported: PDF, DOC, DOCX, TXT, PPT, PPTX, JPG, PNG, MP4</small>
+                    <small>Supported: PDF, DOC, DOCX, PPT/PPTX, XLS/XLSX, CSV/TSV, TXT, JPG, PNG, ZIP</small>
                 </label>
-                <div class="multi-file-preview" id="multi-file-preview">
-                    <!-- File previews will be added here -->
-                </div>
+                <div class="multi-file-preview" id="multi-file-preview"></div>
             </div>
-            <div class="concepts-container" id="file-concepts" style="display: none;">
+            <div class="concepts-container" id="file-concepts" style="display:none;">
                 <h4>Key Concepts:</h4>
                 <div class="concept-tags" id="file-concept-tags"></div>
             </div>
-            <button class="submit-btn" id="submit-file-context">Upload Files <i class="fas fa-spinner fa-spin"
-                    style="display: none;" id="file-spinner"></i></button>
+            <button class="submit-btn" id="submit-file-context">
+                Upload Files <i class="fas fa-spinner fa-spin" style="display:none;" id="file-spinner"></i>
+            </button>
         </div>
     </div>
 
-    <!-- Debug Vector Modal -->
+    <!-- ========== VECTOR DEBUG MODAL ========== -->
     <div class="modal" id="vector-debug-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Embedding Debug Tool</h3>
+                <h3>Embedding Debug Tool</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="input-group">
-                <label for="testInput">Test Text</label>
-                <textarea id="testInput" placeholder="Enter text to test embedding..."></textarea>
+                <label for="testInput">Test Text</label>
+                <textarea id="testInput" placeholder="Enter text to test embedding…"></textarea>
             </div>
-            <button class="submit-btn" id="test-vector-btn">Generate Embedding</button>
-            <div class="kernel-output" id="vectorOutput" style="margin-top: 20px; max-height: 300px;"></div>
+            <button class="submit-btn" id="test-vector-btn">Generate Embedding</button>
+            <div class="kernel-output" id="vectorOutput" style="margin-top:20px;max-height:300px;"></div>
         </div>
     </div>
 
-    <!-- Admin Login Modal -->
+    <!-- ========== ADMIN LOGIN MODAL ========== -->
     <div class="modal" id="admin-login-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Admin Login</h3>
+                <h3>Admin Login</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="input-group">
@@ -309,28 +319,29 @@
         </div>
     </div>
 
-    <!-- Admin Dashboard -->
-    <section id="admin-dashboard" style="display:none; padding:2rem">
+    <!-- ========== ADMIN DASHBOARD ========== -->
+    <section id="admin-dashboard" style="display:none;padding:2rem;">
         <div class="glass-panel">
             <h2>Admin Dashboard</h2>
-            <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
-            <div style="margin-top:2rem">
+            <button class="submit-btn" onclick="resetDatabase()">Reset Database</button>
+
+            <div style="margin-top:2rem;">
                 <h3>Conversation Logs</h3>
-                <pre id="admin-conversations" style="max-height:300px; overflow:auto"></pre>
+                <pre id="admin-conversations" style="max-height:300px;overflow:auto;"></pre>
+
                 <h3>Frequent Questions</h3>
                 <ul id="frequent-questions"></ul>
 
-                <!-- B. Extended Admin Panel -->
-                <div style="margin-top:2rem">
-                    <h3>Q&A Accuracy Tags</h3>
+                <div style="margin-top:2rem;">
+                    <h3>Q&A Accuracy Tags</h3>
                     <div class="tagging-controls">
-                        <button class="action-btn">Mark Correct</button>
-                        <button class="action-btn">Mark Inaccurate</button>
-                        <button class="action-btn">Flag for Review</button>
+                        <button class="action-btn">Mark Correct</button>
+                        <button class="action-btn">Mark Inaccurate</button>
+                        <button class="action-btn">Flag for Review</button>
                     </div>
                 </div>
 
-                <div style="margin-top:2rem">
+                <div style="margin-top:2rem;">
                     <h3>Export Logs</h3>
                     <div class="answer-actions">
                         <button class="action-btn" onclick="downloadConversation('csv')">.CSV</button>
@@ -340,9 +351,9 @@
                     </div>
                 </div>
 
-                <div style="margin-top:2rem">
+                <div style="margin-top:2rem;">
                     <h3>Benchmark Summary</h3>
-                    <table class="kernel-output" style="width:100%; max-width:600px;">
+                    <table class="kernel-output" style="width:100%;max-width:600px;">
                         <thead>
                             <tr>
                                 <th>Metric</th>
@@ -351,16 +362,16 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Avg. Response Time</td>
-                                <td>2.1s</td>
+                                <td>Avg.&nbsp;Response&nbsp;Time</td>
+                                <td>2.1 s</td>
                             </tr>
                             <tr>
-                                <td>Tokens per Answer</td>
+                                <td>Tokens&nbsp;per&nbsp;Answer</td>
                                 <td>308</td>
                             </tr>
                             <tr>
-                                <td>Embedding Coverage</td>
-                                <td>98%</td>
+                                <td>Embedding&nbsp;Coverage</td>
+                                <td>98 %</td>
                             </tr>
                         </tbody>
                     </table>
@@ -369,8 +380,10 @@
         </div>
     </section>
 
+    <!-- ========== NOTIFICATION TOASTS ========== -->
     <div id="notification-container"></div>
 
+    <!-- ========== MAIN SCRIPT ========== -->
     <script src="{{ url_for('static', filename='js/kaggle.js') }}"></script>
 </body>
 
