@@ -134,6 +134,27 @@ nav {
     width: 100%;
 }
 
+.matched-chunk summary {
+    cursor: pointer;
+    padding: 0.5rem;
+    background: rgba(255, 157, 92, 0.1);
+    color: var(--orange-primary);
+    font-weight: 600;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+.matched-chunk pre {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid var(--orange-secondary);
+    white-space: pre-wrap;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--cream);
+}
+
 section {
     padding: 5rem 5%;
     position: relative;
