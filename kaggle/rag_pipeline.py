@@ -616,6 +616,81 @@ def generate_slidesgpt_presentation(answer, session_id, api_key):
         logger.error(f"Presentation generation error: {e}")
         raise RuntimeError(f"Presentation generation failed: {str(e)}")
 
+def generate_gamma_slides(answer, session_id, api_key):
+    """Generate Gamma slides presentation"""
+    # Placeholder implementation - replace with actual Gamma API integration
+    output_path = os.path.join(OUTPUT_FOLDER, f"gamma_slides_{session_id}.pdf")
+    
+    # For demo: create a simple PDF
+    from fpdf import FPDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Gamma Slides Presentation", ln=1, align='C')
+    pdf.cell(200, 10, txt="", ln=1)
+    pdf.multi_cell(0, 10, txt=answer)
+    pdf.output(output_path)
+    
+    return output_path
+
+# Rename this function to match import
+def generate_slidesgpt(answer, session_id, api_key):
+    """Generate SlidesGPT presentation (renamed function)"""
+    return generate_slidesgpt_presentation(answer, session_id, api_key)
+
+# Rename the existing function
+def generate_slidesgpt_presentation(answer, session_id, api_key):
+    """Generate presentation using SlidesGPT-style formatting"""
+    try:
+        # Format content for presentation
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model=GPT_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Format this content into a slide presentation structure with titles and bullet points.",
+                },
+                {"role": "user", "content": answer},
+            ],
+            temperature=0.3,
+        )
+        structured_content = response.choices[0].message.content.strip()
+
+        # Create presentation
+        output_path = os.path.join(OUTPUT_FOLDER, f"slides_{session_id}.pptx")
+        prs = Presentation()
+
+        # Title slide
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        title = slide.shapes.title
+        title.text = "AI Generated Presentation"
+
+        # Content slides
+        for i, section in enumerate(structured_content.split("\n\n")):
+            if not section.strip():
+                continue
+
+            slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = slide.shapes.title
+            content = slide.placeholders[1]
+
+            lines = section.split("\n")
+            title.text = lines[0] if lines else f"Slide {i+1}"
+
+            if len(lines) > 1:
+                tf = content.text_frame
+                for line in lines[1:]:
+                    p = tf.add_paragraph()
+                    p.text = line
+                    p.level = 0
+
+        prs.save(output_path)
+        return output_path
+
+    except Exception as e:
+        logger.error(f"Presentation generation error: {e}")
+        raise RuntimeError(f"Presentation generation failed: {str(e)}")
 
 def generate_openai_memo(answer, session_id, api_key):
     """Generate memo using pre-signed template"""

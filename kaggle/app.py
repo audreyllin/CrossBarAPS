@@ -39,8 +39,7 @@ import magic
 from rag_pipeline import (
     generate_media,
     generate_gamma_slides,
-    generate_slidesgpt,
-)  # Updated import
+) 
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
