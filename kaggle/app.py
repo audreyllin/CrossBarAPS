@@ -187,6 +187,7 @@ def allowed_file(filename):
     ext = Path(filename).suffix.lower()
     return ext in ALLOWED_EXTENSIONS
 
+
 def hash_text(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -290,6 +291,7 @@ def extract_text_from_file(filepath, api_key=None):
         logger.error(f"[extract_text] {filepath} failed: {str(e)}")
 
     return text[:20000]  # Limit to 20k characters
+
 
 def embed(text, api_key, model="text-embedding-3-large"):
     client = OpenAI(api_key=api_key)
@@ -1092,6 +1094,43 @@ def generate_from_enhanced():
             "download_generated", file=os.path.basename(output_path), _external=True
         )
         return jsonify({"url": download_url})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/enhance_prompt", methods=["POST"])
+def enhance_prompt():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    data = request.json
+    prompt = data.get("prompt")
+    media_type = data.get("mediaType")
+    style = data.get("style")
+
+    if not prompt:
+        return jsonify({"error": "Missing prompt"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+        enhancement_prompt = f"""
+        Enhance the following prompt for {media_type} generation with a {style} style.
+        The prompt should be clear, detailed, and optimized for AI generation.
+        Return only the enhanced prompt, no additional commentary.
+        
+        Original prompt: {prompt}
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": enhancement_prompt}],
+            temperature=0.7,
+            max_tokens=500,
+        )
+
+        return jsonify({"enhanced_prompt": response.choices[0].message.content})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
