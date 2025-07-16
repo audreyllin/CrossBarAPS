@@ -55,7 +55,7 @@ const answerActions = document.getElementById('answer-actions');
 const followUpSuggestions = document.getElementById('follow-up-suggestions');
 const followUpButtons = document.getElementById('follow-up-buttons');
 const genContainer = document.getElementById('generation-buttons');
-const copyBtn = document.getElementById('copy-answer-btn'); // Added to DOM elements
+const copyBtn = document.getElementById('copy-answer-btn');
 
 // Disable copy button initially
 copyBtn.disabled = true;
@@ -942,9 +942,7 @@ document.getElementById('clear-text-context').addEventListener('click', () => {
     document.getElementById('text-concept-tags').innerHTML = '';
 });
 
-// ────────────────────────────────────────────────────────────────
-// Copy answer to clipboard with button guard (UPDATED)
-// ────────────────────────────────────────────────────────────────
+// Copy answer to clipboard with button guard
 copyBtn.addEventListener('click', async () => {
     const adjustButtons = document.querySelectorAll('#answer-actions .action-btn');
 
@@ -1005,7 +1003,7 @@ async function generateFromAnswer(type) {
             body: JSON.stringify({
                 type: type,
                 answer: answer,
-                sessionId: sessionId // Fix parameter name
+                sessionId: sessionId
             })
         });
 
@@ -1035,6 +1033,226 @@ async function generateFromAnswer(type) {
         genContainer.classList.remove('disabled');
     }
 }
+
+// ====== NEW FEATURES START HERE ======
+// Media type change handler
+document.getElementById('media-type').addEventListener('change', function () {
+    const mediaType = this.value;
+    const pageOptions = document.getElementById('page-options-container');
+
+    if (mediaType === 'slides' || mediaType === 'document') {
+        pageOptions.style.display = 'block';
+    } else {
+        pageOptions.style.display = 'none';
+    }
+
+    // Update style options based on media type
+    const styleOptions = document.getElementById('style-options');
+    styleOptions.innerHTML = '';
+
+    const styles = {
+        image: ['Professional', 'Creative', 'Minimalist', 'Vibrant', 'Photorealistic', 'Watercolor', 'Cyberpunk'],
+        video: ['Professional', 'Cinematic', 'Animated', 'Minimalist', 'Dynamic'],
+        slides: ['Professional', 'Creative', 'Minimalist', 'Corporate', 'Academic'],
+        document: ['Professional', 'Creative', 'Formal', 'Casual', 'Technical']
+    }[mediaType].map(style =>
+        `<option value="${style.toLowerCase()}">${style}</option>`
+    ).join('');
+
+    styleOptions.innerHTML = styles;
+});
+
+// Enhance prompt button handler
+document.getElementById('enhance-prompt-btn').addEventListener('click', async function () {
+    const prompt = document.getElementById('prompt-input').value;
+    const mediaType = document.getElementById('media-type').value;
+    const style = document.getElementById('style-options').value;
+    const apiKey = document.getElementById('api-key').value;
+
+    if (!prompt) {
+        showNotification('Please enter a prompt to enhance', 'error');
+        return;
+    }
+
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    try {
+        this.innerHTML = 'Enhancing... <i class="fas fa-spinner fa-spin"></i>';
+        this.disabled = true;
+
+        const client = new OpenAI(apiKey);
+
+        const enhancementPrompt = `
+        Enhance the following prompt for ${mediaType} generation with a ${style} style.
+        The prompt should be clear, detailed, and optimized for AI generation.
+        Return only the enhanced prompt, no additional commentary.
+        
+        Original prompt: ${prompt}
+        `;
+
+        const response = await client.chat.completions.create({
+            model: "gpt-4",
+            messages: [{
+                role: "user",
+                content: enhancementPrompt
+            }],
+            temperature: 0.7,
+            max_tokens: 500
+        });
+
+        const enhancedPrompt = response.choices[0].message.content;
+
+        document.getElementById('enhanced-prompt-output').textContent = enhancedPrompt;
+        document.getElementById('enhanced-prompt-container').style.display = 'block';
+        document.getElementById('enhanced-generation-buttons').style.display = 'flex';
+
+        // Store the enhanced prompt for generation
+        window.currentEnhancedPrompt = enhancedPrompt;
+
+        showNotification('Prompt enhanced successfully!', 'success');
+
+        // Generate preview if possible
+        await generatePreview(enhancedPrompt, mediaType, apiKey);
+
+    } catch (error) {
+        showNotification(`Error enhancing prompt: ${error.message}`, 'error');
+    } finally {
+        this.innerHTML = 'Enhance Prompt <i class="fas fa-wand-magic-sparkles"></i>';
+        this.disabled = false;
+    }
+});
+
+// Template upload handler
+document.getElementById('template-upload').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const preview = document.getElementById('template-preview');
+    preview.innerHTML = '';
+    preview.style.display = 'block';
+
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Template Preview">`;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = `<div class="file-preview">
+            <i class="fas fa-file"></i>
+            <span>${file.name}</span>
+        </div>`;
+    }
+
+    // Store the template file for generation
+    window.templateFile = file;
+});
+
+// Feedback buttons
+document.querySelectorAll('.feedback-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('feedback-comment').style.display = 'block';
+    });
+});
+
+// Generate from enhanced prompt
+async function generateFromEnhancedPrompt(type) {
+    if (!window.currentEnhancedPrompt) {
+        showNotification('No enhanced prompt available', 'error');
+        return;
+    }
+
+    const apiKey = document.getElementById('api-key').value;
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    try {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.add('disabled');
+
+        // Include template if uploaded
+        let formData = new FormData();
+        formData.append('type', type);
+        formData.append('prompt', window.currentEnhancedPrompt);
+        formData.append('sessionId', sessionId);
+
+        if (window.templateFile) {
+            formData.append('template', window.templateFile);
+        }
+
+        const response = await fetch('/api/generate_from_enhanced', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+        window.open(data.url, '_blank');
+        showNotification(`${type} generated successfully!`, 'success');
+
+    } catch (error) {
+        showNotification(`Generation error: ${error.message}`, 'error');
+    } finally {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.remove('disabled');
+    }
+}
+
+// Preview generation
+async function generatePreview(prompt, mediaType, apiKey) {
+    const previewSection = document.getElementById('preview-section');
+    const previewContent = document.getElementById('preview-content');
+
+    previewSection.style.display = 'block';
+    previewContent.innerHTML = '<p>Generating preview...</p>';
+
+    try {
+        if (mediaType === 'image') {
+            // Generate a small thumbnail preview
+            const client = new OpenAI(apiKey);
+            const response = await client.images.generate({
+                model: "dall-e-3",
+                prompt: prompt,
+                size: "256x256",
+                quality: "standard",
+                n: 1
+            });
+
+            previewContent.innerHTML = `<img src="${response.data[0].url}" alt="Preview" style="max-width:100%;border-radius:4px;">`;
+
+        } else if (mediaType === 'slides') {
+            // Generate a text outline of slides
+            const client = new OpenAI(apiKey);
+            const response = await client.chat.completions.create({
+                model: "gpt-4",
+                messages: [{
+                    role: "user",
+                    content: `Create a slide outline based on this prompt: ${prompt}\n\nReturn as HTML bullet points`
+                }],
+                temperature: 0.5
+            });
+
+            previewContent.innerHTML = response.choices[0].message.content;
+
+        } else {
+            previewContent.innerHTML = '<p>Live preview not available for this media type</p>';
+        }
+    } catch (error) {
+        previewContent.innerHTML = '<p>Preview generation failed</p>';
+    }
+}
+// ====== NEW FEATURES END HERE ======
 
 // Initialize session role dropdown
 document.addEventListener('DOMContentLoaded', () => {
