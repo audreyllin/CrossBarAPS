@@ -42,7 +42,7 @@ MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
 POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram-ai/ideogram-v3-turbo")
-REPLICATE_USE_FILE_OUTPUT = False  # <-- NEW FLAG ADDED
+REPLICATE_USE_FILE_OUTPUT = False
 
 # Initialize OpenAI client
 client_oa = OpenAI()
@@ -53,10 +53,10 @@ def _run_replicate(model_ref: str, prompt: str) -> str:
     output = replicate.run(
         model_ref,
         input={"prompt": prompt},
-        use_file_output=REPLICATE_USE_FILE_OUTPUT,  # <-- NEW PARAM
+        use_file_output=REPLICATE_USE_FILE_OUTPUT,
     )
 
-    # Handle different output types - UPDATED LOGIC
+    # Handle different output types
     if isinstance(output, list) and len(output) > 0:
         first = output[0]
     else:
@@ -281,13 +281,14 @@ def generate_answer(question, context, api_key):
         return "Error generating answer"
 
 
-def generate_media(media_type, text, session_id, api_key=None):
+def generate_media(media_type, text, session_id, api_key=None, template_path=None):
     """
     Generate different media types from text:
     - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate) with auto-retry and DALL·E fallback
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
     - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
+    - template_path: Optional path to a style template file
     Returns the absolute file path. Raises on any failure.
     """
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -304,6 +305,11 @@ def generate_media(media_type, text, session_id, api_key=None):
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
 
         prompt = text.strip()[:400]  # Keep prompt short
+
+        # Include template reference if provided
+        if template_path:
+            prompt = f"Use this style: {template_path}. {prompt}"
+
         try:
             # First try without version pin
             url = _run_replicate(POSTER_MODEL, prompt)
@@ -323,7 +329,7 @@ def generate_media(media_type, text, session_id, api_key=None):
                 raise RuntimeError(f"Poster generation failed: {e}") from e
         return _download(url, session_id, "poster")
 
-    # Generate video using Seedance - UPDATED OUTPUT HANDLING
+    # Generate video using Seedance
     elif media_type == "video":
         if not REPLICATE_API_TOKEN:
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
@@ -337,10 +343,10 @@ def generate_media(media_type, text, session_id, api_key=None):
                     "fps": 24,
                     "seed": 42,
                 },
-                use_file_output=REPLICATE_USE_FILE_OUTPUT,  # <-- NEW PARAM
+                use_file_output=REPLICATE_USE_FILE_OUTPUT,
             )
 
-            # Unified output handling - UPDATED LOGIC
+            # Unified output handling
             first = output[0] if isinstance(output, list) else output
             video_url = first.url if hasattr(first, "url") else str(first)
 
