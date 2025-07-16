@@ -971,6 +971,70 @@ copyBtn.addEventListener('click', async () => {
     }
 });
 
+// Media generation function
+async function generateFromAnswer(type) {
+    const apiKey = document.getElementById('api-key').value;
+    const answer = document.getElementById('kernel-answer').innerText;
+
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    if (!answer) {
+        showNotification('No answer to generate from', 'error');
+        return;
+    }
+
+    try {
+        // Disable buttons during generation
+        const buttons = document.getElementById('generation-buttons');
+        buttons.classList.add('disabled');
+        showNotification(`Generating ${type}...`, 'info');
+
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                type: type,
+                answer: answer,
+                sessionId: sessionId
+            })
+        });
+
+        const data = await safeJsonParse(response);
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+        // Handle different media types
+        if (type === 'video' || type === 'poster') {
+            window.open(data.url, '_blank');
+        } else if (type === 'slidesgpt') {
+            document.getElementById('preview-content').innerHTML =
+                `<iframe src="${data.url}" style="width:100%;height:300px;border:none"></iframe>`;
+            document.getElementById('preview-section').style.display = 'block';
+        } else if (type === 'memo') {
+            const blob = new Blob([data.content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'memo.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        showNotification(`${type} generated successfully!`, 'success');
+    } catch (error) {
+        showNotification(`Generation error: ${error.message}`, 'error');
+    } finally {
+        const buttons = document.getElementById('generation-buttons');
+        buttons.classList.remove('disabled');
+    }
+}
+
 const toolMapping = {
     video: "replicate",
     poster: "replicate",
