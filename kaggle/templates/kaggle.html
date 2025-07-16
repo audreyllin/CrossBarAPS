@@ -242,11 +242,29 @@
                             <h4>Enhanced Prompt:</h4>
                             <div class="kernel-output" id="enhanced-prompt-output"></div>
 
+                            <!-- New confirmation step -->
+                            <div class="confirmation-step" id="confirmation-step" style="display:none; margin-top:1rem;">
+                                <p>Would you like to proceed with media generation or refine your prompt?</p>
+                                <div class="confirmation-buttons">
+                                    <button class="generation-btn confirm-btn" id="confirm-generation-btn" style="background-color: #4CAF50;">
+                                        <i class="fas fa-check-circle"></i> Continue Generation
+                                    </button>
+                                    <button class="generation-btn refine-btn" id="refine-prompt-btn" style="background-color: #f39c12;">
+                                        <i class="fas fa-edit"></i> Refine Prompt
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Preview section -->
                             <div class="preview-section" id="preview-section" style="display:none;">
                                 <h4>Preview:</h4>
                                 <div class="preview-content" id="preview-content"></div>
+                                <button class="download-btn" id="download-media-btn" style="display:none; background-color: #3498db;">
+                                    <i class="fas fa-download"></i> Download Media
+                                </button>
                             </div>
 
+                            <!-- Template upload -->
                             <div class="template-upload">
                                 <label for="template-upload" class="file-label">
                                     <i class="fas fa-upload"></i>
@@ -256,6 +274,12 @@
                                 <div id="template-preview" style="display:none;"></div>
                             </div>
 
+                            <!-- New Continue for Media Generation button - distinct color -->
+                            <button class="submit-btn" id="continue-media-btn" style="display:none; background-color: #9b59b6; border-color: #8e44ad;">
+                                <i class="fas fa-play-circle"></i> Continue for Media Generation
+                            </button>
+
+                            <!-- Existing generation buttons (hidden initially) -->
                             <div class="generation-buttons" id="enhanced-generation-buttons" style="display:none;margin-top:1rem;">
                                 <button class="generation-btn" onclick="generateFromEnhancedPrompt('video')"><i
                                         class="fas fa-video"></i> Replicate Video</button>
@@ -267,6 +291,7 @@
                                         class="fas fa-file-alt"></i> OpenAI Memo</button>
                             </div>
 
+                            <!-- Feedback section -->
                             <div class="feedback-section" style="margin-top:1rem;">
                                 <span class="feedback-label">Rate this enhancement:</span>
                                 <div class="feedback-buttons">
