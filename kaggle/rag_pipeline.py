@@ -42,6 +42,7 @@ MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
 POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram-ai/ideogram-v3-turbo")
+REPLICATE_USE_FILE_OUTPUT = False  # <-- NEW FLAG ADDED
 
 # Initialize OpenAI client
 client_oa = OpenAI()
@@ -49,26 +50,33 @@ client_oa = OpenAI()
 
 def _run_replicate(model_ref: str, prompt: str) -> str:
     """Run a Replicate model and handle different output formats."""
-    output = replicate.run(model_ref, input={"prompt": prompt})
+    output = replicate.run(
+        model_ref,
+        input={"prompt": prompt},
+        use_file_output=REPLICATE_USE_FILE_OUTPUT,  # <-- NEW PARAM
+    )
 
-    # Handle different output types
-    if isinstance(output, replicate.output.FileOutput):
-        return output.url
-    elif isinstance(output, dict):
+    # Handle different output types - UPDATED LOGIC
+    if isinstance(output, list) and len(output) > 0:
+        first = output[0]
+    else:
+        first = output
+
+    # Duck-typing for URL extraction
+    if hasattr(first, "url"):  # FileOutput object
+        return first.url
+    elif isinstance(first, str):
+        return first
+    elif isinstance(first, dict):
         # Look for URL in dictionary values
-        for value in output.values():
+        for value in first.values():
             if isinstance(value, str) and value.startswith("http"):
                 return value
+            if hasattr(value, "url"):
+                return value.url
         # Fallback to first value if no URL found
-        first_val = next(iter(output.values()), None)
+        first_val = next(iter(first.values()), None)
         return str(first_val) if first_val is not None else ""
-    elif isinstance(output, list) and len(output) > 0:
-        first_item = output[0]
-        if isinstance(first_item, replicate.output.FileOutput):
-            return first_item.url
-        elif isinstance(first_item, str):
-            return first_item
-        return str(first_item)  # Fallback for other types
     return str(output)  # Final fallback
 
 
@@ -315,7 +323,7 @@ def generate_media(media_type, text, session_id, api_key=None):
                 raise RuntimeError(f"Poster generation failed: {e}") from e
         return _download(url, session_id, "poster")
 
-    # Generate video using Seedance
+    # Generate video using Seedance - UPDATED OUTPUT HANDLING
     elif media_type == "video":
         if not REPLICATE_API_TOKEN:
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
@@ -329,18 +337,15 @@ def generate_media(media_type, text, session_id, api_key=None):
                     "fps": 24,
                     "seed": 42,
                 },
+                use_file_output=REPLICATE_USE_FILE_OUTPUT,  # <-- NEW PARAM
             )
 
-            # Handle different output formats
-            if isinstance(output, replicate.output.FileOutput):
-                video_url = output.url
-            elif isinstance(output, dict):
-                video_url = output.get("video", "")
-            else:  # list[FileOutput]
-                video_url = output[0].url if len(output) > 0 else ""
+            # Unified output handling - UPDATED LOGIC
+            first = output[0] if isinstance(output, list) else output
+            video_url = first.url if hasattr(first, "url") else str(first)
 
-            if not video_url:
-                raise RuntimeError("No video URL found in Replicate output")
+            if not video_url.startswith("http"):
+                raise RuntimeError("No valid video URL found in Replicate output")
 
             return _download(video_url, session_id, "video")
 
