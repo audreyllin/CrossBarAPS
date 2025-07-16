@@ -1337,6 +1337,121 @@ document.getElementById('template-upload').addEventListener('change', function (
     window.templateFile = file;
 });
 
+// Continue Generation button handler
+document.getElementById('continue-generation-btn').addEventListener('click', function () {
+    const enhancedPrompt = document.getElementById('enhanced-prompt-output').textContent;
+    const mediaType = document.getElementById('media-type').value;
+
+    // Show preview section
+    document.getElementById('preview-section').style.display = 'block';
+
+    // Generate preview immediately
+    generateFromEnhancedPrompt(mediaType);
+});
+
+// Feedback button handlers
+document.querySelectorAll('.feedback-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const rating = this.getAttribute('data-rating');
+
+        // Remove active class from all buttons
+        document.querySelectorAll('.feedback-btn').forEach(b => {
+            b.classList.remove('active');
+        });
+
+        // Add active class to clicked button
+        this.classList.add('active');
+
+        // Show comment box
+        document.querySelector('.feedback-comment').style.display = 'block';
+
+        // Send feedback to server
+        sendFeedback(rating, enhancedPrompt);
+    });
+});
+
+// Function to send feedback to server
+async function sendFeedback(rating, prompt) {
+    const comment = document.querySelector('.feedback-comment textarea').value;
+
+    try {
+        const response = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rating: rating,
+                comment: comment,
+                prompt: prompt,
+                sessionId: sessionId
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Failed to submit feedback');
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+    }
+}
+
+// Modified generateFromEnhancedPrompt function
+async function generateFromEnhancedPrompt(type) {
+    if (!window.currentEnhancedPrompt) {
+        showNotification('No enhanced prompt available', 'error');
+        return;
+    }
+
+    const apiKey = document.getElementById('api-key').value;
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    try {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.add('disabled');
+
+        // Generate media
+        const response = await fetch('/api/generate_from_enhanced', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                type: type,
+                prompt: window.currentEnhancedPrompt,
+                sessionId: sessionId
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+        // Update preview
+        const previewContent = document.getElementById('generated-preview-content');
+        if (type === 'image') {
+            previewContent.innerHTML = `<img src="${data.url}" alt="Generated ${type}" style="max-width:100%;">`;
+        } else if (type === 'video') {
+            previewContent.innerHTML = `
+                <video controls style="max-width:100%;">
+                    <source src="${data.url}" type="video/mp4">
+                </video>`;
+        } else {
+            previewContent.innerHTML = `<p>Preview generated: ${type}</p>`;
+        }
+
+        showNotification(`${type} generated successfully!`, 'success');
+    } catch (error) {
+        showNotification(`Generation error: ${error.message}`, 'error');
+    } finally {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.remove('disabled');
+    }
+}
+
 // Feedback buttons
 document.querySelectorAll('.feedback-btn').forEach(btn => {
     btn.addEventListener('click', function () {
