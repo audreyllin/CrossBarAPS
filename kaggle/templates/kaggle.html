@@ -242,7 +242,7 @@
                             <h4>Enhanced Prompt:</h4>
                             <div class="kernel-output" id="enhanced-prompt-output"></div>
 
-                            <!-- New Continue Generation button -->
+                            <!-- Continue Generation button -->
                             <button class="continue-generation-btn" id="continue-generation-btn">
                                 <i class="fas fa-play"></i> Continue Generation
                             </button>
@@ -261,9 +261,20 @@
                                 </div>
                             </div>
 
-                            <!-- Existing generation buttons -->
+                            <!-- generation buttons -->
                             <div class="generation-buttons" id="enhanced-generation-buttons" style="display:none;margin-top:1rem;">
-                                <!-- ... existing buttons ... -->
+                                <button class="generation-btn" onclick="generateFromEnhanced('video')">
+                                    <i class="fas fa-video"></i> Generate Video
+                                </button>
+                                <button class="generation-btn" onclick="generateFromEnhanced('poster')">
+                                    <i class="fas fa-image"></i> Generate Poster
+                                </button>
+                                <button class="generation-btn" onclick="generateFromEnhanced('slides')">
+                                    <i class="fas fa-chalkboard"></i> Generate Slides
+                                </button>
+                                <button class="generation-btn" onclick="generateFromEnhanced('document')">
+                                    <i class="fas fa-file-alt"></i> Generate Document
+                                </button>
                             </div>
 
                             <!-- Feedback section -->
