@@ -1035,6 +1035,181 @@ async function generateFromAnswer(type) {
 }
 
 // ====== NEW FEATURES START HERE ======
+
+// ====== NEW ENHANCED PROMPT FUNCTIONALITY ======
+
+// Event listener for the Continue for Media Generation button
+document.getElementById('continue-media-btn').addEventListener('click', async function () {
+    const enhancedPrompt = document.getElementById('enhanced-prompt-output').textContent;
+    const mediaType = document.getElementById('media-type').value;
+    const apiKey = document.getElementById('api-key').value;
+
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    // Show confirmation step
+    document.getElementById('confirmation-step').style.display = 'block';
+    this.style.display = 'none';
+
+    // Generate preview if possible
+    await generatePreview(enhancedPrompt, mediaType, apiKey);
+});
+
+// Event listeners for confirmation buttons
+document.getElementById('confirm-generation-btn').addEventListener('click', function () {
+    // Hide confirmation, show preview and download button
+    document.getElementById('confirmation-step').style.display = 'none';
+    document.getElementById('preview-section').style.display = 'block';
+    document.getElementById('download-media-btn').style.display = 'inline-block';
+
+    // Show the specific generation buttons
+    document.getElementById('enhanced-generation-buttons').style.display = 'flex';
+});
+
+document.getElementById('refine-prompt-btn').addEventListener('click', function () {
+    // Hide confirmation, show prompt input again
+    document.getElementById('confirmation-step').style.display = 'none';
+    document.getElementById('prompt-input').focus();
+});
+
+// Download button handler
+document.getElementById('download-media-btn').addEventListener('click', function () {
+    const mediaType = document.getElementById('media-type').value;
+    const enhancedPrompt = document.getElementById('enhanced-prompt-output').textContent;
+    const apiKey = document.getElementById('api-key').value;
+
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    generateFromEnhancedPrompt(mediaType);
+});
+
+// Modified generateFromEnhancedPrompt function
+async function generateFromEnhancedPrompt(type) {
+    if (!window.currentEnhancedPrompt) {
+        showNotification('No enhanced prompt available', 'error');
+        return;
+    }
+
+    const apiKey = document.getElementById('api-key').value;
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    try {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.add('disabled');
+        document.getElementById('download-media-btn').disabled = true;
+
+        // Include template if uploaded
+        let formData = new FormData();
+        formData.append('type', type);
+        formData.append('prompt', window.currentEnhancedPrompt);
+        formData.append('sessionId', sessionId);
+
+        if (window.templateFile) {
+            formData.append('template', window.templateFile);
+        }
+
+        const response = await fetch('/api/generate_from_enhanced', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+        // Update preview with the generated media
+        const previewContent = document.getElementById('preview-content');
+        if (type === 'image' || type === 'poster') {
+            previewContent.innerHTML = `<img src="${data.url}" alt="Generated ${type}" style="max-width:100%;">`;
+        } else if (type === 'video') {
+            previewContent.innerHTML = `
+                <video controls style="max-width:100%;">
+                    <source src="${data.url}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+        }
+
+        // Set download link
+        document.getElementById('download-media-btn').onclick = function () {
+            window.open(data.url, '_blank');
+        };
+
+        showNotification(`${type} generated successfully!`, 'success');
+
+    } catch (error) {
+        showNotification(`Generation error: ${error.message}`, 'error');
+    } finally {
+        const buttons = document.getElementById('enhanced-generation-buttons');
+        buttons.classList.remove('disabled');
+        document.getElementById('download-media-btn').disabled = false;
+    }
+}
+
+// Show the Continue button after enhancement
+document.getElementById('enhance-prompt-btn').addEventListener('click', async function () {
+    // After successful enhancement:
+    document.getElementById('continue-media-btn').style.display = 'block';
+    document.getElementById('enhanced-generation-buttons').style.display = 'none';
+});
+
+// Preview generation
+async function generatePreview(prompt, mediaType, apiKey) {
+    const previewSection = document.getElementById('preview-section');
+    const previewContent = document.getElementById('preview-content');
+
+    previewSection.style.display = 'block';
+    previewContent.innerHTML = '<p>Generating preview...</p>';
+
+    try {
+        if (mediaType === 'image') {
+            // Generate a small thumbnail preview
+            const imgResponse = await fetch('/api/generate_preview', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    mediaType: 'image'
+                })
+            });
+            const imgData = await imgResponse.json();
+            previewContent.innerHTML = `<img src="${imgData.url}" alt="Preview" style="max-width:100%;border-radius:4px;">`;
+
+        } else if (mediaType === 'slides') {
+            // Generate a text outline of slides
+            const outlineResponse = await fetch('/api/generate_slides_outline', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt
+                })
+            });
+            const outlineData = await outlineResponse.json();
+            previewContent.innerHTML = outlineData.outline;
+
+        } else {
+            previewContent.innerHTML = '<p>Live preview not available for this media type</p>';
+        }
+    } catch (error) {
+        previewContent.innerHTML = '<p>Preview generation failed</p>';
+    }
+}
+
 // Media type change handler
 // Media type change handler (optimized)
 document.getElementById('media-type').addEventListener('change', function () {
