@@ -378,6 +378,59 @@ section {
     transition: all 0.4s ease-out;
 }
 
+
+/* Add these styles to Version B */
+
+.preview-section {
+    background: rgba(30, 15, 10, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--glass-border);
+}
+
+.preview-columns {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.preview-column h5 {
+    margin-bottom: 0.5rem;
+    color: var(--orange-secondary);
+    font-size: 0.9rem;
+}
+
+.preview-content {
+    background: rgba(30, 15, 10, 0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    height: 200px;
+    overflow: auto;
+    border: 1px solid var(--glass-border);
+}
+
+.template-preview .preview-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.generation-buttons.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.generation-buttons.disabled .generation-btn {
+    background: #555;
+    cursor: not-allowed;
+}
+
 .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
