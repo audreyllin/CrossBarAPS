@@ -1248,6 +1248,40 @@ def generate_slides_outline():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/feedback', methods=['POST'])
+def handle_feedback():
+    data = request.json
+    feedback = {
+        'rating': data.get('rating'),
+        'comment': data.get('comment', ''),
+        'prompt': data.get('prompt', ''),
+        'session_id': data.get('sessionId'),
+        'timestamp': datetime.utcnow().isoformat()
+    }
+    
+    # Save feedback to file
+    feedback_path = os.path.join(ADMIN_OUTPUTS, 'feedback.json')
+    feedbacks = []
+    
+    if os.path.exists(feedback_path):
+        with open(feedback_path, 'r') as f:
+            feedbacks = json.load(f)
+    
+    feedbacks.append(feedback)
+    
+    with open(feedback_path, 'w') as f:
+        json.dump(feedbacks, f, indent=2)
+    
+    return jsonify({'status': 'success'})
+
+@app.route('/api/admin/feedback', methods=['GET'])
+@requires_admin_auth
+def get_feedback():
+    feedback_path = os.path.join(ADMIN_OUTPUTS, 'feedback.json')
+    if os.path.exists(feedback_path):
+        with open(feedback_path, 'r') as f:
+            return jsonify(json.load(f))
+    return jsonify([])
 
 if __name__ == "__main__":
     load_context_index()
