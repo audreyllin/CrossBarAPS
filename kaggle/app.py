@@ -35,7 +35,7 @@ import numpy as np
 import faiss
 from collections import Counter
 import zipfile
-import magic
+import mimetypes
 from rag_pipeline import generate_media  # Fixed import
 
 # Configuration
