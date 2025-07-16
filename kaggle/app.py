@@ -916,7 +916,7 @@ def api_generate():
         # Map slidesgpt to slides
         if media_type == "slidesgpt":
             media_type = "slides"
-            
+
         output_path = generate_media(media_type, answer, session_id, api_key)
 
         if not output_path or not os.path.isfile(output_path):
@@ -1025,7 +1025,7 @@ def adjust_answer():
 
     try:
         data = request.get_json()
-        answer   = data.get("answer")
+        answer = data.get("answer")
         adj_type = data.get("type", "shorten").lower()
 
         if not answer or not adj_type:
@@ -1055,6 +1055,46 @@ def adjust_answer():
     except Exception as e:
         logger.error(f"Error in adjust_answer: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate_from_enhanced", methods=["POST"])
+def generate_from_enhanced():
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
+
+    media_type = request.form.get("type")
+    prompt = request.form.get("prompt")
+    session_id = request.form.get("sessionId")
+    template_file = request.files.get("template")
+
+    if not media_type or not prompt:
+        return jsonify({"error": "Missing media type or prompt"}), 400
+
+    try:
+        # Save template if provided
+        template_path = None
+        if template_file and allowed_file(template_file.filename):
+            filename = secure_filename(template_file.filename)
+            template_path = os.path.join(UPLOAD_FOLDER, filename)
+            template_file.save(template_path)
+
+        # Generate media with template if available
+        output_path = generate_media(
+            media_type, prompt, session_id, api_key, template_path=template_path
+        )
+
+        if not output_path or not os.path.isfile(output_path):
+            return jsonify({"error": "Generation failed"}), 500
+
+        download_url = url_for(
+            "download_generated", file=os.path.basename(output_path), _external=True
+        )
+        return jsonify({"url": download_url})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # Main route
 @app.route("/")
