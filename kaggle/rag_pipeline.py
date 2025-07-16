@@ -48,13 +48,17 @@ REPLICATE_USE_FILE_OUTPUT = False
 client_oa = OpenAI()
 
 
-def _run_replicate(model_ref: str, prompt: str) -> str:
+def _run_replicate(model_ref: str, input_data: dict) -> str:
     """Run a Replicate model and handle different output formats."""
-    output = replicate.run(
-        model_ref,
-        input={"prompt": prompt},
-        use_file_output=REPLICATE_USE_FILE_OUTPUT,
-    )
+    try:
+        output = replicate.run(
+            model_ref,
+            input=input_data,
+            use_file_output=REPLICATE_USE_FILE_OUTPUT,
+        )
+    except Exception as e:
+        logger.error(f"Replicate run failed: {str(e)}")
+        raise
 
     # Handle different output types
     if isinstance(output, list) and len(output) > 0:
@@ -305,29 +309,65 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
 
         prompt = text.strip()[:400]  # Keep prompt short
-
-        # Include template reference if provided
-        if template_path:
-            prompt = f"Use this style: {template_path}. {prompt}"
+        refs = None
 
         try:
+            # Base input parameters
+            input_data = {
+                "prompt": prompt,
+                "aspect_ratio": "16:9",
+            }
+
+            # Handle style type vs reference image conflict
+            if template_path and style_type:
+                raise ValueError("Cannot use both style_type and reference image")
+
+            # Process reference image if provided
+            if template_path and os.path.exists(template_path):
+                try:
+                    refs = [open(template_path, "rb")]
+                    input_data["style_reference_images"] = refs
+                    logger.info(f"Using reference image: {template_path}")
+                except FileNotFoundError:
+                    logger.warning(f"Template file not found: {template_path}")
+            # Process style type if provided
+            elif style_type:
+                valid_styles = [None, "AUTO", "GENERAL", "REALISTIC", "DESIGN"]
+                if style_type.upper() not in valid_styles:
+                    raise ValueError(
+                        f"Invalid style type: {style_type}. Valid options: {valid_styles}"
+                    )
+                input_data["style_type"] = style_type.upper()
+                logger.info(f"Using style type: {style_type.upper()}")
+
             # First try without version pin
-            url = _run_replicate(POSTER_MODEL, prompt)
+            url = _run_replicate(POSTER_MODEL, input_data)
+            return _download(url, session_id, "poster")
+
         except ReplicateError as e:
             # Handle version mismatch (422 status)
             if getattr(e, "status", None) == 422:
                 try:
                     # Get latest model version
-                    model = replicate.models.get(POSTER_MODEL)
+                    model = replicate.models.get(POSTER_MODEL.split(":")[0])
                     latest_version = model.versions.list()[0].id
+                    pinned_model = f"{POSTER_MODEL.split(':')[0]}:{latest_version}"
+
                     # Retry with latest version
-                    url = _run_replicate(f"{POSTER_MODEL}:{latest_version}", prompt)
+                    logger.info(f"Retrying with pinned version: {pinned_model}")
+                    url = _run_replicate(pinned_model, input_data)
+                    return _download(url, session_id, "poster")
                 except Exception:
                     # Final fallback to DALL-E 3
+                    logger.warning("Falling back to DALL-E 3")
                     url = _run_dalle(prompt)
+                    return _download(url, session_id, "poster")
             else:
                 raise RuntimeError(f"Poster generation failed: {e}") from e
-        return _download(url, session_id, "poster")
+        finally:
+            if refs:
+                for f in refs:
+                    f.close()
 
     # Generate video using Seedance
     elif media_type == "video":
@@ -335,26 +375,16 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             raise RuntimeError("REPLICATE_API_TOKEN environment variable not set")
 
         try:
-            output = replicate.run(
+            video_url = _run_replicate(
                 "bytedance/seedance-1-lite:5d4d1a9f6c8b2d7c3d1d3e3f3d3f3d3f3d3f3d3f3d3f3d3f",
-                input={
+                {
                     "prompt": text[:500],
                     "video_length": "5s",
                     "fps": 24,
                     "seed": 42,
                 },
-                use_file_output=REPLICATE_USE_FILE_OUTPUT,
             )
-
-            # Unified output handling
-            first = output[0] if isinstance(output, list) else output
-            video_url = first.url if hasattr(first, "url") else str(first)
-
-            if not video_url.startswith("http"):
-                raise RuntimeError("No valid video URL found in Replicate output")
-
             return _download(video_url, session_id, "video")
-
         except Exception as e:
             logger.error(f"Video generation error: {e}")
             raise RuntimeError(f"Video generation failed: {str(e)}")
