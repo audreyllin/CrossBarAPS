@@ -120,12 +120,11 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="roleSelect">Session Profile:</label>
+                            <label for="roleSelect">Session Profile:</label>
                             <select id="roleSelect">
-                                <option value="general">General</option>
-                                <option value="engineering">Engineering</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="public">Public</option>
+                                {% for role in roles %}
+                                <option value="{{ role.value }}">{{ role.label }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
