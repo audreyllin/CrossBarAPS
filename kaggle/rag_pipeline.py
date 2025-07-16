@@ -48,16 +48,28 @@ client_oa = OpenAI()
 
 
 def _run_replicate(model_ref: str, prompt: str) -> str:
-    """Run a Replicate text-to-image model with auto-correction for Ideogram model references."""
-    try:
-        return replicate.run(model_ref, input={"prompt": prompt})[0]
-    except ReplicateError as e:
-        # Auto-correct Ideogram model references
-        if "ideogram/" in model_ref and "/ideogram-" in model_ref:
-            new_ref = model_ref.replace("ideogram/", "ideogram-ai/")
-            logger.info(f"Auto-correcting model reference to: {new_ref}")
-            return replicate.run(new_ref, input={"prompt": prompt})[0]
-        raise
+    """Run a Replicate model and handle different output formats."""
+    output = replicate.run(model_ref, input={"prompt": prompt})
+
+    # Handle different output types
+    if isinstance(output, replicate.output.FileOutput):
+        return output.url
+    elif isinstance(output, dict):
+        # Look for URL in dictionary values
+        for value in output.values():
+            if isinstance(value, str) and value.startswith("http"):
+                return value
+        # Fallback to first value if no URL found
+        first_val = next(iter(output.values()), None)
+        return str(first_val) if first_val is not None else ""
+    elif isinstance(output, list) and len(output) > 0:
+        first_item = output[0]
+        if isinstance(first_item, replicate.output.FileOutput):
+            return first_item.url
+        elif isinstance(first_item, str):
+            return first_item
+        return str(first_item)  # Fallback for other types
+    return str(output)  # Final fallback
 
 
 def _run_dalle(prompt: str) -> str:
@@ -319,8 +331,17 @@ def generate_media(media_type, text, session_id, api_key=None):
                 },
             )
 
-            # Download the generated video
-            video_url = output["video"]
+            # Handle different output formats
+            if isinstance(output, replicate.output.FileOutput):
+                video_url = output.url
+            elif isinstance(output, dict):
+                video_url = output.get("video", "")
+            else:  # list[FileOutput]
+                video_url = output[0].url if len(output) > 0 else ""
+
+            if not video_url:
+                raise RuntimeError("No video URL found in Replicate output")
+
             return _download(video_url, session_id, "video")
 
         except Exception as e:
