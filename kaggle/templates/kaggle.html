@@ -198,6 +198,15 @@
                     <div class="kernel-output" id="user-memories">
                         <p>Login to see your saved Q&A memories</p>
                     </div>
+                    <!-- Download conversation -->
+                    <div>
+                        <h3><i class="fas fa-download"></i> Download Conversation</h3>
+                        <div class="answer-actions">
+                            <button class="action-btn" onclick="downloadConversation('txt')">.TXT</button>
+                            <button class="action-btn" onclick="downloadConversation('docx')">.DOCX</button>
+                            <button class="action-btn" onclick="downloadConversation('pdf')">.PDF</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- File history -->
@@ -205,16 +214,6 @@
                     <h3><i class="fas fa-folder-open"></i> File History</h3>
                     <div class="kernel-output" id="file-history">
                         <p>No uploaded files yet.</p>
-                    </div>
-                </div>
-
-                <!-- Download conversation -->
-                <div class="result-card animate-on-scroll">
-                    <h3><i class="fas fa-download"></i> Download Conversation</h3>
-                    <div class="answer-actions">
-                        <button class="action-btn" onclick="downloadConversation('txt')">.TXT</button>
-                        <button class="action-btn" onclick="downloadConversation('docx')">.DOCX</button>
-                        <button class="action-btn" onclick="downloadConversation('pdf')">.PDF</button>
                     </div>
                 </div>
             </div>
