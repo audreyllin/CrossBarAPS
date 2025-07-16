@@ -484,6 +484,7 @@ def api_ask():
             context_str += f"[source: {res.get('filename', 'unknown')}, page: {res.get('page', '?')}]\n\n"
 
         # B. Add role to prompt
+        role = data.get("sessionProfile", "general")
         prompt = f"""
         [Role: {role}]
         Context information:
@@ -904,34 +905,39 @@ def get_qa_stats():
         return jsonify({"error": str(e)}), 500
 
 
+# Replace existing /api/generate route with this:
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    data = request.get_json() or {}
+    data = request.form
     media_type = data.get("type")
     answer = data.get("answer", "")
     session_id = data.get("sessionId")
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    template_file = request.files.get("template")
 
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
 
     try:
-        # Map slidesgpt to slides
-        if media_type == "slidesgpt":
-            media_type = "slides"
+        # Save template if provided
+        template_path = None
+        if template_file and allowed_file(template_file.filename):
+            filename = secure_filename(template_file.filename)
+            template_path = os.path.join(UPLOAD_FOLDER, filename)
+            template_file.save(template_path)
 
-        output_path = generate_media(media_type, answer, session_id, api_key)
+        output_path = generate_media(
+            media_type, answer, session_id, api_key, template_path=template_path
+        )
 
         if not output_path or not os.path.isfile(output_path):
-            current_app.logger.error(
-                "generate_media returned invalid path: %r", output_path
-            )
+            current_app.logger.error("Generation succeeded but no file was created")
             return (
                 jsonify({"error": "Generation succeeded but no file was created"}),
                 500,
             )
 
-        # E. Media Output Routing - Save copy to admin_outputs
+        # Save copy to admin_outputs
         filename = os.path.basename(output_path)
         admin_output_path = os.path.join(ADMIN_OUTPUTS, filename)
         shutil.copy(output_path, admin_output_path)
@@ -1139,7 +1145,108 @@ def enhance_prompt():
 # Main route
 @app.route("/")
 def index():
-    return render_template("kaggle.html")
+    roles = [
+        {"value": "general", "label": "General"},
+        {"value": "engineering", "label": "Engineering"}, 
+        {"value": "marketing", "label": "Marketing"},
+        {"value": "public", "label": "Public"}
+    ]
+    return render_template("kaggle.html", roles=roles)
+
+@app.route("/api/debug_vector", methods=["POST"])
+def debug_vector():
+    """Debug endpoint for testing vector embeddings"""
+    data = request.json
+    text = data.get("text")
+    model = data.get("model", "text-embedding-3-large")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not text or not api_key:
+        return jsonify({"error": "Missing text or API key"}), 400
+
+    try:
+        embedding = embed(text, api_key, model)
+        return jsonify(
+            {
+                "text": text,
+                "embedding": embedding[:5] + ["..."],  # Show partial for debugging
+                "dimensions": len(embedding),
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate_preview", methods=["POST"])
+def generate_preview():
+    """Generate preview for enhanced prompts"""
+    data = request.json
+    prompt = data.get("prompt")
+    media_type = data.get("mediaType")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not prompt or not api_key:
+        return jsonify({"error": "Missing prompt or API key"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+
+        if media_type == "image":
+            # Generate thumbnail description
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Describe a thumbnail image for: {prompt}",
+                    }
+                ],
+            )
+            return jsonify({"preview": response.choices[0].message.content})
+
+        elif media_type == "slides":
+            # Generate slides outline
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Create an outline for slides based on: {prompt}",
+                    }
+                ],
+            )
+            return jsonify({"outline": response.choices[0].message.content})
+
+        return jsonify({"preview": "Preview not available for this media type"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate_slides_outline", methods=["POST"])
+def generate_slides_outline():
+    """Generate slides outline for preview"""
+    data = request.json
+    prompt = data.get("prompt")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not prompt or not api_key:
+        return jsonify({"error": "Missing prompt or API key"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Create a detailed slides outline for: {prompt}",
+                }
+            ],
+        )
+        return jsonify({"outline": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
