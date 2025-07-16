@@ -1092,8 +1092,6 @@ document.getElementById('enhance-prompt-btn').addEventListener('click', async fu
         this.innerHTML = 'Enhancing... <i class="fas fa-spinner fa-spin"></i>';
         this.disabled = true;
 
-        const client = new OpenAI(apiKey);
-
         const enhancementPrompt = `
         Enhance the following prompt for ${mediaType} generation with a ${style} style.
         The prompt should be clear, detailed, and optimized for AI generation.
@@ -1102,17 +1100,21 @@ document.getElementById('enhance-prompt-btn').addEventListener('click', async fu
         Original prompt: ${prompt}
         `;
 
-        const response = await client.chat.completions.create({
-            model: "gpt-4",
-            messages: [{
-                role: "user",
-                content: enhancementPrompt
-            }],
-            temperature: 0.7,
-            max_tokens: 500
+        const response = await fetch('/api/enhance_prompt', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                prompt: enhancementPrompt,
+                mediaType: mediaType,
+                style: style
+            })
         });
-
-        const enhancedPrompt = response.choices[0].message.content;
+        const data = await safeJsonParse(response);
+        if (!response.ok) throw new Error(data.error || 'Prompt enhancement failed');
+        const enhancedPrompt = data.enhanced_prompt || data.answer || data.response;
 
         document.getElementById('enhanced-prompt-output').textContent = enhancedPrompt;
         document.getElementById('enhanced-prompt-container').style.display = 'block';
@@ -1229,30 +1231,34 @@ async function generatePreview(prompt, mediaType, apiKey) {
     try {
         if (mediaType === 'image') {
             // Generate a small thumbnail preview
-            const client = new OpenAI(apiKey);
-            const response = await client.images.generate({
-                model: "dall-e-3",
-                prompt: prompt,
-                size: "256x256",
-                quality: "standard",
-                n: 1
+            const imgResponse = await fetch('/api/generate_preview', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    mediaType: 'image'
+                })
             });
-
-            previewContent.innerHTML = `<img src="${response.data[0].url}" alt="Preview" style="max-width:100%;border-radius:4px;">`;
+            const imgData = await imgResponse.json();
+            previewContent.innerHTML = `<img src="${imgData.url}" alt="Preview" style="max-width:100%;border-radius:4px;">`;
 
         } else if (mediaType === 'slides') {
             // Generate a text outline of slides
-            const client = new OpenAI(apiKey);
-            const response = await client.chat.completions.create({
-                model: "gpt-4",
-                messages: [{
-                    role: "user",
-                    content: `Create a slide outline based on this prompt: ${prompt}\n\nReturn as HTML bullet points`
-                }],
-                temperature: 0.5
+            const outlineResponse = await fetch('/api/generate_slides_outline', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt
+                })
             });
-
-            previewContent.innerHTML = response.choices[0].message.content;
+            const outlineData = await outlineResponse.json();
+            previewContent.innerHTML = outlineData.outline;
 
         } else {
             previewContent.innerHTML = '<p>Live preview not available for this media type</p>';
