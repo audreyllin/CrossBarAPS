@@ -1,3 +1,4 @@
+# Core libraries
 Flask==3.0.0
 gunicorn==21.2.0
 openai>=1.3.7
@@ -11,16 +12,33 @@ numpy>=1.24.0
 pandas
 accelerate
 bitsandbytes
+tiktoken
+werkzeug
+python-dotenv
+tqdm
+
+# Text and document processing
 PyPDF2
 pdfplumber
 python-docx
 python-pptx
+PyMuPDF
+reportlab
+fpdf
+python-magic
+python-magic-bin
+
+# OCR and image processing
 pytesseract
 Pillow
-tiktoken
-werkzeug
-reportlab
 pdf2image
-python-dotenv
-PyMuPDF
-fpdf
+opencv-python-headless
+
+# Async and FastAPI (optional)
+aiofiles
+fastapi
+uvicorn
+
+# Language processing (optional)
+langdetect
+googletrans==4.0.0rc1
