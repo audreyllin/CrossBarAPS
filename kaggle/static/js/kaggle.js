@@ -1036,30 +1036,39 @@ async function generateFromAnswer(type) {
 
 // ====== NEW FEATURES START HERE ======
 // Media type change handler
+// Media type change handler (optimized)
 document.getElementById('media-type').addEventListener('change', function () {
     const mediaType = this.value;
     const pageOptions = document.getElementById('page-options-container');
-
-    if (mediaType === 'slides' || mediaType === 'document') {
-        pageOptions.style.display = 'block';
-    } else {
-        pageOptions.style.display = 'none';
-    }
-
-    // Update style options based on media type
     const styleOptions = document.getElementById('style-options');
-    styleOptions.innerHTML = '';
 
-    const styles = {
-        image: ['Professional', 'Creative', 'Minimalist', 'Vibrant', 'Photorealistic', 'Watercolor', 'Cyberpunk'],
+    // Toggle page options - more readable condition
+    pageOptions.style.display =
+        (mediaType === 'slides' || mediaType === 'document') ? 'block' : 'none';
+
+    // Update style options based on media type - optimized mapping
+    const styleMap = {
+        image: ['Professional', 'Creative', 'Minimalist', 'Vibrant',
+            'Photorealistic', 'Watercolor', 'Cyberpunk'],
         video: ['Professional', 'Cinematic', 'Animated', 'Minimalist', 'Dynamic'],
         slides: ['Professional', 'Creative', 'Minimalist', 'Corporate', 'Academic'],
         document: ['Professional', 'Creative', 'Formal', 'Casual', 'Technical']
-    }[mediaType].map(style =>
-        `<option value="${style.toLowerCase()}">${style}</option>`
-    ).join('');
+    };
 
-    styleOptions.innerHTML = styles;
+    // Clear previous options
+    styleOptions.innerHTML = '';
+
+    // Add new options with proper value formatting
+    styleMap[mediaType].forEach(style => {
+        const option = document.createElement('option');
+        option.value = style.toLowerCase().replace(/\s+/g, '-');
+        option.textContent = style;
+        styleOptions.appendChild(option);
+    });
+
+    // Trigger change event to update dependent elements
+    const event = new Event('change');
+    styleOptions.dispatchEvent(event);
 });
 
 // Enhance prompt button handler
