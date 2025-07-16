@@ -1045,6 +1045,119 @@ footer {
     transform: translateX(-50%);
 }
 
+
+/* Continue Generation button */
+
+.continue-generation-btn {
+    background-color: #4a6fa5;
+    border: 1px solid #3a5a8a;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.continue-generation-btn:hover {
+    background-color: #3a5a8a;
+    transform: translateY(-2px);
+}
+
+
+/* Preview columns layout */
+
+.preview-columns {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.preview-column h5 {
+    margin-bottom: 0.5rem;
+    color: var(--orange-secondary);
+    font-size: 0.9rem;
+}
+
+.template-preview .preview-content,
+.generated-preview .preview-content {
+    background: rgba(30, 15, 10, 0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    height: 200px;
+    overflow: auto;
+    border: 1px solid var(--glass-border);
+}
+
+.template-preview .preview-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+
+/* Feedback buttons */
+
+.feedback-btn {
+    background: transparent;
+    border: none;
+    color: var(--cream);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0.5rem;
+}
+
+.feedback-btn:hover {
+    transform: scale(1.2);
+}
+
+.feedback-btn[data-rating="1"] {
+    color: #ff6b6b;
+}
+
+.feedback-btn[data-rating="2"] {
+    color: #ffb347;
+}
+
+.feedback-btn[data-rating="3"] {
+    color: #f7ff59;
+}
+
+.feedback-btn[data-rating="4"] {
+    color: #7cfc00;
+}
+
+.feedback-btn[data-rating="5"] {
+    color: #ff8c00;
+}
+
+.feedback-btn.active {
+    transform: scale(1.3);
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.feedback-comment textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-top: 0.5rem;
+    background: rgba(30, 15, 10, 0.5);
+    border: 1px solid var(--glass-border);
+    color: var(--cream);
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
 .generation-buttons {
     display: flex;
     gap: 0.8rem;
