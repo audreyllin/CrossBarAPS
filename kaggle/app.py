@@ -183,8 +183,9 @@ def update_tags(filename, tags):
 
 # Utility functions
 def allowed_file(filename):
-    return Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
-
+    """Check if the file extension is allowed"""
+    ext = Path(filename).suffix.lower()
+    return ext in ALLOWED_EXTENSIONS
 
 def hash_text(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -220,6 +221,7 @@ def extract_text_from_zip(zip_path):
 
 
 def extract_text_from_file(filepath, api_key=None):
+    """Extract text from various file types using mimetypes for detection"""
     ext = Path(filepath).suffix.lower()
     text = ""
 
@@ -288,7 +290,6 @@ def extract_text_from_file(filepath, api_key=None):
         logger.error(f"[extract_text] {filepath} failed: {str(e)}")
 
     return text[:20000]  # Limit to 20k characters
-
 
 def embed(text, api_key, model="text-embedding-3-large"):
     client = OpenAI(api_key=api_key)
