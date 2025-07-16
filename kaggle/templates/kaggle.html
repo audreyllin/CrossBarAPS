@@ -192,6 +192,98 @@
                     </div>
                 </div>
 
+                <!-- Prompt Enhancement card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-magic"></i> Prompt Enhancement</h3>
+                    <div class="prompt-enhancement-container">
+                        <div class="input-group">
+                            <label for="prompt-input">Your Prompt</label>
+                            <textarea id="prompt-input" placeholder="Enter your prompt for enhancement..."></textarea>
+                        </div>
+
+                        <div class="enhancement-options">
+                            <div class="input-group">
+                                <label for="media-type">Media Type</label>
+                                <select id="media-type">
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                    <option value="slides">Presentation</option>
+                                    <option value="document">Document</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" id="style-options-container">
+                                <label for="style-options">Style</label>
+                                <select id="style-options">
+                                    <option value="professional">Professional</option>
+                                    <option value="creative">Creative</option>
+                                    <option value="minimalist">Minimalist</option>
+                                    <option value="vibrant">Vibrant</option>
+                                </select>
+                            </div>
+
+                            <div class="feedback-buttons">
+                                <button class="feedback-btn" data-rating="1"><i class="far fa-frown"></i></button>
+                                <button class="feedback-btn" data-rating="2"><i class="far fa-meh"></i></button>
+                                <button class="feedback-btn" data-rating="3"><i class="far fa-smile"></i></button>
+                                <button class="feedback-btn" data-rating="4"><i class="far fa-grin-stars"></i></button>
+                                <button class="feedback-btn" data-rating="5"><i class="fas fa-fire"></i></button>
+                            </div>
+
+                            <div class="input-group" id="page-options-container" style="display:none;">
+                                <label for="page-count">Pages/Slides</label>
+                                <input type="number" id="page-count" min="1" max="20" value="5">
+                            </div>
+                        </div>
+
+                        <button class="submit-btn" id="enhance-prompt-btn">Enhance Prompt <i
+                                class="fas fa-wand-magic-sparkles"></i></button>
+
+                        <div class="enhanced-prompt-container" id="enhanced-prompt-container" style="display:none;">
+                            <h4>Enhanced Prompt:</h4>
+                            <div class="kernel-output" id="enhanced-prompt-output"></div>
+
+                            <div class="preview-section" id="preview-section" style="display:none;">
+                                <h4>Preview:</h4>
+                                <div class="preview-content" id="preview-content"></div>
+                            </div>
+
+                            <div class="template-upload">
+                                <label for="template-upload" class="file-label">
+                                    <i class="fas fa-upload"></i>
+                                    <span>Upload Style Template (Optional)</span>
+                                </label>
+                                <input type="file" id="template-upload" accept=".jpg,.jpeg,.png,.pptx,.docx" style="display:none;">
+                                <div id="template-preview" style="display:none;"></div>
+                            </div>
+
+                            <div class="generation-buttons" id="enhanced-generation-buttons" style="display:none;margin-top:1rem;">
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('video')"><i
+                                        class="fas fa-video"></i> Replicate Video</button>
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('poster')"><i
+                                        class="fas fa-image"></i> Ideogram Poster</button>
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('slidesgpt')"><i
+                                        class="fas fa-chalkboard"></i> SlidesGPT</button>
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('memo')"><i
+                                        class="fas fa-file-alt"></i> OpenAI Memo</button>
+                            </div>
+
+                            <div class="feedback-section" style="margin-top:1rem;">
+                                <span class="feedback-label">Rate this enhancement:</span>
+                                <div class="feedback-buttons">
+                                    <button class="feedback-btn" data-rating="1"><i class="far fa-frown"></i></button>
+                                    <button class="feedback-btn" data-rating="2"><i class="far fa-meh"></i></button>
+                                    <button class="feedback-btn" data-rating="3"><i class="far fa-smile"></i></button>
+                                    <button class="feedback-btn" data-rating="4"><i
+                                            class="far fa-grin-stars"></i></button>
+                                    <button class="feedback-btn" data-rating="5"><i class="fas fa-fire"></i></button>
+                                </div>
+                                <textarea id="feedback-comment" placeholder="Optional comments..." style="margin-top:0.5rem;width:100%;display:none;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Conversation history -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-history"></i> Conversation History</h3>
