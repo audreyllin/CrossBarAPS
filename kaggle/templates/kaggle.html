@@ -191,6 +191,30 @@
                     </div>
                 </div>
 
+                <!-- Data Visualization card -->
+                <div class="result-card animate-on-scroll">
+                    <h3><i class="fas fa-chart-bar"></i> Data Visualization</h3>
+                    <div class="visualization-controls">
+                        <div class="viz-toolbar">
+                            <select id="chart-type">
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Chart</option>
+                                <option value="pie">Pie Chart</option>
+                                <option value="scatter">Scatter Plot</option>
+                                <option value="area">Area Chart</option>
+                                <option value="combo">Combo Chart</option>
+                                <option value="table">Data Table</option>
+                            </select>
+                            <input type="color" id="chart-color" value="#4CAF50">
+                            <button id="copy-viz-svg"><i class="fas fa-copy"></i> SVG</button>
+                            <button id="copy-viz-png"><i class="fas fa-copy"></i> PNG</button>
+                            <button id="copy-viz-data"><i class="fas fa-copy"></i> Data</button>
+                            <button id="download-viz"><i class="fas fa-download"></i></button>
+                        </div>
+                        <div id="vega-embed-container"></div>
+                    </div>
+                </div>
+
                 <!-- Prompt Enhancement card -->
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-magic"></i> Prompt Enhancement</h3>
@@ -211,14 +235,29 @@
                                 </select>
                             </div>
 
+                            <div class="input-group">
+                                <label for="aspect-ratio">Aspect Ratio</label>
+                                <select id="aspect-ratio">
+                                    <option value="16:9">16:9 (Widescreen)</option>
+                                    <option value="9:16">9:16 (Portrait)</option>
+                                    <option value="4:3">4:3 (Standard)</option>
+                                    <option value="1:1" selected>1:1 (Square)</option>
+                                    <option value="3:2">3:2 (Classic)</option>
+                                    <option value="2:3">2:3 (Vertical)</option>
+                                </select>
+                            </div>
+
                             <div class="input-group" id="style-options-container">
                                 <label for="style-options">Style</label>
-                                <select id="style-options">
-                                    <option value="professional">Professional</option>
-                                    <option value="creative">Creative</option>
-                                    <option value="minimalist">Minimalist</option>
-                                    <option value="vibrant">Vibrant</option>
+                                <select id="style-options" disabled>
+                                    <option value="DESIGN" selected>Design</option>
                                 </select>
+                                <div class="mutual-exclusive-notice">OR</div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="reference-upload">Reference Image (Optional)</label>
+                                <input type="file" id="reference-upload" accept=".jpg,.jpeg,.png">
                             </div>
 
                             <div class="feedback-buttons">
@@ -250,7 +289,7 @@
                             </div>
                             <div class="kernel-output" id="enhanced-prompt-output"></div>
 
-                            <!-- New confirmation step -->
+                            <!-- Confirmation step -->
                             <div class="confirmation-step" id="confirmation-step" style="display:none; margin-top:1rem;">
                                 <p>Would you like to proceed with media generation or refine your prompt?</p>
                                 <div class="confirmation-buttons">
@@ -263,9 +302,19 @@
                                 </div>
                             </div>
 
-                            <!-- Preview section -->
+                            <!-- Preview section with before-after container -->
                             <div class="preview-section" id="preview-section" style="display:none;">
                                 <h4>Preview:</h4>
+                                <div class="before-after-container">
+                                    <div class="before-pane">
+                                        <h4>Template</h4>
+                                        <div class="preview-image" id="before-preview"></div>
+                                    </div>
+                                    <div class="after-pane">
+                                        <h4>Generated</h4>
+                                        <div class="preview-image" id="after-preview"></div>
+                                    </div>
+                                </div>
                                 <div class="preview-content" id="preview-content"></div>
                                 <button class="download-btn" id="download-media-btn" style="display:none; background-color: #3498db;">
                                     <i class="fas fa-download"></i> Download Media
@@ -282,12 +331,12 @@
                                 <div id="template-preview" style="display:none;"></div>
                             </div>
 
-                            <!-- New Continue for Media Generation button - distinct color -->
+                            <!-- Continue for Media Generation button -->
                             <button class="submit-btn" id="continue-media-btn-2">
                                 <i class="fas fa-play-circle"></i> Continue for Media Generation
                             </button>
 
-                            <!-- Existing generation buttons (hidden initially) -->
+                            <!-- Generation buttons -->
                             <div class="generation-buttons" id="enhanced-generation-buttons" style="display:none;margin-top:1rem;">
                                 <button class="generation-btn" onclick="generateFromEnhancedPrompt('video')">
                                     <i class="fas fa-video"></i> Replicate Video
@@ -295,11 +344,8 @@
                                 <button class="generation-btn" onclick="generateFromEnhancedPrompt('poster')">
                                     <i class="fas fa-image"></i> Ideogram Poster
                                 </button>
-                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('slidesgpt')">
-                                    <i class="fas fa-chalkboard"></i> SlidesGPT
-                                </button>
-                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('memo')">
-                                    <i class="fas fa-file-alt"></i> OpenAI Memo
+                                <button class="generation-btn" onclick="generateFromAnswer('poster')">
+                                    <i class="fas fa-image"></i> GPT Poster
                                 </button>
                             </div>
 
@@ -504,6 +550,9 @@
 
     <!-- ========== MAIN SCRIPT ========== -->
     <script src="{{ url_for('static', filename='js/kaggle.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 </body>
 
 </html>
