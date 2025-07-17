@@ -195,23 +195,56 @@
                 <div class="result-card animate-on-scroll">
                     <h3><i class="fas fa-chart-bar"></i> Data Visualization</h3>
                     <div class="visualization-controls">
-                        <div class="viz-toolbar">
-                            <select id="chart-type">
-                                <option value="bar">Bar Chart</option>
-                                <option value="line">Line Chart</option>
-                                <option value="pie">Pie Chart</option>
-                                <option value="scatter">Scatter Plot</option>
-                                <option value="area">Area Chart</option>
-                                <option value="combo">Combo Chart</option>
-                                <option value="table">Data Table</option>
-                            </select>
-                            <input type="color" id="chart-color" value="#4CAF50">
-                            <button id="copy-viz-svg"><i class="fas fa-copy"></i> SVG</button>
-                            <button id="copy-viz-png"><i class="fas fa-copy"></i> PNG</button>
-                            <button id="copy-viz-data"><i class="fas fa-copy"></i> Data</button>
-                            <button id="download-viz"><i class="fas fa-download"></i></button>
+                        <!-- Data input area -->
+                        <div class="input-group">
+                            <label for="data-input">Data Input</label>
+                            <textarea id="data-input" placeholder="Paste raw data or upload file..."></textarea>
                         </div>
-                        <div id="vega-embed-container"></div>
+
+                        <!-- File upload -->
+                        <div class="file-upload">
+                            <input type="file" id="data-upload" class="file-input" accept=".csv,.tsv,.xlsx,.json">
+                            <label for="data-upload" class="file-label">
+                                <i class="fas fa-file-upload"></i>
+                                <span>Upload Data File</span>
+                                <small>Supported: CSV, TSV, XLSX, JSON</small>
+                            </label>
+                        </div>
+
+                        <!-- Parse button -->
+                        <button class="submit-btn" id="parse-data-btn">
+                            <i class="fas fa-chart-line"></i> Parse Data
+                        </button>
+
+                        <!-- Color palette selector -->
+                        <div class="input-group">
+                            <label for="chart-palette">Color Palette</label>
+                            <select id="chart-palette">
+                                <option value="crossbar">Crossbar Theme</option>
+                                <option value="warm">Warm Gradient</option>
+                                <option value="cool">Cool Gradient</option>
+                                <option value="mono">Monochrome</option>
+                            </select>
+                        </div>
+
+                        <!-- Visualization container -->
+                        <div id="vega-embed-container" style="max-height: 400px; overflow: auto;"></div>
+
+                        <!-- Action buttons -->
+                        <div class="viz-toolbar">
+                            <button class="viz-btn" data-action="svg">
+                                <i class="fas fa-copy"></i> SVG
+                            </button>
+                            <button class="viz-btn" data-action="png">
+                                <i class="fas fa-copy"></i> PNG
+                            </button>
+                            <button class="viz-btn" data-action="data">
+                                <i class="fas fa-copy"></i> Data
+                            </button>
+                            <button class="viz-btn" data-action="download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
                     </div>
                 </div>
 
