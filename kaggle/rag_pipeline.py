@@ -222,7 +222,7 @@ def get_embeddings(texts, api_key):
 
 def create_index(api_key):
     """Create a FAISS index from documents in the upload folder"""
-    index = faiss.IndexFlatL2(3072)  # Dimension for text-embedding-3-large
+    index = faiss.IndexFlatL2(3072)
     metadata = []
 
     for filepath in Path(UPLOAD_FOLDER).glob("*"):
@@ -284,16 +284,26 @@ def generate_answer(question, context, api_key):
         logger.error(f"Answer generation failed: {str(e)}")
         return "Error generating answer"
 
+
 VALID_RATIOS = ["16:9", "9:16", "4:3", "1:1", "3:2", "2:3"]
 
-def generate_media(media_type, text, session_id, api_key=None, template_path=None, aspect_ratio="16:9", style_type=None):
+
+def generate_media(
+    media_type,
+    text,
+    session_id,
+    api_key=None,
+    template_path=None,
+    aspect_ratio="16:9",
+    style_type=None,
+):
     """
     Generate different media types from text with comprehensive validation:
     - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate) with auto-retry and DALL·E fallback
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
     - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
-    
+
     Args:
         media_type: Type of media to generate (poster, video, slides, memo)
         text: Input text/content to generate from
@@ -302,27 +312,33 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
         template_path: Optional path to a style template file
         aspect_ratio: Aspect ratio for generated media (default: "16:9")
         style_type: Style type for poster generation (AUTO, GENERAL, REALISTIC, DESIGN)
-    
+
     Returns:
         Absolute path to generated media file
-    
+
     Raises:
         ValueError: For invalid parameters
         RuntimeError: For generation failures
     """
     # Validate media type
     if media_type not in ["poster", "video", "slides", "memo"]:
-        raise ValueError(f"Invalid media type: {media_type}. Must be one of: poster, video, slides, memo")
+        raise ValueError(
+            f"Invalid media type: {media_type}. Must be one of: poster, video, slides, memo"
+        )
 
     # Validate aspect ratio
     if aspect_ratio not in VALID_RATIOS:
-        raise ValueError(f"Invalid aspect ratio: {aspect_ratio}. Must be one of: {VALID_RATIOS}")
+        raise ValueError(
+            f"Invalid aspect ratio: {aspect_ratio}. Must be one of: {VALID_RATIOS}"
+        )
 
     # Poster-specific validation
     if media_type == "poster":
         if template_path and style_type:
-            raise ValueError("Cannot specify both template_path and style_type - choose one")
-        
+            raise ValueError(
+                "Cannot specify both template_path and style_type - choose one"
+            )
+
         # Set default style if neither provided
         if not template_path and not style_type:
             style_type = "DESIGN"
@@ -434,11 +450,11 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             )
             slides = json.loads(resp.choices[0].message.content)
             prs = Presentation()
-            
+
             # Add title slide
             title_slide = prs.slides.add_slide(prs.slide_layouts[0])
             title_slide.shapes.title.text = "Presentation"
-            
+
             # Add content slides
             for slide_data in slides:
                 slide = prs.slides.add_slide(prs.slide_layouts[1])
@@ -446,7 +462,7 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
                 tf = slide.shapes.placeholders[1].text_frame
                 for bullet in slide_data.get("bullets", []):
                     tf.add_paragraph().text = bullet
-                    
+
             prs.save(out_path)
             return os.path.abspath(out_path)
         except Exception as e:
@@ -470,20 +486,22 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             )
             memo_content = resp.choices[0].message.content
             doc = DocxWriter()
-            
+
             # Add memo header
             doc.add_heading("MEMORANDUM", level=0)
-            doc.add_paragraph().add_run("Date: " + datetime.now().strftime("%B %d, %Y")).bold = True
+            doc.add_paragraph().add_run(
+                "Date: " + datetime.now().strftime("%B %d, %Y")
+            ).bold = True
             doc.add_paragraph().add_run("To: ").bold = True
             doc.add_paragraph().add_run("From: ").bold = True
             doc.add_paragraph().add_run("Subject: ").bold = True
             doc.add_paragraph()
-            
+
             # Add memo content
             for para in memo_content.splitlines():
                 if para.strip():
                     doc.add_paragraph(para.strip())
-                    
+
             doc.save(out_path)
             return os.path.abspath(out_path)
         except Exception as e:

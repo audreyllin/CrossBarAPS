@@ -36,14 +36,18 @@ import faiss
 from collections import Counter
 import zipfile
 import mimetypes
-from rag_pipeline import generate_media  # Fixed import
+from rag_pipeline import generate_media
+
+# Add these constants near the top of app.py
+VALID_RATIOS = ["16:9", "9:16", "4:3", "1:1", "3:2", "2:3"]
+VALID_STYLES = ["AUTO", "GENERAL", "REALISTIC", "DESIGN"]
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 ADMIN_OUTPUTS = "admin_outputs"
 CONVERSATIONS_FILE = "conversations.json"
-CONTEXT_UPLOADS_FILE = ".json"
+CONTEXT_UPLOADS_FILE = "context_uploads.json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(ADMIN_OUTPUTS, exist_ok=True)
@@ -82,26 +86,42 @@ app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024  # 100MB limit
 
 
 # FAISS Vector Index
-class VectorIndex:
-    def __init__(self, dim=3072):
-        self.index = faiss.IndexIDMap(faiss.IndexFlatL2(dim))
-        self.metadata = {}
-        self.next_id = 1
+class PersistentVectorIndex:
+    def __init__(self, path="vector_index"):
+        self.path = path
+        self.index_path = f"{path}.faiss"
+        self.meta_path = f"{path}.json"
+
+        if os.path.exists(self.index_path):
+            self.index = faiss.read_index(self.index_path)
+            with open(self.meta_path, "r") as f:
+                self.metadata = json.load(f)
+        else:
+            self.index = faiss.IndexIDMap(faiss.IndexFlatL2(3072))
+            self.metadata = {}
+
+    def save(self):
+        faiss.write_index(self.index, self.index_path)
+        with open(self.meta_path, "w") as f:
+            json.dump(self.metadata, f, indent=2)
 
     def add_vector(self, vector, metadata):
-        vector_id = self.next_id
-        self.index.add_with_ids(np.array([vector]), np.array([vector_id]))
+        vector_id = len(self.metadata) + 1
+        self.index.add_with_ids(
+            np.array([vector]).astype("float32"), np.array([vector_id], dtype=np.int64)
+        )
         self.metadata[vector_id] = metadata
-        self.next_id += 1
         return vector_id
 
     def remove_vector(self, vector_id):
-        self.index.remove_ids(np.array([vector_id]))
+        self.index.remove_ids(np.array([vector_id], dtype=np.int64))
         if vector_id in self.metadata:
             del self.metadata[vector_id]
 
     def search(self, vector, k=5):
-        distances, vector_ids = self.index.search(np.array([vector]), k)
+        distances, vector_ids = self.index.search(
+            np.array([vector]).astype("float32"), k
+        )
         results = []
         for i in range(len(vector_ids[0])):
             if vector_ids[0][i] >= 0 and vector_ids[0][i] in self.metadata:
@@ -114,8 +134,8 @@ class VectorIndex:
         return results
 
 
-# Initialize index
-vector_index = VectorIndex()
+# Initialize the persistent index
+vector_index = PersistentVectorIndex()
 
 
 # Load existing context
@@ -139,6 +159,8 @@ def load_context_index():
                                 "timestamp": entry["timestamp"],
                             },
                         )
+            # Save the loaded index to disk
+            vector_index.save()
         except Exception as e:
             logger.error(f"Error loading context index: {str(e)}")
 
@@ -222,7 +244,7 @@ def extract_text_from_zip(zip_path):
 
 
 def extract_text_from_file(filepath, api_key=None):
-    """Extract text from various file types using mimetypes for detection"""
+    """Extract text from various file types using semantic chunking"""
     ext = Path(filepath).suffix.lower()
     text = ""
 
@@ -231,26 +253,16 @@ def extract_text_from_file(filepath, api_key=None):
         if ext == ".zip":
             return extract_text_from_zip(filepath)
 
-        # Handle other file types
+        # Handle other file types (existing extraction logic)
         if ext == ".pdf":
-            # First try regular text extraction
             with pdfplumber.open(filepath) as pdf:
                 text = "\n".join(
                     page.extract_text() for page in pdf.pages if page.extract_text()
                 )
-
-            # If no text or image-heavy, try OCR
             if not text.strip() or is_image_heavy_pdf(filepath):
                 doc = fitz.open(filepath)
                 for page in doc:
-                    pix = page.get_pixmap()
-                    with tempfile.NamedTemporaryFile(
-                        suffix=".png", delete=False
-                    ) as tmp_img:
-                        pix.save(tmp_img.name)
-                        image = Image.open(tmp_img.name)
-                        text += pytesseract.image_to_string(image) + "\n"
-                        os.unlink(tmp_img.name)
+                    text += page.get_text() or ""
 
         elif ext in [".doc", ".docx"]:
             doc = DocxDoc(filepath)
@@ -268,14 +280,14 @@ def extract_text_from_file(filepath, api_key=None):
         elif ext in [".xls", ".xlsx"]:
             df = pd.read_excel(filepath, sheet_name=None)
             text = "\n".join(
-                df[sheet].ast(str).apply(" | ".join, axis=1).str.cat(sep="\n")
+                df[sheet].astype(str).apply(" | ".join, axis=1).str.cat(sep="\n")
                 for sheet in df
             )
 
         elif ext in [".csv", ".tsv"]:
             text = (
                 pd.read_csv(filepath)
-                .ast(str)
+                .astype(str)
                 .apply(" | ".join, axis=1)
                 .str.cat(sep="\n")
             )
@@ -289,8 +301,65 @@ def extract_text_from_file(filepath, api_key=None):
 
     except Exception as e:
         logger.error(f"[extract_text] {filepath} failed: {str(e)}")
+        return ""
 
-    return text[:20000]  # Limit to 20k characters
+    # Apply semantic chunking to the extracted text
+    return semantic_chunk(clean_text(text[:20000]))  # Limit to 20k chars
+
+
+def semantic_chunk(text, min_size=500):
+    """Split by paragraphs/sections while respecting min size"""
+    chunks = []
+    current_chunk = []
+    current_len = 0
+
+    # First try splitting by double newlines (paragraphs)
+    paragraphs = text.split("\n\n")
+
+    for para in paragraphs:
+        para = para.strip()
+        if not para:
+            continue
+
+        if current_len + len(para) > min_size and current_chunk:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = []
+            current_len = 0
+
+        current_chunk.append(para)
+        current_len += len(para)
+
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+
+    # If we got just one chunk that's too large, fall back to sentence splitting
+    if len(chunks) == 1 and len(chunks[0]) > min_size * 2:
+        return chunk_text(text)  # Fall back to original chunking method
+
+    return chunks
+
+
+def update_context_priority(session_id, used_context_ids, positive=True):
+    """Adjust priority based on usage"""
+    if not os.path.exists(CONTEXT_UPLOADS_FILE):
+        return
+
+    try:
+        with open(CONTEXT_UPLOADS_FILE, "r+") as f:
+            data = json.load(f)
+            for entry in data:
+                if entry["context_id"] in used_context_ids:
+                    # Increase priority for positive feedback, decrease for negative
+                    entry["priority"] += 1 if positive else -1
+                    # Ensure priority stays within reasonable bounds
+                    entry["priority"] = max(0, min(entry["priority"], 10))
+
+            f.seek(0)
+            json.dump(data, f, indent=2)
+            f.truncate()
+
+    except Exception as e:
+        logger.error(f"Error updating context priorities: {str(e)}")
 
 
 def embed(text, api_key, model="text-embedding-3-large"):
@@ -300,6 +369,40 @@ def embed(text, api_key, model="text-embedding-3-large"):
         .data[0]
         .embedding
     )
+
+
+def get_enhanced_embeddings(texts, api_key):
+    """Add cross-chunk context to embeddings"""
+    if not api_key or not texts:
+        return []
+
+    try:
+        client = OpenAI(api_key=api_key)
+        prompt = f"""Analyze these text chunks as a cohesive document and return enhanced summaries:
+        {texts}
+        Return a JSON array where each element is an enhanced summary of the corresponding chunk."""
+
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=2000,
+            temperature=0.3,
+        )
+
+        enhanced_data = json.loads(response.choices[0].message.content)
+        if isinstance(enhanced_data, dict) and "chunks" in enhanced_data:
+            enhanced_texts = enhanced_data["chunks"]
+        elif isinstance(enhanced_data, list):
+            enhanced_texts = enhanced_data
+        else:
+            enhanced_texts = texts  # Fallback to original texts
+
+        return embed(enhanced_texts, api_key)
+
+    except Exception as e:
+        logger.error(f"Enhanced embeddings failed: {str(e)}")
+        return embed(texts, api_key)  # Fallback to regular embeddings
 
 
 def extract_concepts(text, api_key):
@@ -427,7 +530,7 @@ def reset_db():
         # Reset vector index
         vector_index.index.reset()
         vector_index.metadata = {}
-        vector_index.next_id = 1
+        vector_index.save()  # Save the empty index
 
         return jsonify({"status": "reset complete"})
     except Exception as e:
@@ -440,8 +543,9 @@ def api_ask():
     question = data.get("question")
     session_id = data.get("sessionId")
     model = data.get("model", "text-embedding-3-large")
-    role = data.get("sessionProfile", "general")  # B. Role-based context
+    role = data.get("sessionProfile", "general")
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+    enhance = data.get("enhance", False)  # New enhancement flag
 
     if not question or not api_key:
         return jsonify({"error": "Missing question or API key"}), 400
@@ -451,40 +555,42 @@ def api_ask():
         q_emb = embed(question, api_key, model)
 
         # Retrieve relevant context
-        results = vector_index.search(q_emb, k=10)  # Increased k for better context
+        results = vector_index.search(q_emb, k=10)
 
-        # A. Context Traceability: Create matched_chunks list
-        matched_chunks = [
-            {
-                "file": r.get("filename"),
-                "text": r.get("text"),
-                "page": r.get("page", "?"),
-            }
-            for r in results
-        ]
+        # Track used context IDs for priority updates
+        used_context_ids = [r["context_id"] for r in results if "context_id" in r]
 
-        # C. Concept Boost Logic
+        # Apply concept boost
         concept_boost = 0.1
         for r in results:
-            if "concepts" in r and "blockchain" in r["concepts"]:
+            if "concepts" in r and any(
+                concept in question.lower() for concept in r["concepts"]
+            ):
                 r["similarity"] += concept_boost
 
-        # Sort by priority then similarity (with boost)
+        # Sort by priority then similarity
         results.sort(key=lambda x: (-x.get("priority", 0), -x["similarity"]))
 
-        # Build context string with source info (A)
+        # Build context string with source info
         context_str = ""
-        for res in results[:5]:  # Use top 5 results
+        matched_chunks = []
+        for i, res in enumerate(results[:5]):  # Use top 5 results
             if res.get("text"):
-                context_str += f"{res['text']}\n\n"
-            elif res.get("filename"):
-                context_str += f"From {res['filename']}:\n{res.get('text', '')}\n\n"
+                context_str += f"[Source {i+1}]: {res['text']}\n\n"
+                matched_chunks.append(
+                    {
+                        "file": res.get("filename", "text snippet"),
+                        "text": (
+                            res["text"][:500] + "..."
+                            if len(res["text"]) > 500
+                            else res["text"]
+                        ),
+                        "similarity": res["similarity"],
+                        "concepts": res.get("concepts", []),
+                    }
+                )
 
-            # Add source info (A)
-            context_str += f"[source: {res.get('filename', 'unknown')}, page: {res.get('page', '?')}]\n\n"
-
-        # B. Add role to prompt
-        role = data.get("sessionProfile", "general")
+        # Generate answer with enhanced prompt if requested
         prompt = f"""
         [Role: {role}]
         Context information:
@@ -494,55 +600,75 @@ def api_ask():
         Answer:
         """
 
-        # Send to GPT
         client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1024,
-        )
-        answer = response.choices[0].message.content.strip()
 
-        # Save conversation
+        # Enhanced generation with follow-up questions if requested
+        if enhance:
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1024,
+                response_format={"type": "json_object"},
+                temperature=0.3,
+            )
+
+            try:
+                answer_data = json.loads(response.choices[0].message.content)
+                answer = answer_data.get("answer", "")
+                follow_ups = answer_data.get("follow_up_questions", [])
+            except:
+                answer = response.choices[0].message.content.strip()
+                follow_ups = []
+        else:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1024,
+            )
+            answer = response.choices[0].message.content.strip()
+            follow_ups = []
+
+        # Save conversation and update context priorities
         save_conversation(session_id, question, answer)
+        update_context_priority(session_id, used_context_ids, positive=True)
 
-        # D. Admin Q&A Benchmarking - Save usage log
+        # Save Q&A log
         qa_log = {
             "session_id": session_id,
             "question": question,
             "answer": answer,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "matched_chunks": matched_chunks,  # A
-            "files": list(
-                set(r.get("filename") for r in results if r.get("filename"))
-            ),  # D
+            "matched_chunks": matched_chunks,
+            "files": list(set(r.get("filename") for r in results if r.get("filename"))),
+            "model": model,
+            "enhanced": enhance,
         }
 
-        # Save to admin_outputs directory (D)
+        # Save to admin_outputs directory
         qa_log_path = os.path.join(ADMIN_OUTPUTS, "qa_logs.json")
+        qa_logs = []
         if os.path.exists(qa_log_path):
             with open(qa_log_path, "r") as f:
                 qa_logs = json.load(f)
-        else:
-            qa_logs = []
-
         qa_logs.append(qa_log)
         with open(qa_log_path, "w") as f:
             json.dump(qa_logs, f, indent=2)
 
-        return jsonify(
-            {
-                "answer": answer,
-                "question": question,
-                "follow_ups": [
-                    "Can you elaborate on this?",
-                    "What are the key points from this answer?",
-                    "How does this relate to other documents?",
-                ],
-                "context_used": [r.get("filename") or "text snippet" for r in results],
-                "matched_chunks": matched_chunks,  # A
-            }
-        )
+        response_data = {
+            "answer": answer,
+            "question": question,
+            "context_used": [r.get("filename") or "text snippet" for r in results[:5]],
+            "matched_chunks": matched_chunks,
+            "model": model,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+        if enhance and follow_ups:
+            response_data["follow_up_questions"] = follow_ups[
+                :3
+            ]  # Limit to 3 follow-ups
+
+        return jsonify(response_data)
 
     except Exception as e:
         logger.error(f"Error in api_ask: {str(e)}")
@@ -914,6 +1040,8 @@ def api_generate():
     session_id = data.get("sessionId")
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
     template_file = request.files.get("template")
+    aspect_ratio = data.get("aspect_ratio", "16:9")
+    style_type = data.get("style_type")
 
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
@@ -927,7 +1055,13 @@ def api_generate():
             template_file.save(template_path)
 
         output_path = generate_media(
-            media_type, answer, session_id, api_key, template_path=template_path
+            media_type, 
+            answer, 
+            session_id, 
+            api_key, 
+            template_path=template_path,
+            aspect_ratio=data.get("aspect_ratio", "16:9"),
+            style_type=data.get("style_type")
         )
 
         if not output_path or not os.path.isfile(output_path):
@@ -1115,7 +1249,13 @@ def generate_from_enhanced():
 
         # Generate media
         output_path = generate_media(
-            media_type, prompt, session_id, api_key, template_path=template_path
+            media_type, 
+            prompt, 
+            session_id, 
+            api_key, 
+            template_path=template_path,
+            aspect_ratio=data.get("aspect_ratio", "16:9"),
+            style_type=data.get("style_type")
         )
 
         if not output_path or not os.path.isfile(output_path):
@@ -1343,7 +1483,7 @@ def handle_feedback():
         "session_id": data.get("sessionId"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
-    
+
     # Save feedback to file
     feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
     feedbacks = []
@@ -1361,6 +1501,7 @@ def handle_feedback():
         json.dump(feedbacks, f, indent=2)
 
     return jsonify({"status": "success"})
+
 
 @app.route("/api/admin/feedback", methods=["GET"])
 @requires_admin_auth
@@ -1473,6 +1614,7 @@ def visualize_data():
         return jsonify(spec)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     load_context_index()
