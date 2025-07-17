@@ -737,7 +737,10 @@ section {
 }
 
 button#enhance-prompt-btn,
-button#submit-btn {
+button#submit-btn,
+button#submit-file-context,
+button#submit-text-context,
+button#test-vector-btn {
     background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
 }
 
