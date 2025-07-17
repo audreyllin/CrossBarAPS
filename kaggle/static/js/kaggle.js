@@ -695,6 +695,193 @@ document.getElementById('admin-login-btn').addEventListener('click', async () =>
     }
 });
 
+// Palette definitions
+const palettes = {
+    crossbar: ['#ff7f00', '#5d3924', '#00f2ff'],
+    warm: ['#ff9d5c', '#ff7f00', '#ff6b6b'],
+    cool: ['#00f2ff', '#8a2be2', '#627eea'],
+    mono: ['#ffffff', '#f5deb3', '#ff7f00']
+};
+
+// Current Vega spec
+let currentVegaSpec = null;
+
+// Parse Data button handler
+document.getElementById('parse-data-btn').addEventListener('click', async function () {
+    const apiKey = document.getElementById('api-key').value;
+    const textInput = document.getElementById('data-input').value;
+    const fileInput = document.getElementById('data-upload').files[0];
+
+    if (!apiKey) {
+        showNotification('Please enter your API key first', 'error');
+        return;
+    }
+
+    let dataToParse = textInput;
+
+    // If file was uploaded, read it
+    if (fileInput) {
+        try {
+            dataToParse = await readUploadedFile(fileInput);
+        } catch (error) {
+            showNotification(`Error reading file: ${error.message}`, 'error');
+            return;
+        }
+    }
+
+    if (!dataToParse) {
+        showNotification('Please enter data or upload a file', 'error');
+        return;
+    }
+
+    try {
+        this.innerHTML = 'Parsing... <i class="fas fa-spinner fa-spin"></i>';
+
+        const response = await fetch('/api/visualize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({ text: dataToParse })
+        });
+
+        const spec = await response.json();
+        if (!response.ok) throw new Error(spec.error || 'Visualization failed');
+
+        // Store the spec and render
+        currentVegaSpec = spec;
+        renderViz(spec);
+        showNotification('Data visualized successfully!', 'success');
+    } catch (error) {
+        showNotification(`Error: ${error.message}`, 'error');
+    } finally {
+        this.innerHTML = '<i class="fas fa-chart-line"></i> Parse Data';
+    }
+});
+
+// File reader helper
+function readUploadedFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(new Error('File read failed'));
+
+        if (file.name.endsWith('.json')) {
+            reader.readAsText(file);
+        } else if (file.name.endsWith('.xlsx')) {
+            // For Excel files, we'll convert to CSV
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                resolve(XLSX.utils.sheet_to_csv(firstSheet));
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            reader.readAsText(file);
+        }
+    });
+}
+
+// Render Vega visualization
+function renderViz(spec) {
+    const container = document.getElementById('vega-embed-container');
+    container.innerHTML = '';
+
+    vegaEmbed(container, spec)
+        .then(result => {
+            // Store the view for later export
+            window.vegaView = result.view;
+        })
+        .catch(error => {
+            console.error('Vega embedding error:', error);
+            showNotification('Error rendering visualization', 'error');
+        });
+}
+
+// Palette change handler
+document.getElementById('chart-palette').addEventListener('change', function () {
+    if (!currentVegaSpec) return;
+
+    const palette = palettes[this.value];
+    if (!palette) return;
+
+    // Update the spec with new colors
+    if (currentVegaSpec.encoding && currentVegaSpec.encoding.color) {
+        currentVegaSpec.encoding.color.scale = { range: palette };
+    } else if (currentVegaSpec.layer) {
+        // Handle layered specs
+        currentVegaSpec.layer.forEach(layer => {
+            if (layer.encoding && layer.encoding.color) {
+                layer.encoding.color.scale = { range: palette };
+            }
+        });
+    }
+
+    // Re-render
+    renderViz(currentVegaSpec);
+});
+
+// Consolidated Visualization Export Controls
+document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        const action = this.getAttribute('data-action');
+        await handleVizExport(action);
+    });
+});
+
+async function handleVizExport(action) {
+    const container = document.getElementById('vega-embed-container');
+    const view = container.querySelector('.vega-embed')?._view || window.vegaView;
+
+    if (!view) {
+        showNotification('No visualization to export', 'error');
+        return;
+    }
+
+    try {
+        switch (action) {
+            case 'svg':
+            case 'copy-viz-svg':
+                const svg = await view.toSVG();
+                await navigator.clipboard.writeText(svg);
+                showNotification('SVG copied to clipboard!', 'success');
+                break;
+
+            case 'png':
+            case 'copy-viz-png':
+                const pngCanvas = await view.toCanvas();
+                const pngBlob = await new Promise(resolve => pngCanvas.toBlob(resolve));
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': pngBlob })
+                ]);
+                showNotification('PNG copied to clipboard!', 'success');
+                break;
+
+            case 'data':
+            case 'copy-viz-data':
+                const data = view.data('source');
+                await navigator.clipboard.writeText(
+                    JSON.stringify(data, null, 2)
+                );
+                showNotification('Data copied to clipboard!', 'success');
+                break;
+
+            case 'download':
+            case 'download-viz':
+                const dlCanvas = await view.toCanvas();
+                const link = document.createElement('a');
+                link.download = 'visualization.png';
+                link.href = dlCanvas.toDataURL('image/png');
+                link.click();
+                break;
+        }
+    } catch (error) {
+        showNotification(`Export failed: ${error.message}`, 'error');
+    }
+}
+
 // Load admin dashboard
 async function loadAdminDashboard() {
     try {
@@ -1646,34 +1833,6 @@ async function generatePreview(prompt, mediaType, apiKey) {
     }
 }
 
-// Visualization Export Controls
-async function copyVizAs(format) {
-    const container = document.getElementById('vega-embed-container');
-    const view = container.querySelector('.vega-embed')?._view;
-
-    if (!view) return;
-
-    try {
-        if (format === 'svg') {
-            const svg = await view.toSVG();
-            await navigator.clipboard.writeText(svg);
-            showNotification('SVG copied to clipboard!', 'success');
-        } else if (format === 'png') {
-            const canvas = await view.toCanvas();
-            canvas.toBlob(async (blob) => {
-                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                showNotification('PNG copied to clipboard!', 'success');
-            });
-        } else if (format === 'data') {
-            const data = view.data('source');
-            await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-            showNotification('Data copied to clipboard!', 'success');
-        }
-    } catch (err) {
-        showNotification(`Copy failed: ${err.message}`, 'error');
-    }
-}
-
 function downloadViz() {
     const container = document.getElementById('vega-embed-container');
     const view = container.querySelector('.vega-embed')?._view;
@@ -1723,10 +1882,44 @@ function setupUniversalCopy() {
 setupUniversalCopy();
 
 // Add event listeners
-document.getElementById('copy-viz-svg').addEventListener('click', () => copyVizAs('svg'));
-document.getElementById('copy-viz-png').addEventListener('click', () => copyVizAs('png'));
-document.getElementById('copy-viz-data').addEventListener('click', () => copyVizAs('data'));
-document.getElementById('download-viz').addEventListener('click', downloadViz);
+// Update all visualization export event listeners to use handleVizExport
+document.getElementById('copy-viz-svg').addEventListener('click', () => handleVizExport('svg'));
+document.getElementById('copy-viz-png').addEventListener('click', () => handleVizExport('png'));
+document.getElementById('copy-viz-data').addEventListener('click', () => handleVizExport('data'));
+document.getElementById('download-viz').addEventListener('click', () => handleVizExport('download'));
+
+// Test palette swapping
+describe('Palette Swapping', () => {
+    it('should update Vega spec with new colors', () => {
+        const testSpec = {
+            mark: 'bar',
+            encoding: {
+                color: { field: 'category', type: 'nominal' }
+            }
+        };
+
+        currentVegaSpec = JSON.parse(JSON.stringify(testSpec));
+        document.getElementById('chart-palette').value = 'warm';
+        document.getElementById('chart-palette').dispatchEvent(new Event('change'));
+
+        expect(currentVegaSpec.encoding.color.scale.range).toEqual(palettes.warm);
+    });
+});
+
+// Test mobile responsiveness
+describe('Mobile Responsiveness', () => {
+    beforeEach(() => {
+        // Set mobile viewport
+        window.innerWidth = 500;
+        window.dispatchEvent(new Event('resize'));
+    });
+
+    it('should have scrollable viz container on mobile', () => {
+        const container = document.getElementById('vega-embed-container');
+        expect(container.style.maxHeight).toBe('400px');
+        expect(container.style.overflow).toBe('auto');
+    });
+});
 
 // Add to generatePreview function
 function updateBeforeAfterPreview(templateFile, generatedUrl) {
