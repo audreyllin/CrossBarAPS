@@ -237,48 +237,74 @@
 
                         <button class="submit-btn" id="enhance-prompt-btn">Enhance Prompt <i
                                 class="fas fa-wand-magic-sparkles"></i></button>
+                        <button class="submit-btn" id="continue-media-btn">
+                            <i class="fas fa-play-circle"></i> Continue for Media Generation
+                        </button>
 
                         <div class="enhanced-prompt-container" id="enhanced-prompt-container" style="display:none;">
                             <h4>Enhanced Prompt:</h4>
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                                <p>Your enhanced prompt ready for use:</p>
+                                <button id="copy-enhanced-prompt-btn" class="action-btn"><i class="fas fa-copy"></i>
+                                    Copy&nbsp;All</button>
+                            </div>
                             <div class="kernel-output" id="enhanced-prompt-output"></div>
 
-                            <!-- Continue Generation button -->
-                            <button class="continue-generation-btn" id="continue-generation-btn">
-                                <i class="fas fa-play"></i> Continue Generation
-                            </button>
-
-                            <!-- Preview section divided into two columns -->
-                            <div class="preview-section" id="preview-section" style="display:none;">
-                                <div class="preview-columns">
-                                    <div class="preview-column template-preview">
-                                        <h5>Template Preview</h5>
-                                        <div class="preview-content" id="template-preview-content"></div>
-                                    </div>
-                                    <div class="preview-column generated-preview">
-                                        <h5>Generated Preview</h5>
-                                        <div class="preview-content" id="generated-preview-content"></div>
-                                    </div>
+                            <!-- New confirmation step -->
+                            <div class="confirmation-step" id="confirmation-step" style="display:none; margin-top:1rem;">
+                                <p>Would you like to proceed with media generation or refine your prompt?</p>
+                                <div class="confirmation-buttons">
+                                    <button class="generation-btn confirm-btn" id="confirm-generation-btn" style="background-color: #4CAF50;">
+                                        <i class="fas fa-check-circle"></i> Continue Generation
+                                    </button>
+                                    <button class="generation-btn refine-btn" id="refine-prompt-btn" style="background-color: #f39c12;">
+                                        <i class="fas fa-edit"></i> Refine Prompt
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- generation buttons -->
+                            <!-- Preview section -->
+                            <div class="preview-section" id="preview-section" style="display:none;">
+                                <h4>Preview:</h4>
+                                <div class="preview-content" id="preview-content"></div>
+                                <button class="download-btn" id="download-media-btn" style="display:none; background-color: #3498db;">
+                                    <i class="fas fa-download"></i> Download Media
+                                </button>
+                            </div>
+
+                            <!-- Template upload -->
+                            <div class="template-upload">
+                                <label for="template-upload" class="file-label">
+                                    <i class="fas fa-upload"></i>
+                                    <span>Upload Style Template (Optional)</span>
+                                </label>
+                                <input type="file" id="template-upload" accept=".jpg,.jpeg,.png,.pptx,.docx" style="display:none;">
+                                <div id="template-preview" style="display:none;"></div>
+                            </div>
+
+                            <!-- New Continue for Media Generation button - distinct color -->
+                            <button class="submit-btn" id="continue-media-btn-2">
+                                <i class="fas fa-play-circle"></i> Continue for Media Generation
+                            </button>
+
+                            <!-- Existing generation buttons (hidden initially) -->
                             <div class="generation-buttons" id="enhanced-generation-buttons" style="display:none;margin-top:1rem;">
-                                <button class="generation-btn" onclick="generateFromEnhanced('video')">
-                                    <i class="fas fa-video"></i> Generate Video
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('video')">
+                                    <i class="fas fa-video"></i> Replicate Video
                                 </button>
-                                <button class="generation-btn" onclick="generateFromEnhanced('poster')">
-                                    <i class="fas fa-image"></i> Generate Poster
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('poster')">
+                                    <i class="fas fa-image"></i> Ideogram Poster
                                 </button>
-                                <button class="generation-btn" onclick="generateFromEnhanced('slides')">
-                                    <i class="fas fa-chalkboard"></i> Generate Slides
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('slidesgpt')">
+                                    <i class="fas fa-chalkboard"></i> SlidesGPT
                                 </button>
-                                <button class="generation-btn" onclick="generateFromEnhanced('document')">
-                                    <i class="fas fa-file-alt"></i> Generate Document
+                                <button class="generation-btn" onclick="generateFromEnhancedPrompt('memo')">
+                                    <i class="fas fa-file-alt"></i> OpenAI Memo
                                 </button>
                             </div>
 
                             <!-- Feedback section -->
-                            <div class="feedback-section">
+                            <div class="feedback-section" style="margin-top:1rem;">
                                 <span class="feedback-label">Rate this enhancement:</span>
                                 <div class="feedback-buttons">
                                     <button class="feedback-btn" data-rating="1"><i class="far fa-frown"></i></button>
@@ -288,9 +314,7 @@
                                             class="far fa-grin-stars"></i></button>
                                     <button class="feedback-btn" data-rating="5"><i class="fas fa-fire"></i></button>
                                 </div>
-                                <div class="feedback-comment" style="display:none;">
-                                    <textarea placeholder="Additional feedback (optional)"></textarea>
-                                </div>
+                                <textarea id="feedback-comment" placeholder="Optional comments..." style="margin-top:0.5rem;width:100%;display:none;"></textarea>
                             </div>
                         </div>
                     </div>
