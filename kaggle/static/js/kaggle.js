@@ -23,6 +23,15 @@ if (!sessionId) {
     localStorage.setItem('sessionId', sessionId);
 }
 
+// Safe element access helper
+function getElement(id) {
+    const el = document.getElementById(id);
+    if (!el) {
+        console.warn(`Element with ID ${id} not found`);
+    }
+    return el;
+}
+
 // Safe JSON parsing utility
 async function safeJsonParse(response) {
     const contentType = response.headers.get("content-type") || "";
@@ -40,30 +49,91 @@ async function safeJsonParse(response) {
 let currentAnswer = "";
 let currentQuestion = "";
 
-// DOM elements
-const textContextModal = document.getElementById('text-context-modal');
-const fileContextModal = document.getElementById('file-context-modal');
-const vectorDebugModal = document.getElementById('vector-debug-modal');
-const adminLoginModal = document.getElementById('admin-login-modal');
+// Initialize elements with null checks
+const textContextModal = getElement('text-context-modal');
+const fileContextModal = getElement('file-context-modal');
+const vectorDebugModal = getElement('vector-debug-modal');
+const adminLoginModal = getElement('admin-login-modal');
 const closeButtons = document.querySelectorAll('.close-modal');
-const fileInput = document.getElementById('context-files');
-const multiFilePreview = document.getElementById('multi-file-preview');
-const textConcepts = document.getElementById('text-concepts');
-const textConceptTags = document.getElementById('text-concept-tags');
-const fileConcepts = document.getElementById('file-concepts');
-const fileConceptTags = document.getElementById('file-concept-tags');
-const textSpinner = document.getElementById('text-spinner');
-const fileSpinner = document.getElementById('file-spinner');
-const answerActions = document.getElementById('answer-actions');
-const followUpSuggestions = document.getElementById('follow-up-suggestions');
-const followUpButtons = document.getElementById('follow-up-buttons');
-const genContainer = document.getElementById('generation-buttons');
-const copyBtn = document.getElementById('copy-answer-btn');
-const styleSelect = document.getElementById('style-options');
-const referenceUpload = document.getElementById('reference-upload');
+const fileInput = getElement('context-files');
+const multiFilePreview = getElement('multi-file-preview');
+const textConcepts = getElement('text-concepts');
+const textConceptTags = getElement('text-concept-tags');
+const fileConcepts = getElement('file-concepts');
+const fileConceptTags = getElement('file-concept-tags');
+const textSpinner = getElement('text-spinner');
+const fileSpinner = getElement('file-spinner');
+const answerActions = getElement('answer-actions');
+const followUpSuggestions = getElement('follow-up-suggestions');
+const followUpButtons = getElement('follow-up-buttons');
+const genContainer = getElement('generation-buttons');
+const copyBtn = getElement('copy-answer-btn');
+const styleSelect = getElement('style-options');
+const referenceUpload = getElement('reference-upload');
 
 // Disable copy button initially
 copyBtn.disabled = true;
+
+// Initialize with null checks
+if (copyBtn) copyBtn.disabled = true;
+
+// Event listeners with null checks
+if (textContextModal) {
+    document.getElementById('add-text-context') ? .addEventListener('click', () => {
+        textContextModal.style.display = 'flex';
+        setTimeout(() => textContextModal.classList.add('show'), 10);
+    });
+}
+
+if (fileContextModal) {
+    document.getElementById('add-file-context') ? .addEventListener('click', () => {
+        fileContextModal.style.display = 'flex';
+        setTimeout(() => fileContextModal.classList.add('show'), 10);
+    });
+}
+
+if (vectorDebugModal) {
+    document.getElementById('debug-vector-btn') ? .addEventListener('click', () => {
+        vectorDebugModal.style.display = 'flex';
+        setTimeout(() => vectorDebugModal.classList.add('show'), 10);
+    });
+}
+
+// Close buttons with null checks
+closeButtons.forEach(button => {
+    button ? .addEventListener('click', () => {
+        textContextModal ? .classList.remove('show');
+        fileContextModal ? .classList.remove('show');
+        vectorDebugModal ? .classList.remove('show');
+        adminLoginModal ? .classList.remove('show');
+        setTimeout(() => {
+            textContextModal && (textContextModal.style.display = 'none');
+            fileContextModal && (fileContextModal.style.display = 'none');
+            vectorDebugModal && (vectorDebugModal.style.display = 'none');
+            adminLoginModal && (adminLoginModal.style.display = 'none');
+        }, 300);
+    });
+});
+
+// Window click handler with null checks
+window.addEventListener('click', (e) => {
+    if (e.target === textContextModal) {
+        textContextModal ? .classList.remove('show');
+        setTimeout(() => textContextModal && (textContextModal.style.display = 'none'), 300);
+    }
+    if (e.target === fileContextModal) {
+        fileContextModal ? .classList.remove('show');
+        setTimeout(() => fileContextModal && (fileContextModal.style.display = 'none'), 300);
+    }
+    if (e.target === vectorDebugModal) {
+        vectorDebugModal ? .classList.remove('show');
+        setTimeout(() => vectorDebugModal && (vectorDebugModal.style.display = 'none'), 300);
+    }
+    if (e.target === adminLoginModal) {
+        adminLoginModal ? .classList.remove('show');
+        setTimeout(() => adminLoginModal && (adminLoginModal.style.display = 'none'), 300);
+    }
+});
 
 // Crypto animation logic
 const cryptos = {
@@ -831,28 +901,33 @@ document.querySelectorAll('[data-action]').forEach(btn => {
     });
 });
 
-async function handleVizExport(action) {
+async function handleVizExport(format) {
     const container = document.getElementById('vega-embed-container');
-    const view = container.querySelector('.vega-embed')?._view || window.vegaView;
+    if (!container) {
+        throw new Error('Visualization container not found');
+    }
 
+    const view = container.querySelector('.vega-embed')?._view || window.vegaView;
     if (!view) {
-        showNotification('No visualization to export', 'error');
-        return;
+        throw new Error('No active visualization to export');
     }
 
     try {
-        switch (action) {
+        switch (format) {
             case 'svg':
-            case 'copy-viz-svg':
                 const svg = await view.toSVG();
                 await navigator.clipboard.writeText(svg);
                 showNotification('SVG copied to clipboard!', 'success');
                 break;
 
             case 'png':
-            case 'copy-viz-png':
                 const pngCanvas = await view.toCanvas();
-                const pngBlob = await new Promise(resolve => pngCanvas.toBlob(resolve));
+                const pngBlob = await new Promise(resolve => {
+                    pngCanvas.toBlob(resolve, 'image/png', 1.0);
+                });
+                if (!pngBlob) {
+                    throw new Error('Failed to create PNG blob');
+                }
                 await navigator.clipboard.write([
                     new ClipboardItem({ 'image/png': pngBlob })
                 ]);
@@ -860,8 +935,10 @@ async function handleVizExport(action) {
                 break;
 
             case 'data':
-            case 'copy-viz-data':
                 const data = view.data('source');
+                if (!data) {
+                    throw new Error('No data available for export');
+                }
                 await navigator.clipboard.writeText(
                     JSON.stringify(data, null, 2)
                 );
@@ -869,16 +946,21 @@ async function handleVizExport(action) {
                 break;
 
             case 'download':
-            case 'download-viz':
                 const dlCanvas = await view.toCanvas();
                 const link = document.createElement('a');
                 link.download = 'visualization.png';
                 link.href = dlCanvas.toDataURL('image/png');
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
                 break;
+
+            default:
+                throw new Error(`Unsupported export format: ${format}`);
         }
     } catch (error) {
-        showNotification(`Export failed: ${error.message}`, 'error');
+        console.error(`Export ${format} failed:`, error);
+        throw error;
     }
 }
 
@@ -1882,7 +1964,6 @@ function setupUniversalCopy() {
 setupUniversalCopy();
 
 // Add event listeners
-// Update all visualization export event listeners to use handleVizExport
 document.getElementById('copy-viz-svg').addEventListener('click', () => handleVizExport('svg'));
 document.getElementById('copy-viz-png').addEventListener('click', () => handleVizExport('png'));
 document.getElementById('copy-viz-data').addEventListener('click', () => handleVizExport('data'));
@@ -2159,34 +2240,19 @@ document.querySelectorAll('.feedback-btn').forEach(btn => {
 
 // Initialize session role dropdown and setup mutual exclusive controls
 document.addEventListener('DOMContentLoaded', () => {
-    // Add session role dropdown to UI
-    const roleSelectHtml = `
-        <div class="role-selector">
-            <label for="roleSelect">Session Role:</label>
-            <select id="roleSelect">
-                <option value="general">General</option>
-                <option value="engineering">Engineering</option>
-                <option value="marketing">Marketing</option>
-                <option value="public">Public</option>
-            </select>
-        </div>
-    `;
-    const apiKeyGroup = document.querySelector('.input-group');
-    if (apiKeyGroup) {
-        apiKeyGroup.insertAdjacentHTML('afterend', `
-        <div class="input-group">
-            <label for="roleSelect">Session Profile:</label>
-            <select id="roleSelect">
-                {% for role in roles %}
-                <option value="{{ role.value }}">{{ role.label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        `);
-    }
-
-    // Setup mutual exclusive controls for style vs reference image
-    setupMutualExclusive();
+    ['copy-viz-svg', 'copy-viz-png', 'copy-viz-data', 'download-viz'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const format = id.split('-').pop();
+                handleVizExport(format).catch(error => {
+                    console.error('Export failed:', error);
+                    showNotification(`Export failed: ${error.message}`, 'error');
+                });
+            });
+        }
+    });
 });
 
 function setupMutualExclusive() {
