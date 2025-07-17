@@ -740,7 +740,8 @@ button#enhance-prompt-btn,
 button#submit-btn,
 button#submit-file-context,
 button#submit-text-context,
-button#test-vector-btn {
+button#test-vector-btn,
+button#parse-data-btn {
     background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
 }
 
@@ -833,6 +834,40 @@ button#continue-media-btn-2 {
     align-items: center;
     gap: 0.8rem;
     color: var(--orange-secondary);
+}
+
+
+/* Alternate colors for cards */
+
+.results-grid .result-card:nth-child(4n+1),
+.results-grid .result-card:nth-child(4n+4) {
+    background: rgba(62, 31, 14, 0.85);
+    /* Darker chocolate color */
+}
+
+.results-grid .result-card:nth-child(4n+2),
+.results-grid .result-card:nth-child(4n+3) {
+    background: rgba(30, 15, 10, 0.85);
+    /* Original glass background */
+}
+
+
+/* Top border accent colors */
+
+.results-grid .result-card:nth-child(4n+1)::before {
+    background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary));
+}
+
+.results-grid .result-card:nth-child(4n+2)::before {
+    background: linear-gradient(90deg, var(--electric-violet), rgba(0, 242, 255, 0.7));
+}
+
+.results-grid .result-card:nth-child(4n+3)::before {
+    background: linear-gradient(90deg, var(--neon-cyan), var(--electric-violet));
+}
+
+.results-grid .result-card:nth-child(4n+4)::before {
+    background: linear-gradient(90deg, var(--chocolate-light), var(--orange-secondary));
 }
 
 .kernel-output {
@@ -1115,6 +1150,97 @@ footer {
 .vertical-line.center {
     left: 50%;
     transform: translateX(-50%);
+}
+
+
+/* Visualization controls */
+
+.visualization-controls {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+
+/* Vega container */
+
+#vega-embed-container {
+    max-height: 400px;
+    overflow: auto;
+    margin-top: 1rem;
+    background: rgba(20, 10, 5, 0.6);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+
+/* Viz buttons */
+
+.viz-btn {
+    background: rgba(255, 157, 92, 0.2);
+    border: 1px solid var(--orange-secondary);
+    color: var(--cream);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.viz-btn:hover {
+    background: rgba(255, 157, 92, 0.3);
+    transform: translateY(-2px);
+}
+
+
+/* Palette selector */
+
+#chart-palette {
+    background: rgba(30, 15, 10, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    color: var(--cream);
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%23ff9d5c' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}
+
+
+/* Palette preview options */
+
+#chart-palette option {
+    padding: 0.5rem;
+    background: var(--bg-dark);
+}
+
+#chart-palette option[value="crossbar"] {
+    background: linear-gradient(90deg, #ff7f00, #5d3924, #00f2ff);
+}
+
+#chart-palette option[value="warm"] {
+    background: linear-gradient(90deg, #ff9d5c, #ff7f00, #ff6b6b);
+}
+
+#chart-palette option[value="cool"] {
+    background: linear-gradient(90deg, #00f2ff, #8a2be2, #627eea);
+}
+
+#chart-palette option[value="mono"] {
+    background: linear-gradient(90deg, #ffffff, #f5deb3, #ff7f00);
 }
 
 
