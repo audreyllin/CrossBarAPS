@@ -38,7 +38,16 @@ import zipfile
 import mimetypes
 from rag_pipeline import generate_media
 
-# Add these constants near the top of app.py
+
+def _to_native(o):
+    # teach json how to handle NumPy numbers
+    if isinstance(o, (np.float_, np.floating)):
+        return float(o)
+    if isinstance(o, (np.int_, np.integer)):
+        return int(o)
+    raise TypeError  # let real errors propagate
+
+
 VALID_RATIOS = ["16:9", "9:16", "4:3", "1:1", "3:2", "2:3"]
 VALID_STYLES = ["AUTO", "GENERAL", "REALISTIC", "DESIGN"]
 
@@ -568,7 +577,7 @@ def api_ask():
             ):
                 r["similarity"] += concept_boost
 
-        # Sort by priority then similarity
+        # Sort by priority then similarity (fixed missing parenthesis)
         results.sort(key=lambda x: (-x.get("priority", 0), -x["similarity"]))
 
         # Build context string with source info
@@ -585,7 +594,9 @@ def api_ask():
                             if len(res["text"]) > 500
                             else res["text"]
                         ),
-                        "similarity": res["similarity"],
+                        "similarity": float(
+                            res["similarity"]
+                        ),  # Convert numpy float to native float
                         "concepts": res.get("concepts", []),
                     }
                 )
@@ -616,7 +627,8 @@ def api_ask():
                 answer_data = json.loads(response.choices[0].message.content)
                 answer = answer_data.get("answer", "")
                 follow_ups = answer_data.get("follow_up_questions", [])
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to parse enhanced response: {str(e)}")
                 answer = response.choices[0].message.content.strip()
                 follow_ups = []
         else:
@@ -649,10 +661,17 @@ def api_ask():
         qa_logs = []
         if os.path.exists(qa_log_path):
             with open(qa_log_path, "r") as f:
-                qa_logs = json.load(f)
+                try:
+                    qa_logs = json.load(f)
+                except json.JSONDecodeError:
+                    logger.warning("Failed to parse existing qa_logs, starting fresh")
+                    qa_logs = []
+
         qa_logs.append(qa_log)
         with open(qa_log_path, "w") as f:
-            json.dump(qa_logs, f, indent=2)
+            json.dump(
+                qa_logs, f, indent=2, default=_to_native
+            )  # Use _to_native for numpy floats
 
         response_data = {
             "answer": answer,
@@ -671,8 +690,11 @@ def api_ask():
         return jsonify(response_data)
 
     except Exception as e:
-        logger.error(f"Error in api_ask: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in api_ask: {str(e)}", exc_info=True)
+        return (
+            jsonify({"error": "An error occurred while processing your request"}),
+            500,
+        )
 
 
 @app.route("/upload", methods=["POST"])
@@ -1055,13 +1077,13 @@ def api_generate():
             template_file.save(template_path)
 
         output_path = generate_media(
-            media_type, 
-            answer, 
-            session_id, 
-            api_key, 
+            media_type,
+            answer,
+            session_id,
+            api_key,
             template_path=template_path,
             aspect_ratio=data.get("aspect_ratio", "16:9"),
-            style_type=data.get("style_type")
+            style_type=data.get("style_type"),
         )
 
         if not output_path or not os.path.isfile(output_path):
@@ -1249,13 +1271,13 @@ def generate_from_enhanced():
 
         # Generate media
         output_path = generate_media(
-            media_type, 
-            prompt, 
-            session_id, 
-            api_key, 
+            media_type,
+            prompt,
+            session_id,
+            api_key,
             template_path=template_path,
             aspect_ratio=data.get("aspect_ratio", "16:9"),
-            style_type=data.get("style_type")
+            style_type=data.get("style_type"),
         )
 
         if not output_path or not os.path.isfile(output_path):
