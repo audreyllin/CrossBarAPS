@@ -59,6 +59,8 @@ const followUpSuggestions = document.getElementById('follow-up-suggestions');
 const followUpButtons = document.getElementById('follow-up-buttons');
 const genContainer = document.getElementById('generation-buttons');
 const copyBtn = document.getElementById('copy-answer-btn');
+const styleSelect = document.getElementById('style-options');
+const referenceUpload = document.getElementById('reference-upload');
 
 // Disable copy button initially
 copyBtn.disabled = true;
@@ -819,6 +821,25 @@ function showNotification(message, type, concepts = []) {
     }, 5000);
 }
 
+const NOTIFICATION_TEXTS = {
+    copy_success: {
+        png: "Image copied as PNG!",
+        svg: "Image copied as SVG!",
+        text: "Text data copied!",
+        html: "HTML content copied!"
+    },
+    download_success: "Download started!",
+    template_saved: "Template saved to vault!",
+    generation_success: "Media generated successfully!",
+    enhancement_success: "Prompt enhanced successfully!",
+    error_general: "An error occurred",
+    error_api_key: "Please enter your API key first",
+    error_prompt: "Please enter a valid prompt"
+};
+
+// Example usage:
+showNotification(NOTIFICATION_TEXTS.generation_success, 'success');
+
 // Animation on scroll
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -1027,12 +1048,10 @@ async function generateFromAnswer(type) {
 
         const json = await safeJsonParse(resp);
 
-        // Handle HTTP errors
         if (!resp.ok) {
             throw new Error(json.error || resp.statusText);
         }
 
-        // Guard against missing or null URL
         if (!json.url) {
             throw new Error('No download URL returned from server.');
         }
@@ -1627,6 +1646,186 @@ async function generatePreview(prompt, mediaType, apiKey) {
     }
 }
 
+// Visualization Export Controls
+async function copyVizAs(format) {
+    const container = document.getElementById('vega-embed-container');
+    const view = container.querySelector('.vega-embed')?._view;
+
+    if (!view) return;
+
+    try {
+        if (format === 'svg') {
+            const svg = await view.toSVG();
+            await navigator.clipboard.writeText(svg);
+            showNotification('SVG copied to clipboard!', 'success');
+        } else if (format === 'png') {
+            const canvas = await view.toCanvas();
+            canvas.toBlob(async (blob) => {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                showNotification('PNG copied to clipboard!', 'success');
+            });
+        } else if (format === 'data') {
+            const data = view.data('source');
+            await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+            showNotification('Data copied to clipboard!', 'success');
+        }
+    } catch (err) {
+        showNotification(`Copy failed: ${err.message}`, 'error');
+    }
+}
+
+function downloadViz() {
+    const container = document.getElementById('vega-embed-container');
+    const view = container.querySelector('.vega-embed')?._view;
+
+    if (!view) return;
+
+    view.toCanvas().then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'visualization.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+
+// Universal Copy Modes
+function setupUniversalCopy() {
+    // For posters
+    document.querySelectorAll('.poster-actions .copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const poster = btn.closest('.generated-poster');
+            const img = poster.querySelector('img');
+            const format = btn.dataset.format;
+
+            try {
+                if (format === 'png') {
+                    const blob = await fetch(img.src).then(r => r.blob());
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                } else if (format === 'svg') {
+                    // Convert to SVG (simplified example)
+                    const svg = `<svg>...${img.outerHTML}...</svg>`;
+                    await navigator.clipboard.writeText(svg);
+                } else if (format === 'text') {
+                    const prompt = poster.dataset.prompt;
+                    await navigator.clipboard.writeText(prompt);
+                }
+                showNotification(`Copied as ${format.toUpperCase()}!`, 'success');
+            } catch (err) {
+                showNotification(`Copy failed: ${err.message}`, 'error');
+            }
+        });
+    });
+
+    // Similar setup for charts (already shown in 2.4)
+}
+
+// Call this in initialization
+setupUniversalCopy();
+
+// Add event listeners
+document.getElementById('copy-viz-svg').addEventListener('click', () => copyVizAs('svg'));
+document.getElementById('copy-viz-png').addEventListener('click', () => copyVizAs('png'));
+document.getElementById('copy-viz-data').addEventListener('click', () => copyVizAs('data'));
+document.getElementById('download-viz').addEventListener('click', downloadViz);
+
+// Add to generatePreview function
+function updateBeforeAfterPreview(templateFile, generatedUrl) {
+    const beforePane = document.getElementById('before-preview');
+    const afterPane = document.getElementById('after-preview');
+
+    // Clear previous
+    beforePane.innerHTML = '';
+    afterPane.innerHTML = '';
+
+    if (templateFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.maxWidth = '100%';
+            beforePane.appendChild(img);
+        };
+        reader.readAsDataURL(templateFile);
+    }
+
+    if (generatedUrl) {
+        const img = document.createElement('img');
+        img.src = generatedUrl;
+        img.style.maxWidth = '100%';
+        afterPane.appendChild(img);
+    }
+}
+
+// Template storage functions
+const TEMPLATE_KEY = 'poster_templates';
+
+// Update scroll logic
+function updateScrollTargets() {
+    const features = document.getElementById('features');
+    const api = document.getElementById('api');
+    const results = document.getElementById('results');
+
+    // Update any scroll handlers to use these targets
+    document.querySelectorAll('nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const target = link.getAttribute('href');
+            if (target === '#features') features.scrollIntoView({ behavior: 'smooth' });
+            else if (target === '#api') api.scrollIntoView({ behavior: 'smooth' });
+            else if (target === '#results') results.scrollIntoView({ behavior: 'smooth' });
+            e.preventDefault();
+        });
+    });
+}
+
+function saveTemplate(name, config) {
+    const templates = JSON.parse(localStorage.getItem(TEMPLATE_KEY)) || [];
+    templates.push({ name, config, timestamp: new Date().toISOString() });
+    localStorage.setItem(TEMPLATE_KEY, JSON.stringify(templates));
+}
+
+function loadTemplates() {
+    return JSON.parse(localStorage.getItem(TEMPLATE_KEY)) || [];
+}
+
+function renderTemplateGallery() {
+    const templates = loadTemplates();
+    const gallery = document.getElementById('template-gallery');
+
+    gallery.innerHTML = templates.map(t => `
+        <div class="template-item">
+            <img src="${t.config.thumbnail}">
+            <h4>${t.name}</h4>
+            <button onclick="applyTemplate('${t.name}')">Apply</button>
+        </div>
+    `).join('');
+}
+
+// Add UI elements for template management
+function setupTemplateUI() {
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save as Template';
+    saveBtn.addEventListener('click', () => {
+        const name = prompt('Template name:');
+        if (name) {
+            saveTemplate(name, {
+                prompt: currentEnhancedPrompt,
+                style: document.getElementById('style-options').value,
+                thumbnail: document.querySelector('.preview-image img')?.src
+            });
+            renderTemplateGallery();
+        }
+    });
+
+    document.querySelector('.preview-section').appendChild(saveBtn);
+
+    const gallery = document.createElement('div');
+    gallery.id = 'template-gallery';
+    gallery.className = 'template-gallery';
+    document.querySelector('.preview-section').appendChild(gallery);
+
+    renderTemplateGallery();
+}
+
 // Media type change handler
 // Media type change handler (optimized)
 document.getElementById('media-type').addEventListener('change', function () {
@@ -1765,7 +1964,7 @@ document.querySelectorAll('.feedback-btn').forEach(btn => {
 
 // ====== NEW FEATURES END HERE ======
 
-// Initialize session role dropdown
+// Initialize session role dropdown and setup mutual exclusive controls
 document.addEventListener('DOMContentLoaded', () => {
     // Add session role dropdown to UI
     const roleSelectHtml = `
@@ -1790,6 +1989,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 {% endfor %}
             </select>
         </div>
-    `);
+        `);
     }
+
+    // Setup mutual exclusive controls for style vs reference image
+    setupMutualExclusive();
 });
+
+function setupMutualExclusive() {
+    const styleSelect = document.getElementById('style-options');
+    const referenceUpload = document.getElementById('reference-upload');
+
+    styleSelect.addEventListener('change', () => {
+        if (styleSelect.value) {
+            referenceUpload.disabled = true;
+            referenceUpload.value = '';
+        } else {
+            referenceUpload.disabled = false;
+        }
+    });
+
+    referenceUpload.addEventListener('change', () => {
+        if (referenceUpload.files.length > 0) {
+            styleSelect.disabled = true;
+            styleSelect.value = '';
+        } else {
+            styleSelect.disabled = false;
+        }
+    });
+}
