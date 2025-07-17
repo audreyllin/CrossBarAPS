@@ -7,7 +7,7 @@ import base64
 import subprocess
 import shutil
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
 from flask import (
@@ -43,7 +43,7 @@ UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 ADMIN_OUTPUTS = "admin_outputs"
 CONVERSATIONS_FILE = "conversations.json"
-CONTEXT_UPLOADS_FILE = "context_uploads.json"
+CONTEXT_UPLOADS_FILE = ".json"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(ADMIN_OUTPUTS, exist_ok=True)
@@ -327,7 +327,7 @@ def save_conversation(session_id, question, answer):
             "session_id": session_id,
             "question": question,
             "answer": answer,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     )
 
@@ -346,13 +346,13 @@ def save_context_upload_with_priority(
     session_id, filename=None, text=None, concepts=[], priority=0
 ):
     context_id = hashlib.md5(
-        f"{session_id}{datetime.utcnow().isoformat()}".encode()
+        f"{session_id}{datetime.now(timezone.utc).isoformat()}".encode()
     ).hexdigest()
 
     entry = {
         "context_id": context_id,
         "session_id": session_id,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "concepts": concepts,
         "priority": priority,
     }
@@ -511,7 +511,7 @@ def api_ask():
             "session_id": session_id,
             "question": question,
             "answer": answer,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "matched_chunks": matched_chunks,  # A
             "files": list(
                 set(r.get("filename") for r in results if r.get("filename"))
@@ -599,14 +599,14 @@ def upload_file():
             # Add to vector index
             metadata = {
                 "context_id": hashlib.md5(
-                    f"{session_id}{datetime.utcnow().isoformat()}".encode()
+                    f"{session_id}{datetime.now(timezone.utc).isoformat()}".encode()
                 ).hexdigest(),
                 "session_id": session_id,
                 "filename": filename,
                 "text": text,
                 "concepts": concepts,
                 "priority": 1,  # File context has higher priority
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             vector_id = vector_index.add_vector(embedding, metadata)
 
@@ -691,14 +691,14 @@ def upload_context():
                 # Add to vector index
                 metadata = {
                     "context_id": hashlib.md5(
-                        f"{session_id}{datetime.utcnow().isoformat()}".encode()
+                        f"{session_id}{datetime.now(timezone.utc).isoformat()}".encode()
                     ).hexdigest(),
                     "session_id": session_id,
                     "filename": None,
                     "text": text,
                     "concepts": concepts,
                     "priority": 0,  # Text context has lower priority
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
                 vector_id = vector_index.add_vector(embedding, metadata)
 
@@ -753,14 +753,14 @@ def upload_context():
                 # Add to vector index
                 metadata = {
                     "context_id": hashlib.md5(
-                        f"{session_id}{datetime.utcnow().isoformat()}".encode()
+                        f"{session_id}{datetime.now(timezone.utc).isoformat()}".encode()
                     ).hexdigest(),
                     "session_id": session_id,
                     "filename": filename,
                     "text": text,
                     "concepts": concepts,
                     "priority": 1,  # File context has higher priority
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
                 vector_id = vector_index.add_vector(embedding, metadata)
 
@@ -1072,36 +1072,68 @@ def generate_from_enhanced():
     if not api_key:
         return jsonify({"error": "Missing API key"}), 401
 
-    media_type = request.form.get("type")
-    prompt = request.form.get("prompt")
-    session_id = request.form.get("sessionId")
-    template_file = request.files.get("template")
-
-    if not media_type or not prompt:
-        return jsonify({"error": "Missing media type or prompt"}), 400
-
     try:
-        # Save template if provided
+        # Handle both JSON and form data
+        if request.is_json:
+            data = request.get_json()
+            media_type = data.get("type")
+            prompt = data.get("prompt")
+            session_id = data.get("sessionId")
+            template_base64 = data.get("template")
+            template_file = None
+        else:
+            media_type = request.form.get("type")
+            prompt = request.form.get("prompt")
+            session_id = request.form.get("sessionId")
+            template_file = request.files.get("template")
+            template_base64 = None
+
+        if not media_type or not prompt:
+            return jsonify({"error": "Missing media type or prompt"}), 400
+
+        # Handle base64 template if provided
         template_path = None
-        if template_file and allowed_file(template_file.filename):
+        if template_base64:
+            try:
+                # Extract base64 data
+                if "base64," in template_base64:
+                    template_base64 = template_base64.split("base64,")[1]
+                file_bytes = base64.b64decode(template_base64)
+                filename = f"template_{session_id or 'temp'}.pptx"  # Default to pptx
+                template_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                with open(template_path, "wb") as f:
+                    f.write(file_bytes)
+            except Exception as e:
+                logger.error(f"Error processing base64 template: {str(e)}")
+                return jsonify({"error": "Invalid template file"}), 400
+        elif template_file and allowed_file(template_file.filename):
+            # Handle regular file upload
             filename = secure_filename(template_file.filename)
             template_path = os.path.join(UPLOAD_FOLDER, filename)
             template_file.save(template_path)
 
-        # Generate media with template if available
+        # Generate media
         output_path = generate_media(
             media_type, prompt, session_id, api_key, template_path=template_path
         )
 
         if not output_path or not os.path.isfile(output_path):
+            logger.error("Generation failed - no output file created")
             return jsonify({"error": "Generation failed"}), 500
 
-        download_url = url_for(
-            "download_generated", file=os.path.basename(output_path), _external=True
-        )
-        return jsonify({"url": download_url})
+        # Save to admin outputs
+        filename = os.path.basename(output_path)
+        admin_output_path = os.path.join(ADMIN_OUTPUTS, filename)
+        shutil.copy(output_path, admin_output_path)
+
+        # Return download URL
+        download_url = url_for("download_generated", file=filename, _external=True)
+
+        return jsonify({"filename": filename, "url": download_url})
 
     except Exception as e:
+        logger.error(f"Error in generate_from_enhanced: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -1129,17 +1161,65 @@ def enhance_prompt():
         Original prompt: {prompt}
         """
 
+        # Use gpt-4-turbo model
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4-turbo",
             messages=[{"role": "user", "content": enhancement_prompt}],
             temperature=0.7,
             max_tokens=500,
         )
 
-        return jsonify({"enhanced_prompt": response.choices[0].message.content})
+        enhanced_prompt = response.choices[0].message.content
+
+        # Generate preview
+        preview = get_preview(media_type, enhanced_prompt, api_key)
+
+        return jsonify({"enhanced_prompt": enhanced_prompt, "preview": preview})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+def get_preview(media_type, prompt, api_key):
+    client = OpenAI(api_key=api_key)
+
+    if media_type == "image":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "user", "content": f"Describe a thumbnail image for: {prompt}"}
+            ],
+            max_tokens=150,
+        )
+        return response.choices[0].message.content
+
+    elif media_type == "slides":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Create an outline for slides based on: {prompt}",
+                }
+            ],
+            max_tokens=300,
+        )
+        return response.choices[0].message.content
+
+    elif media_type == "video":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Describe a short video preview for: {prompt}",
+                }
+            ],
+            max_tokens=200,
+        )
+        return response.choices[0].message.content
+
+    return "Preview not available for this media type"
 
 
 # Main route
@@ -1147,11 +1227,12 @@ def enhance_prompt():
 def index():
     roles = [
         {"value": "general", "label": "General"},
-        {"value": "engineering", "label": "Engineering"}, 
+        {"value": "engineering", "label": "Engineering"},
         {"value": "marketing", "label": "Marketing"},
-        {"value": "public", "label": "Public"}
+        {"value": "public", "label": "Public"},
     ]
     return render_template("kaggle.html", roles=roles)
+
 
 @app.route("/api/debug_vector", methods=["POST"])
 def debug_vector():
@@ -1248,40 +1329,46 @@ def generate_slides_outline():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/feedback', methods=['POST'])
+
+@app.route("/api/feedback", methods=["POST"])
 def handle_feedback():
     data = request.json
     feedback = {
-        'rating': data.get('rating'),
-        'comment': data.get('comment', ''),
-        'prompt': data.get('prompt', ''),
-        'session_id': data.get('sessionId'),
-        'timestamp': datetime.utcnow().isoformat()
+        "rating": data.get("rating"),
+        "comment": data.get("comment", ""),
+        "prompt": data.get("prompt", ""),
+        "session_id": data.get("sessionId"),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
-    
-    # Save feedback to file
-    feedback_path = os.path.join(ADMIN_OUTPUTS, 'feedback.json')
-    feedbacks = []
-    
-    if os.path.exists(feedback_path):
-        with open(feedback_path, 'r') as f:
-            feedbacks = json.load(f)
-    
-    feedbacks.append(feedback)
-    
-    with open(feedback_path, 'w') as f:
-        json.dump(feedbacks, f, indent=2)
-    
-    return jsonify({'status': 'success'})
 
-@app.route('/api/admin/feedback', methods=['GET'])
+    # Save feedback to file
+    feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
+    feedbacks = []
+
+    if os.path.exists(feedback_path):
+        with open(feedback_path, "r") as f:
+            try:
+                feedbacks = json.load(f)
+            except:
+                pass
+
+    feedbacks.append(feedback)
+
+    with open(feedback_path, "w") as f:
+        json.dump(feedbacks, f, indent=2)
+
+    return jsonify({"status": "success"})
+
+
+@app.route("/api/admin/feedback", methods=["GET"])
 @requires_admin_auth
 def get_feedback():
-    feedback_path = os.path.join(ADMIN_OUTPUTS, 'feedback.json')
+    feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
     if os.path.exists(feedback_path):
-        with open(feedback_path, 'r') as f:
+        with open(feedback_path, "r") as f:
             return jsonify(json.load(f))
     return jsonify([])
+
 
 if __name__ == "__main__":
     load_context_index()
