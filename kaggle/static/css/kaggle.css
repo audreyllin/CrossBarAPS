@@ -1177,6 +1177,34 @@ footer {
     border-radius: 4px;
 }
 
+.preview-image img,
+.result-image,
+.result-video {
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+}
+
+.before-after-container {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.before-pane,
+.after-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.before-pane img,
+.after-pane img {
+    align-self: center;
+    margin: auto;
+}
+
 
 /* Feedback buttons */
 
