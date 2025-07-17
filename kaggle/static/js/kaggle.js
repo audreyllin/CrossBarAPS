@@ -77,61 +77,69 @@ copyBtn.disabled = true;
 // Initialize with null checks
 if (copyBtn) copyBtn.disabled = true;
 
-// Event listeners with null checks
+// Event listeners - old-school null checks
 if (textContextModal) {
-    document.getElementById('add-text-context') ? .addEventListener('click', () => {
+    const addTextBtn = document.getElementById('add-text-context');
+    if (addTextBtn) addTextBtn.addEventListener('click', () => {
         textContextModal.style.display = 'flex';
         setTimeout(() => textContextModal.classList.add('show'), 10);
     });
 }
 
 if (fileContextModal) {
-    document.getElementById('add-file-context') ? .addEventListener('click', () => {
+    const addFileBtn = document.getElementById('add-file-context');
+    if (addFileBtn) addFileBtn.addEventListener('click', () => {
         fileContextModal.style.display = 'flex';
         setTimeout(() => fileContextModal.classList.add('show'), 10);
     });
 }
 
 if (vectorDebugModal) {
-    document.getElementById('debug-vector-btn') ? .addEventListener('click', () => {
+    const debugBtn = document.getElementById('debug-vector-btn');
+    if (debugBtn) debugBtn.addEventListener('click', () => {
         vectorDebugModal.style.display = 'flex';
         setTimeout(() => vectorDebugModal.classList.add('show'), 10);
     });
 }
 
-// Close buttons with null checks
-closeButtons.forEach(button => {
-    button ? .addEventListener('click', () => {
-        textContextModal ? .classList.remove('show');
-        fileContextModal ? .classList.remove('show');
-        vectorDebugModal ? .classList.remove('show');
-        adminLoginModal ? .classList.remove('show');
-        setTimeout(() => {
-            textContextModal && (textContextModal.style.display = 'none');
-            fileContextModal && (fileContextModal.style.display = 'none');
-            vectorDebugModal && (vectorDebugModal.style.display = 'none');
-            adminLoginModal && (adminLoginModal.style.display = 'none');
-        }, 300);
-    });
-});
+// Close buttons - null-safe iteration
+if (closeButtons && closeButtons.forEach) {
+    closeButtons.forEach(button => {
+        if (button && button.addEventListener) {
+            button.addEventListener('click', () => {
+                if (textContextModal) textContextModal.classList.remove('show');
+                if (fileContextModal) fileContextModal.classList.remove('show');
+                if (vectorDebugModal) vectorDebugModal.classList.remove('show');
+                if (adminLoginModal) adminLoginModal.classList.remove('show');
 
-// Window click handler with null checks
+                setTimeout(() => {
+                    if (textContextModal) textContextModal.style.display = 'none';
+                    if (fileContextModal) fileContextModal.style.display = 'none';
+                    if (vectorDebugModal) vectorDebugModal.style.display = 'none';
+                    if (adminLoginModal) adminLoginModal.style.display = 'none';
+                }, 300);
+            });
+        }
+    });
+}
+
+// Window click handler - bulletproof checks
 window.addEventListener('click', (e) => {
-    if (e.target === textContextModal) {
-        textContextModal ? .classList.remove('show');
-        setTimeout(() => textContextModal && (textContextModal.style.display = 'none'), 300);
+    if (textContextModal && e.target === textContextModal) {
+        textContextModal.classList.remove('show');
+        setTimeout(() => { textContextModal.style.display = 'none'; }, 300);
     }
-    if (e.target === fileContextModal) {
-        fileContextModal ? .classList.remove('show');
-        setTimeout(() => fileContextModal && (fileContextModal.style.display = 'none'), 300);
+    if (fileContextModal && e.target === fileContextModal) {
+        fileContextModal.classList.remove('show');
+        setTimeout(() => { fileContextModal.style.display = 'none'; }, 300);
     }
-    if (e.target === vectorDebugModal) {
-        vectorDebugModal ? .classList.remove('show');
-        setTimeout(() => vectorDebugModal && (vectorDebugModal.style.display = 'none'), 300);
+    if (vectorDebugModal && e.target === vectorDebugModal) {
+        vectorDebugModal.classList.remove('show');
+        setTimeout(() => { vectorDebugModal.style.display = 'none'; }, 300);
     }
-    if (e.target === adminLoginModal) {
-        adminLoginModal ? .classList.remove('show');
-        setTimeout(() => adminLoginModal && (adminLoginModal.style.display = 'none'), 300);
+    if (adminLoginModal && e.target === adminLoginModal) {
+        adminLoginModal.classList.remove('show');
+        setTimeout(() => { adminLoginModal.style.display = 'none'; }, 300);
     }
 });
 
