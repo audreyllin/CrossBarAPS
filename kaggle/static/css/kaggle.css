@@ -692,7 +692,6 @@ section {
 }
 
 .submit-btn {
-    background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
     color: var(--white);
     border: none;
     width: 100%;
@@ -735,6 +734,23 @@ section {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+}
+
+button#enhance-prompt-btn,
+button#submit-btn {
+    background: linear-gradient(135deg, var(--chocolate-light), var(--orange-primary));
+}
+
+button#continue-media-btn,
+button#continue-media-btn-2 {
+    margin-top: 10px;
+    background-color: #9b59b6;
+    border-color: #8e44ad;
+}
+
+#continue-media-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .results-section {
