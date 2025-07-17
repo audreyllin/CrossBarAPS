@@ -1336,11 +1336,14 @@ def handle_feedback():
     feedback = {
         "rating": data.get("rating"),
         "comment": data.get("comment", ""),
+        "media_type": data.get("mediaType", ""),
         "prompt": data.get("prompt", ""),
+        "style": data.get("style", ""),
+        "reference_image": bool(data.get("hasReference", False)),
         "session_id": data.get("sessionId"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
-
+    
     # Save feedback to file
     feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
     feedbacks = []
@@ -1359,7 +1362,6 @@ def handle_feedback():
 
     return jsonify({"status": "success"})
 
-
 @app.route("/api/admin/feedback", methods=["GET"])
 @requires_admin_auth
 def get_feedback():
@@ -1368,6 +1370,109 @@ def get_feedback():
         with open(feedback_path, "r") as f:
             return jsonify(json.load(f))
     return jsonify([])
+
+
+@app.route("/api/admin/media_summary", methods=["GET"])
+@requires_admin_auth
+def media_summary():
+    feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
+    if not os.path.exists(feedback_path):
+        return jsonify({"summary": "No feedback data available"})
+
+    with open(feedback_path, "r") as f:
+        feedbacks = json.load(f)
+
+    # Generate summary using GPT
+    try:
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        prompt = f"""
+        Analyze this feedback data and provide a concise summary of common suggestions:
+        {json.dumps(feedbacks[:20])}  # Limit to first 20 for context
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+        )
+        return jsonify({"summary": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/admin/export_feedback", methods=["GET"])
+@requires_admin_auth
+def export_feedback():
+    fmt = request.args.get("format", "txt")
+    feedback_path = os.path.join(ADMIN_OUTPUTS, "feedback.json")
+
+    if not os.path.exists(feedback_path):
+        return jsonify({"error": "No feedback data"}), 404
+
+    with open(feedback_path, "r") as f:
+        feedbacks = json.load(f)
+
+    if fmt == "txt":
+        content = "\n".join(
+            f"[{f['timestamp']}] {f['rating']} stars: {f['comment']}" for f in feedbacks
+        )
+        return content, 200, {"Content-Type": "text/plain"}
+
+    elif fmt == "docx":
+        doc = DocxWriter()
+        for fb in feedbacks:
+            doc.add_paragraph(f"Rating: {fb['rating']} stars")
+            doc.add_paragraph(f"Comment: {fb['comment']}")
+            doc.add_paragraph(f"Media Type: {fb.get('media_type', 'N/A')}")
+            doc.add_paragraph("")
+        doc_path = "feedback.docx"
+        doc.save(doc_path)
+        return send_file(doc_path, as_attachment=True)
+
+    elif fmt == "pdf":
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        for fb in feedbacks:
+            pdf.cell(200, 10, txt=f"Rating: {fb['rating']} stars", ln=1)
+            pdf.multi_cell(0, 10, txt=f"Comment: {fb['comment']}")
+            pdf.ln(5)
+        pdf_path = "feedback.pdf"
+        pdf.output(pdf_path)
+        return send_file(pdf_path, as_attachment=True)
+
+    return jsonify({"error": "Invalid format"}), 400
+
+
+@app.route("/api/visualize", methods=["POST"])
+def visualize_data():
+    data = request.json
+    text = data.get("text")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not text or not api_key:
+        return jsonify({"error": "Missing text or API key"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+        prompt = f"""
+        Analyze this text and extract numerical data suitable for visualization.
+        Return a Vega-Lite JSON spec for the most appropriate chart type.
+        Focus on business-oriented visualization (bar, line, pie, etc.).
+        Text: {text}
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=1000,
+        )
+
+        spec = json.loads(response.choices[0].message.content)
+        return jsonify(spec)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

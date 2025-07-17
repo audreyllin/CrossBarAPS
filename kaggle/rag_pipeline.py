@@ -284,17 +284,49 @@ def generate_answer(question, context, api_key):
         logger.error(f"Answer generation failed: {str(e)}")
         return "Error generating answer"
 
+VALID_RATIOS = ["16:9", "9:16", "4:3", "1:1", "3:2", "2:3"]
 
-def generate_media(media_type, text, session_id, api_key=None, template_path=None):
+def generate_media(media_type, text, session_id, api_key=None, template_path=None, aspect_ratio="16:9", style_type=None):
     """
-    Generate different media types from text:
+    Generate different media types from text with comprehensive validation:
     - 'poster': Uses ideogram/ideogram-v3-turbo (Replicate) with auto-retry and DALL·E fallback
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
     - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
-    - template_path: Optional path to a style template file
-    Returns the absolute file path. Raises on any failure.
+    
+    Args:
+        media_type: Type of media to generate (poster, video, slides, memo)
+        text: Input text/content to generate from
+        session_id: User session identifier
+        api_key: OpenAI API key (required for slides and memo)
+        template_path: Optional path to a style template file
+        aspect_ratio: Aspect ratio for generated media (default: "16:9")
+        style_type: Style type for poster generation (AUTO, GENERAL, REALISTIC, DESIGN)
+    
+    Returns:
+        Absolute path to generated media file
+    
+    Raises:
+        ValueError: For invalid parameters
+        RuntimeError: For generation failures
     """
+    # Validate media type
+    if media_type not in ["poster", "video", "slides", "memo"]:
+        raise ValueError(f"Invalid media type: {media_type}. Must be one of: poster, video, slides, memo")
+
+    # Validate aspect ratio
+    if aspect_ratio not in VALID_RATIOS:
+        raise ValueError(f"Invalid aspect ratio: {aspect_ratio}. Must be one of: {VALID_RATIOS}")
+
+    # Poster-specific validation
+    if media_type == "poster":
+        if template_path and style_type:
+            raise ValueError("Cannot specify both template_path and style_type - choose one")
+        
+        # Set default style if neither provided
+        if not template_path and not style_type:
+            style_type = "DESIGN"
+
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     safe_session = session_id or "anon"
     filename_base = f"{media_type}_{safe_session}_{timestamp}"
@@ -315,12 +347,8 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             # Base input parameters
             input_data = {
                 "prompt": prompt,
-                "aspect_ratio": "16:9",
+                "aspect_ratio": aspect_ratio,
             }
-
-            # Handle style type vs reference image conflict
-            if template_path and style_type:
-                raise ValueError("Cannot use both style_type and reference image")
 
             # Process reference image if provided
             if template_path and os.path.exists(template_path):
@@ -332,7 +360,7 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
                     logger.warning(f"Template file not found: {template_path}")
             # Process style type if provided
             elif style_type:
-                valid_styles = [None, "AUTO", "GENERAL", "REALISTIC", "DESIGN"]
+                valid_styles = ["AUTO", "GENERAL", "REALISTIC", "DESIGN"]
                 if style_type.upper() not in valid_styles:
                     raise ValueError(
                         f"Invalid style type: {style_type}. Valid options: {valid_styles}"
@@ -376,7 +404,7 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
 
         try:
             video_url = _run_replicate(
-                "bytedance/seedance-1-lite:5d4d1a9f6c8b2d7c3d1d3e3f3d3f3d3f3d3f3d3f3d3f3d3f",
+                "bytedance/seedance-1-lite",
                 {
                     "prompt": text[:500],
                     "video_length": "5s",
@@ -406,12 +434,19 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
             )
             slides = json.loads(resp.choices[0].message.content)
             prs = Presentation()
+            
+            # Add title slide
+            title_slide = prs.slides.add_slide(prs.slide_layouts[0])
+            title_slide.shapes.title.text = "Presentation"
+            
+            # Add content slides
             for slide_data in slides:
                 slide = prs.slides.add_slide(prs.slide_layouts[1])
-                slide.shapes.title.text = slide_data.get("title", "")
+                slide.shapes.title.text = slide_data.get("title", "Slide")
                 tf = slide.shapes.placeholders[1].text_frame
                 for bullet in slide_data.get("bullets", []):
                     tf.add_paragraph().text = bullet
+                    
             prs.save(out_path)
             return os.path.abspath(out_path)
         except Exception as e:
@@ -428,26 +463,32 @@ def generate_media(media_type, text, session_id, api_key=None, template_path=Non
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Format this as a professional memo:\n\n{text}",
+                        "content": f"Format this as a professional memo with clear sections:\n\n{text}",
                     }
                 ],
                 temperature=0.3,
             )
             memo_content = resp.choices[0].message.content
             doc = DocxWriter()
-            doc.add_heading("Memo", level=1)
+            
+            # Add memo header
+            doc.add_heading("MEMORANDUM", level=0)
+            doc.add_paragraph().add_run("Date: " + datetime.now().strftime("%B %d, %Y")).bold = True
+            doc.add_paragraph().add_run("To: ").bold = True
+            doc.add_paragraph().add_run("From: ").bold = True
+            doc.add_paragraph().add_run("Subject: ").bold = True
+            doc.add_paragraph()
+            
+            # Add memo content
             for para in memo_content.splitlines():
                 if para.strip():
                     doc.add_paragraph(para.strip())
+                    
             doc.save(out_path)
             return os.path.abspath(out_path)
         except Exception as e:
             logger.error(f"Memo generation error: {e}")
             raise RuntimeError(f"Memo generation failed: {str(e)}")
-
-    else:
-        raise ValueError(f"Unknown media type: {media_type!r}")
-
 
 def main():
     """Main RAG pipeline execution"""
