@@ -1638,6 +1638,52 @@ def visualize_data():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/search", methods=["POST"])
+def internet_search():
+    data = request.json
+    query = data.get("query")
+    api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
+
+    if not query or not api_key:
+        return jsonify({"error": "Missing query or API key"}), 400
+
+    try:
+        client = OpenAI(api_key=api_key)
+
+        # Use GPT to generate synthetic search results
+        prompt = f"""
+        You are a web search assistant. Given the query "{query}", generate 3-5 realistic 
+        search results with titles, URLs, and snippets as if they came from a real search engine.
+        
+        Return the results in JSON format like this:
+        {{
+            "results": [
+                {{
+                    "title": "Result title",
+                    "link": "https://example.com/relevant-page",
+                    "snippet": "Relevant information snippet..."
+                }}
+            ]
+        }}
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=1000,
+        )
+
+        search_results = json.loads(response.choices[0].message.content)
+
+        return jsonify(
+            {"status": "success", "results": search_results.get("results", [])}
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     load_context_index()
     app.run(host="0.0.0.0", port=5000, debug=True)
