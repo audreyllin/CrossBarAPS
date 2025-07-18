@@ -39,7 +39,3 @@ opencv-python-headless
 aiofiles
 fastapi
 uvicorn
-
-# Language processing (optional)
-langdetect
-deep-translator==1.11.4
