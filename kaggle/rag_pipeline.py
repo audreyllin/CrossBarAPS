@@ -118,7 +118,7 @@ def is_image_heavy_pdf(filepath):
     try:
         doc = fitz.open(filepath)
         image_count = sum(len(page.get_images(full=True)) for page in doc)
-        return image_count / len(doc) > 0.5
+        return image_count / len(doc) > 0.0
     except Exception:
         return False
 
