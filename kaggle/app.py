@@ -38,6 +38,8 @@ import zipfile
 import mimetypes
 from rag_pipeline import generate_media
 
+print("Starting Crossbar Flask app...")
+
 
 def _to_native(o):
     # teach json how to handle NumPy numbers
@@ -380,10 +382,14 @@ def embed(text, api_key, model="text-embedding-3-large"):
     )
 
 
-def get_enhanced_embeddings(texts, api_key):
-    """Add cross-chunk context to embeddings"""
+def get_enhanced_embeddings(texts, api_key, model="text-embedding-3-large"):
+    """Add cross-chunk context to embeddings - handles both single text and list of texts"""
     if not api_key or not texts:
         return []
+
+    # Handle single text input
+    if isinstance(texts, str):
+        texts = [texts]
 
     try:
         client = OpenAI(api_key=api_key)
@@ -403,15 +409,24 @@ def get_enhanced_embeddings(texts, api_key):
         if isinstance(enhanced_data, dict) and "chunks" in enhanced_data:
             enhanced_texts = enhanced_data["chunks"]
         elif isinstance(enhanced_data, list):
-            enhanced_texts = enhanced_data
+            enhanced_texts = enhanced_texts
         else:
             enhanced_texts = texts  # Fallback to original texts
 
-        return embed(enhanced_texts, api_key)
+        # Get embeddings for all enhanced texts
+        embeddings = []
+        for text in enhanced_texts:
+            emb = embed(text, api_key, model)
+            embeddings.append(emb)
+
+        return embeddings[0] if len(embeddings) == 1 else embeddings
 
     except Exception as e:
         logger.error(f"Enhanced embeddings failed: {str(e)}")
-        return embed(texts, api_key)  # Fallback to regular embeddings
+        # Fallback to regular embeddings for each text
+        if isinstance(texts, str):
+            return embed(texts, api_key, model)
+        return [embed(text, api_key, model) for text in texts]
 
 
 def extract_concepts(text, api_key):
@@ -421,7 +436,7 @@ def extract_concepts(text, api_key):
         + text[:4000]
     )
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=300,
     )
@@ -671,7 +686,7 @@ def perform_web_search(query, api_key):
     """
 
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
     )
@@ -719,7 +734,7 @@ def upload_file():
             seen_hashes.add(h)
 
             # Embed and extract concepts
-            embedding = embed(text, api_key, model)
+            embedding = get_enhanced_embeddings(text, api_key, model)
             concepts_raw = extract_concepts(text, api_key)
             # Ensure concepts is always a list
             if isinstance(concepts_raw, str):
@@ -811,7 +826,7 @@ def upload_context():
         if h not in seen_hashes:
             seen_hashes.add(h)
             try:
-                embedding = embed(text, api_key, model)
+                embedding = get_enhanced_embeddings(text, api_key, model)
                 concepts_raw = extract_concepts(text, api_key)
                 # Ensure concepts is always a list
                 if isinstance(concepts_raw, str):
@@ -873,7 +888,7 @@ def upload_context():
                 seen_hashes.add(h)
 
                 # Embed and extract concepts
-                embedding = embed(text, api_key, model)
+                embedding = get_enhanced_embeddings(text, api_key, model)
                 concepts_raw = extract_concepts(text, api_key)
                 # Ensure concepts is always a list
                 if isinstance(concepts_raw, str):
@@ -1192,7 +1207,7 @@ def adjust_answer():
         # Call OpenAI API
         client = OpenAI(api_key=api_key)
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=messages,
             max_tokens=1024,
         )
@@ -1420,7 +1435,7 @@ def generate_preview():
         if media_type == "image":
             # Generate thumbnail description
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
@@ -1433,7 +1448,7 @@ def generate_preview():
         elif media_type == "slides":
             # Generate slides outline
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
@@ -1462,7 +1477,7 @@ def generate_slides_outline():
     try:
         client = OpenAI(api_key=api_key)
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "user",
@@ -1537,7 +1552,7 @@ def media_summary():
         """
 
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
         )
@@ -1651,7 +1666,7 @@ def internet_search():
         """
 
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             max_tokens=1000,
@@ -1668,5 +1683,9 @@ def internet_search():
 
 
 if __name__ == "__main__":
-    load_context_index()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    print("🔧 Starting Crossbar Flask app on http://localhost:5000")
+    try:
+        load_context_index()
+        app.run(host="0.0.0.0", port=5000, debug=True)
+    except Exception as e:
+        print("❌ Failed to start the Flask app:", e)

@@ -34,7 +34,7 @@ OUTPUT_FOLDER = "output"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-CHUNK_SIZE = 1500
+CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 300
 EMBEDDING_MODEL = "text-embedding-3-large"
 GPT_MODEL = "gpt-4-mini"
