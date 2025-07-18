@@ -429,11 +429,13 @@ document.getElementById('submit-file-context').addEventListener('click', async()
     }
 });
 
-// Form submission with question
+// Replace any search toggle logic with this constant
+const useSearch = true; // Always enable web search
+
+// Modify the question submission handler to always include web search
 document.getElementById('submit-btn').addEventListener('click', async function() {
     const apiKey = document.getElementById('api-key').value;
     const question = document.getElementById('question').value;
-    const submitBtn = this;
 
     if (!apiKey) {
         showNotification('Please enter your API key', 'error');
@@ -445,16 +447,13 @@ document.getElementById('submit-btn').addEventListener('click', async function()
         return;
     }
 
-    // Disable generation buttons while processing
-    genContainer.classList.add('disabled');
-    submitBtn.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
-    submitBtn.disabled = true;
+    // Show loading state
+    this.innerHTML = 'Processing <i class="fas fa-spinner fa-spin"></i>';
+    this.disabled = true;
     setOutputContent('kernel-answer', "> Processing your question...");
 
     try {
         const model = getSelectedModel();
-
-        // Get role from dropdown
         const role = document.getElementById("roleSelect").value;
 
         const response = await fetch('/api/ask', {
@@ -467,7 +466,8 @@ document.getElementById('submit-btn').addEventListener('click', async function()
                 question: question,
                 sessionId: sessionId,
                 model: model,
-                sessionProfile: role // Include role in request
+                sessionProfile: role,
+                enhance: true // Always enable enhanced response with web search
             })
         });
 
@@ -477,43 +477,29 @@ document.getElementById('submit-btn').addEventListener('click', async function()
         currentAnswer = data.answer;
         currentQuestion = data.question;
 
-        // Display matched chunks with answer
+        // Check if web results were used (look for specific markers in the answer)
+        const usedWebResults = data.answer.includes("According to web sources") ||
+            data.answer.includes("Recent information suggests");
+
+        // Display answer with context
         setOutputContent('kernel-answer', data.answer || "No answer found", data);
 
-        answerActions.style.display = 'block';
-
-        // Reveal generation buttons
-        genContainer.style.display = 'flex';
-        genContainer.classList.remove('disabled');
-
-        if (data.follow_ups && data.follow_ups.length > 0) {
-            followUpButtons.innerHTML = "";
-            data.follow_ups.forEach(followUp => {
-                const button = document.createElement('button');
-                button.className = 'follow-up-btn';
-                button.textContent = followUp;
-                button.addEventListener('click', () => {
-                    document.getElementById('question').value = followUp;
-                    document.getElementById('submit-btn').click();
-                });
-                followUpButtons.appendChild(button);
-            });
-            followUpSuggestions.style.display = 'block';
-        } else {
-            followUpSuggestions.style.display = 'none';
+        // Only show web attribution if web results were actually used
+        if (usedWebResults) {
+            const webAttribution = document.createElement('div');
+            webAttribution.className = 'web-attribution';
+            webAttribution.innerHTML = '<i class="fas fa-globe"></i> Includes web results';
+            document.getElementById('kernel-answer').appendChild(webAttribution);
         }
 
-        showNotification('Question answered successfully!', 'success');
+        // Rest of your existing UI update code...
+
     } catch (error) {
         setOutputContent('kernel-answer', `> Error: ${error.message}`);
         showNotification(`Error: ${error.message}`, 'error');
     } finally {
-        submitBtn.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
-        submitBtn.disabled = false;
-        document.getElementById('results').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+        this.innerHTML = 'Ask Question <i class="fas fa-arrow-right"></i>';
+        this.disabled = false;
     }
 });
 
