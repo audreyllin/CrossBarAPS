@@ -1,15 +1,19 @@
+# Standard library imports
 import os
 import json
 import base64
 import subprocess
 import logging
 import re
-import numpy as np
-import fcntl
-from filelock import FileLock
+from constants import INDEX_VERSION_FILE, VALID_RATIOS, VALID_STYLES, ALLOWED_EXTENSIONS
 from datetime import datetime, timezone
 from pathlib import Path
+import fcntl
+
+# Third-party imports
+import numpy as np
 import requests
+from filelock import FileLock
 
 # Document processing imports
 import pytesseract
@@ -19,20 +23,38 @@ from PIL import Image
 from docx import Document as DocxReader
 from docx import Document as DocxWriter
 from pptx import Presentation
+
+# AI/Vector imports
+import faiss
 import replicate
 from replicate.exceptions import ReplicateError
 from openai import OpenAI
 
-# AI/Vector imports
-import faiss
+import zipfile
+import tempfile
+from pathlib import Path
 
-INDEX_VERSION_FILE = "index_version.json"  # For version tracking
+ALLOWED_EXTENSIONS = {
+    ".txt",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".ppt",
+    ".pptx",
+    ".xls",
+    ".xlsx",
+    ".csv",
+    ".tsv",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".odt",
+    ".rtf",
+    ".zip",
+}
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("optimized_rag")
-
-# Configuration
+# Constants and Configuration
+INDEX_VERSION_FILE = "index_version.json"
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -48,109 +70,29 @@ REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
 POSTER_MODEL = os.getenv("POSTER_MODEL", "ideogram-ai/ideogram-v3-turbo")
 REPLICATE_USE_FILE_OUTPUT = False
 
-# Initialize OpenAI client
+# Initialize clients
 client_oa = OpenAI()
 
-def get_index_version():
-    """Get current index version with file locking"""
-    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
-    with FileLock(lock_path):
-        try:
-            with open(INDEX_VERSION_FILE, "r") as f:
-                return json.load(f).get("version", 1)
-        except:
-            return 1
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("optimized_rag")
 
-def increment_index_version():
-    """Increment index version with file locking"""
-    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
-    with FileLock(lock_path):
-        try:
-            with open(INDEX_VERSION_FILE, "r+") as f:
-                version_data = json.load(f)
-                version_data["version"] += 1
-                f.seek(0)
-                json.dump(version_data, f)
-                f.truncate()
-            return version_data["version"]
-        except Exception as e:
-            logger.error(f"Error incrementing index version: {str(e)}")
-            return None
+# ======================
+# File Processing Functions
+# ======================
 
-def _run_replicate(model_ref: str, input_data: dict) -> str:
-    """Run a Replicate model and handle different output formats."""
+def is_image_heavy_pdf(filepath):
+    """Check if PDF is primarily image-based"""
     try:
-        output = replicate.run(
-            model_ref,
-            input=input_data,
-            use_file_output=REPLICATE_USE_FILE_OUTPUT,
-        )
-    except Exception as e:
-        logger.error(f"Replicate run failed: {str(e)}")
-        raise
-
-    # Handle different output types
-    if isinstance(output, list) and len(output) > 0:
-        first = output[0]
-    else:
-        first = output
-
-    # Duck-typing for URL extraction
-    if hasattr(first, "url"):  # FileOutput object
-        return first.url
-    elif isinstance(first, str):
-        return first
-    elif isinstance(first, dict):
-        # Look for URL in dictionary values
-        for value in first.values():
-            if isinstance(value, str) and value.startswith("http"):
-                return value
-            if hasattr(value, "url"):
-                return value.url
-        # Fallback to first value if no URL found
-        first_val = next(iter(first.values()), None)
-        return str(first_val) if first_val is not None else ""
-    return str(output)  # Final fallback
-
-
-def _run_dalle(prompt: str) -> str:
-    """Fallback to DALL-E 3 if Replicate fails"""
-    rsp = client_oa.images.generate(
-        model="dall-e-3", prompt=prompt, size="1024x1024", n=1
-    )
-    return rsp.data[0].url
-
-
-def _download(url: str, session_id: str, media_type: str) -> str:
-    """Download remote media to /output and return local path."""
-    safe_session = session_id or "anon"
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    ext = ".mp4" if media_type == "video" else ".png"
-    fn = f"{media_type}_{safe_session}_{timestamp}{ext}"
-    out_path = os.path.join(OUTPUT_FOLDER, fn)
-
-    with requests.get(url, stream=True, timeout=30) as r:
-        r.raise_for_status()
-        with open(out_path, "wb") as f:
-            for chunk in r.iter_content(8192):
-                f.write(chunk)
-    return os.path.abspath(out_path)
-
+        doc = fitz.open(filepath)
+        image_page_count = sum(1 for p in doc if len(p.get_images(full=True)) > 0)
+        return image_page_count / len(doc) > 0.5
+    except:
+        return False
 
 def clean_text(text):
     """Clean and normalize text by removing extra whitespace"""
     return re.sub(r"\s+", " ", text).strip()
-
-
-def is_image_heavy_pdf(filepath):
-    """Check if PDF contains mostly images"""
-    try:
-        doc = fitz.open(filepath)
-        image_count = sum(len(page.get_images(full=True)) for page in doc)
-        return image_count / len(doc) > 0.0
-    except Exception:
-        return False
-
 
 def extract_pdf_text(filepath):
     """Extract text from PDF, falling back to OCR if needed"""
@@ -236,6 +178,11 @@ def chunk_text(text):
     return chunks
 
 
+# ======================
+# Index Management Functions
+# ======================
+
+
 def get_index_version():
     """Get current index version with file locking"""
     lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
@@ -285,7 +232,7 @@ def create_index(api_key):
 
     # Check if we need to rebuild
     current_version = get_index_version()
-    
+
     with FileLock(str(lock_path)):
         if index_path.exists() and metadata_path.exists():
             # Verify index is up-to-date
@@ -293,7 +240,7 @@ def create_index(api_key):
                 index = faiss.read_index(str(index_path))
                 with open(metadata_path, "r") as f:
                     metadata = json.load(f)
-                
+
                 # Check if any files have changed since last index
                 needs_rebuild = False
                 for filepath in Path(UPLOAD_FOLDER).glob("*"):
@@ -302,7 +249,7 @@ def create_index(api_key):
                         if file_mtime > current_version:
                             needs_rebuild = True
                             break
-                
+
                 if not needs_rebuild:
                     return index, metadata
             except Exception as e:
@@ -328,22 +275,25 @@ def create_index(api_key):
             for i, emb in enumerate(embeddings):
                 if len(chunks[i]) > MIN_CHUNK_LENGTH:
                     index.add(np.array([emb]).astype("float32"))
-                    metadata.append({
-                        "filename": filepath.name,
-                        "chunk_index": i,
-                        "content": chunks[i][:500],
-                        "version": current_version
-                    })
+                    metadata.append(
+                        {
+                            "filename": filepath.name,
+                            "chunk_index": i,
+                            "content": chunks[i][:500],
+                            "version": current_version,
+                        }
+                    )
 
         # Save new index
         faiss.write_index(index, str(index_path))
         with open(metadata_path, "w") as f:
             json.dump(metadata, f)
-        
+
         # Update version
         increment_index_version()
-        
+
         return index, metadata
+
 
 def search_index(index, metadata, query_embedding, k=5):
     """Search the FAISS index for relevant chunks"""
@@ -351,34 +301,69 @@ def search_index(index, metadata, query_embedding, k=5):
     return [metadata[i] for i in indices[0] if i < len(metadata)]
 
 
-def generate_answer(question, context, api_key):
-    """Generate an answer using GPT with provided context"""
-    client = OpenAI(api_key=api_key)
+# ======================
+# Media Generation Functions
+# ======================
 
-    # Format context for the prompt
-    context_str = "\n\n".join(
-        f"[Source {i+1}]: {res['content']}" for i, res in enumerate(context)
-    )
 
-    messages = [
-        {
-            "role": "system",
-            "content": "You are a knowledgeable assistant. Use the provided context to answer questions accurately and concisely.",
-        },
-        {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {question}"},
-    ]
-
+def _run_replicate(model_ref: str, input_data: dict) -> str:
+    """Run a Replicate model and handle different output formats."""
     try:
-        response = client.chat.completions.create(
-            model=GPT_MODEL, messages=messages, temperature=0.3, max_tokens=1024
+        output = replicate.run(
+            model_ref,
+            input=input_data,
+            use_file_output=REPLICATE_USE_FILE_OUTPUT,
         )
-        return response.choices[0].message.content.strip()
     except Exception as e:
-        logger.error(f"Answer generation failed: {str(e)}")
-        return "Error generating answer"
+        logger.error(f"Replicate run failed: {str(e)}")
+        raise
+
+    # Handle different output types
+    if isinstance(output, list) and len(output) > 0:
+        first = output[0]
+    else:
+        first = output
+
+    # Duck-typing for URL extraction
+    if hasattr(first, "url"):  # FileOutput object
+        return first.url
+    elif isinstance(first, str):
+        return first
+    elif isinstance(first, dict):
+        # Look for URL in dictionary values
+        for value in first.values():
+            if isinstance(value, str) and value.startswith("http"):
+                return value
+            if hasattr(value, "url"):
+                return value.url
+        # Fallback to first value if no URL found
+        first_val = next(iter(first.values()), None)
+        return str(first_val) if first_val is not None else ""
+    return str(output)  # Final fallback
 
 
-VALID_RATIOS = ["16:9", "9:16", "4:3", "1:1", "3:2", "2:3"]
+def _run_dalle(prompt: str) -> str:
+    """Fallback to DALL-E 3 if Replicate fails"""
+    rsp = client_oa.images.generate(
+        model="dall-e-3", prompt=prompt, size="1024x1024", n=1
+    )
+    return rsp.data[0].url
+
+
+def _download(url: str, session_id: str, media_type: str) -> str:
+    """Download remote media to /output and return local path."""
+    safe_session = session_id or "anon"
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    ext = ".mp4" if media_type == "video" else ".png"
+    fn = f"{media_type}_{safe_session}_{timestamp}{ext}"
+    out_path = os.path.join(OUTPUT_FOLDER, fn)
+
+    with requests.get(url, stream=True, timeout=30) as r:
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            for chunk in r.iter_content(8192):
+                f.write(chunk)
+    return os.path.abspath(out_path)
 
 
 def generate_media(
@@ -396,22 +381,6 @@ def generate_media(
     - 'video': Uses bytedance/seedance-1-lite (Replicate)
     - 'slides': PPTX presentation (using OpenAI GPT)
     - 'memo': DOCX memo (using OpenAI GPT and python-docx)
-
-    Args:
-        media_type: Type of media to generate (poster, video, slides, memo)
-        text: Input text/content to generate from
-        session_id: User session identifier
-        api_key: OpenAI API key (required for slides and memo)
-        template_path: Optional path to a style template file
-        aspect_ratio: Aspect ratio for generated media (default: "16:9")
-        style_type: Style type for poster generation (AUTO, GENERAL, REALISTIC, DESIGN)
-
-    Returns:
-        Absolute path to generated media file
-
-    Raises:
-        ValueError: For invalid parameters
-        RuntimeError: For generation failures
     """
     # Validate media type
     if media_type not in ["poster", "video", "slides", "memo"]:
@@ -600,6 +569,376 @@ def generate_media(
         except Exception as e:
             logger.error(f"Memo generation error: {e}")
             raise RuntimeError(f"Memo generation failed: {str(e)}")
+
+
+# ==============================================
+# Text Extraction Functions
+# ==============================================
+
+
+def extract_text_from_zip(zip_path):
+    """Extract text from zip archive"""
+    extracted_text = ""
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        for file in zip_ref.namelist():
+            if any(file.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
+                with zip_ref.open(file) as f:
+                    try:
+                        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                            tmp.write(f.read())
+                            tmp_path = tmp.name
+                        extracted_text += extract_text_from_file(tmp_path) + "\n\n"
+                        os.unlink(tmp_path)
+                    except Exception as e:
+                        logger.error(f"Error processing {file} in ZIP: {str(e)}")
+    return extracted_text
+
+
+def extract_text_from_file(filepath, api_key=None):
+    """Extract text from various file types using GPT-4o vision when needed"""
+    ext = Path(filepath).suffix.lower()
+    text = ""
+
+    try:
+        if ext == ".pdf":
+            if is_image_heavy_pdf(filepath):
+                text = process_pdf_with_vision(filepath, api_key)
+            else:
+                text = extract_pdf_text(filepath)
+        elif ext in [".jpg", ".jpeg", ".png"]:
+            text = analyze_image_with_gpt4o(filepath, api_key)
+        elif ext in [".doc", ".docx"]:
+            text = extract_docx_text(filepath)
+        elif ext == ".txt":
+            with open(filepath, "r", encoding="utf-8") as f:
+                text = f.read()
+    except Exception as e:
+        logger.error(f"Error extracting text: {str(e)}")
+        return ""
+    return text
+
+
+def process_pdf_with_vision(pdf_path, api_key):
+    """Use GPT-4o vision to extract text from PDF pages"""
+    client = OpenAI(api_key=api_key)
+    doc = fitz.open(pdf_path)
+    full_text = []
+
+    for page_num in range(len(doc)):
+        pix = doc[page_num].get_pixmap()
+        img_path = f"page_{page_num}.png"
+        pix.save(img_path)
+
+        with open(img_path, "rb") as img_file:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "Extract all text from this document page, preserving layout, tables and structure.",
+                    },
+                    {"role": "user", "image": img_file.read()},
+                ],
+                max_tokens=2000,
+            )
+            full_text.append(response.choices[0].message.content)
+        os.remove(img_path)
+    return "\n\n".join(full_text)
+
+
+def analyze_image_with_gpt4o(image_path, api_key):
+    """Use GPT-4o vision to analyze images/charts"""
+    client = OpenAI(api_key=api_key)
+    with open(image_path, "rb") as img_file:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Describe this image in detail, including any text, charts, or diagrams.",
+                },
+                {"role": "user", "image": img_file.read()},
+            ],
+            max_tokens=1000,
+        )
+        return response.choices[0].message.content
+
+
+# ==============================================
+# NLP and AI Processing Functions
+# ==============================================
+
+
+def gpt_semantic_chunk(text, api_key, max_chunks=10):
+    """Use GPT-4o to split text into coherent semantic chunks"""
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""
+                    Split this document into up to {max_chunks} coherent semantic chunks.
+                    Each chunk should represent a logically self-contained section or idea (~400-600 words).
+                    Preserve all formatting, tables, and layout information.
+                    Return a JSON list of chunks.
+                    
+                    Document:
+                    {text[:6000]}  # Limit context window
+                    """,
+                }
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+        )
+        return json.loads(response.choices[0].message.content)["chunks"]
+    except Exception as e:
+        logger.error(f"GPT chunking failed: {str(e)}")
+        return [text]  # Fallback to original text
+
+
+def embed(text, api_key, model="text-embedding-3-large"):
+    """Standard embedding function with fixed dimensions"""
+    client = OpenAI(api_key=api_key)
+    response = client.embeddings.create(
+        model=model,
+        input=[text],
+        encoding_format="float",
+        dimensions=3072,  # Explicitly set dimensions
+    )
+    return response.data[0].embedding
+
+
+def get_enhanced_embeddings(texts, api_key, model="text-embedding-3-large"):
+    """Generate embeddings with cross-chunk context"""
+    if not isinstance(texts, list):
+        texts = [texts]
+
+    try:
+        client = OpenAI(api_key=api_key)
+        summary_prompt = f"""
+        Analyze these text chunks as a cohesive document and create a global summary 
+        that captures the main themes and relationships between chunks:
+        {texts}
+        """
+        summary = (
+            client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": summary_prompt}],
+                max_tokens=500,
+            )
+            .choices[0]
+            .message.content
+        )
+
+        embeddings = []
+        for text in texts:
+            enhanced_text = f"Chunk: {text}\n\nGlobal Context: {summary}"
+            embedding = embed(enhanced_text, api_key, model)
+            embeddings.append(embedding)
+
+        return embeddings[0] if len(embeddings) == 1 else embeddings
+    except Exception as e:
+        logger.error(f"Enhanced embeddings failed: {str(e)}")
+        return embed(texts, api_key, model)  # Fallback to regular embedding
+
+
+def detect_document_type(text, api_key):
+    """Use GPT to classify document type"""
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""
+                    Classify this document into one of these types:
+                    [memo, article, report, slide, code, legal, spreadsheet, general]
+                    
+                    Text:
+                    {text[:2000]}
+                    
+                    Return only the type.
+                    """,
+                }
+            ],
+            max_tokens=10,
+            temperature=0,
+        )
+        return response.choices[0].message.content.strip().lower()
+    except Exception as e:
+        logger.error(f"Document type detection failed: {str(e)}")
+        return "general"
+
+
+def extract_concepts(text, api_key):
+    client = OpenAI(api_key=api_key)
+    prompt = (
+        "Extract key concepts and summarize the main ideas from the following text:\n"
+        + text[:4000]
+    )
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=300,
+    )
+    return response.choices[0].message.content
+
+
+def perform_web_search(query, api_key):
+    """Simulate or perform actual web search"""
+    client = OpenAI(api_key=api_key)
+    prompt = f"""
+    You are a web search assistant. Given the query "{query}", generate 3-5 realistic 
+    search results with titles, URLs, and snippets as if they came from a real search engine.
+    
+    Return the results in JSON format like this:
+    {{
+        "results": [
+            {{
+                "title": "Result title",
+                "source": "example.com",
+                "snippet": "Relevant information snippet..."
+            }}
+        ]
+    }}
+    """
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+    )
+    data = json.loads(response.choices[0].message.content)
+    return data.get("results", [])
+
+
+def get_preview(media_type, prompt, api_key):
+    client = OpenAI(api_key=api_key)
+    if media_type == "image":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "user", "content": f"Describe a thumbnail image for: {prompt}"}
+            ],
+            max_tokens=150,
+        )
+        return response.choices[0].message.content
+    elif media_type == "slides":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Create an outline for slides based on: {prompt}",
+                }
+            ],
+            max_tokens=300,
+        )
+        return response.choices[0].message.content
+    elif media_type == "video":
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Describe a short video preview for: {prompt}",
+                }
+            ],
+            max_tokens=200,
+        )
+        return response.choices[0].message.content
+    return "Preview not available for this media type"
+
+
+def initialize_vector_index(path="vector_index"):
+    """Initialize or load the FAISS index"""
+    index_path = f"{path}.faiss"
+    meta_path = f"{path}.json"
+
+    if os.path.exists(index_path):
+        index = faiss.read_index(index_path)
+        with open(meta_path, "r") as f:
+            metadata = json.load(f)
+    else:
+        index = faiss.IndexIDMap(faiss.IndexFlatL2(3072))
+        metadata = {}
+
+    return index, metadata
+
+
+def save_vector_index(index, metadata, path="vector_index"):
+    """Save the FAISS index"""
+    index_path = f"{path}.faiss"
+    meta_path = f"{path}.json"
+
+    faiss.write_index(index, index_path)
+    with open(meta_path, "w") as f:
+        json.dump(metadata, f, indent=2)
+
+    increment_index_version()
+
+
+def add_to_index(index, metadata, vector, vector_metadata):
+    """Add a vector to the index with metadata"""
+    vector_id = len(metadata) + 1
+    index.add_with_ids(
+        np.array([vector]).astype("float32"), np.array([vector_id], dtype=np.int64)
+    )
+    metadata[vector_id] = vector_metadata
+    return vector_id
+
+
+def remove_from_index(index, metadata, vector_id):
+    """Remove a vector from the index"""
+    index.remove_ids(np.array([vector_id], dtype=np.int64))
+    if vector_id in metadata:
+        del metadata[vector_id]
+
+
+def search_index(index, metadata, query_vector, k=5):
+    """Search the index for similar vectors"""
+    distances, vector_ids = index.search(np.array([query_vector]).astype("float32"), k)
+    results = []
+    for i in range(len(vector_ids[0])):
+        if vector_ids[0][i] >= 0 and vector_ids[0][i] in metadata:
+            results.append(
+                {**metadata[vector_ids[0][i]], "similarity": 1 - distances[0][i]}
+            )
+    return results
+
+
+# ======================
+# RAG Pipeline Functions
+# ======================
+
+
+def generate_answer(question, context, api_key):
+    """Generate an answer using GPT with provided context"""
+    client = OpenAI(api_key=api_key)
+
+    # Format context for the prompt
+    context_str = "\n\n".join(
+        f"[Source {i+1}]: {res['content']}" for i, res in enumerate(context)
+    )
+
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a knowledgeable assistant. Use the provided context to answer questions accurately and concisely.",
+        },
+        {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {question}"},
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model=GPT_MODEL, messages=messages, temperature=0.3, max_tokens=1024
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Answer generation failed: {str(e)}")
+        return "Error generating answer"
 
 
 def main():
