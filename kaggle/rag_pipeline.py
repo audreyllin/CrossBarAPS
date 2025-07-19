@@ -5,6 +5,8 @@ import subprocess
 import logging
 import re
 import numpy as np
+import fcntl
+from filelock import FileLock
 from datetime import datetime, timezone
 from pathlib import Path
 import requests
@@ -24,6 +26,8 @@ from openai import OpenAI
 # AI/Vector imports
 import faiss
 
+INDEX_VERSION_FILE = "index_version.json"  # For version tracking
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("optimized_rag")
@@ -37,7 +41,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 300
 EMBEDDING_MODEL = "text-embedding-3-large"
-GPT_MODEL = "gpt-4-mini"
+GPT_MODEL = "gpt-4o"
 MIN_CHUNK_LENGTH = 100
 MAX_FILE_SIZE_MB = 10
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
@@ -47,6 +51,31 @@ REPLICATE_USE_FILE_OUTPUT = False
 # Initialize OpenAI client
 client_oa = OpenAI()
 
+def get_index_version():
+    """Get current index version with file locking"""
+    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
+    with FileLock(lock_path):
+        try:
+            with open(INDEX_VERSION_FILE, "r") as f:
+                return json.load(f).get("version", 1)
+        except:
+            return 1
+
+def increment_index_version():
+    """Increment index version with file locking"""
+    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
+    with FileLock(lock_path):
+        try:
+            with open(INDEX_VERSION_FILE, "r+") as f:
+                version_data = json.load(f)
+                version_data["version"] += 1
+                f.seek(0)
+                json.dump(version_data, f)
+                f.truncate()
+            return version_data["version"]
+        except Exception as e:
+            logger.error(f"Error incrementing index version: {str(e)}")
+            return None
 
 def _run_replicate(model_ref: str, input_data: dict) -> str:
     """Run a Replicate model and handle different output formats."""
@@ -207,6 +236,34 @@ def chunk_text(text):
     return chunks
 
 
+def get_index_version():
+    """Get current index version with file locking"""
+    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
+    with FileLock(lock_path):
+        try:
+            with open(INDEX_VERSION_FILE, "r") as f:
+                return json.load(f).get("version", 1)
+        except:
+            return 1
+
+
+def increment_index_version():
+    """Increment index version with file locking"""
+    lock_path = os.path.join(OUTPUT_FOLDER, "index_version.lock")
+    with FileLock(lock_path):
+        try:
+            with open(INDEX_VERSION_FILE, "r+") as f:
+                version_data = json.load(f)
+                version_data["version"] += 1
+                f.seek(0)
+                json.dump(version_data, f)
+                f.truncate()
+            return version_data["version"]
+        except Exception as e:
+            logger.error(f"Error incrementing index version: {str(e)}")
+            return None
+
+
 def get_embeddings(texts, api_key):
     """Generate embeddings using OpenAI's API"""
     client = OpenAI(api_key=api_key)
@@ -221,36 +278,72 @@ def get_embeddings(texts, api_key):
 
 
 def create_index(api_key):
-    """Create a FAISS index from documents in the upload folder"""
-    index = faiss.IndexFlatL2(3072)
-    metadata = []
+    """Create a FAISS index with version checking"""
+    index_path = Path(OUTPUT_FOLDER) / "index.faiss"
+    metadata_path = Path(OUTPUT_FOLDER) / "metadata.json"
+    lock_path = Path(OUTPUT_FOLDER) / "index.lock"
 
-    for filepath in Path(UPLOAD_FOLDER).glob("*"):
-        if filepath.suffix.lower() not in [".pdf", ".doc", ".docx", ".txt"]:
-            continue
+    # Check if we need to rebuild
+    current_version = get_index_version()
+    
+    with FileLock(str(lock_path)):
+        if index_path.exists() and metadata_path.exists():
+            # Verify index is up-to-date
+            try:
+                index = faiss.read_index(str(index_path))
+                with open(metadata_path, "r") as f:
+                    metadata = json.load(f)
+                
+                # Check if any files have changed since last index
+                needs_rebuild = False
+                for filepath in Path(UPLOAD_FOLDER).glob("*"):
+                    if filepath.suffix.lower() in [".pdf", ".doc", ".docx", ".txt"]:
+                        file_mtime = filepath.stat().st_mtime
+                        if file_mtime > current_version:
+                            needs_rebuild = True
+                            break
+                
+                if not needs_rebuild:
+                    return index, metadata
+            except Exception as e:
+                logger.warning(f"Error loading existing index, will rebuild: {str(e)}")
 
-        logger.info(f"Processing: {filepath.name}")
-        text = extract_text(str(filepath))
-        if not text:
-            continue
+        # Rebuild index
+        logger.info("Building new index")
+        index = faiss.IndexFlatL2(3072)
+        metadata = []
 
-        chunks = chunk_text(text)
-        embeddings = get_embeddings(chunks, api_key)
+        for filepath in Path(UPLOAD_FOLDER).glob("*"):
+            if filepath.suffix.lower() not in [".pdf", ".doc", ".docx", ".txt"]:
+                continue
 
-        for i, emb in enumerate(embeddings):
-            if len(chunks[i]) > MIN_CHUNK_LENGTH:
-                # Fix dtype warning by ensuring float32
-                index.add(np.array([emb]).astype("float32"))
-                metadata.append(
-                    {
+            logger.info(f"Processing: {filepath.name}")
+            text = extract_text(str(filepath))
+            if not text:
+                continue
+
+            chunks = chunk_text(text)
+            embeddings = get_embeddings(chunks, api_key)
+
+            for i, emb in enumerate(embeddings):
+                if len(chunks[i]) > MIN_CHUNK_LENGTH:
+                    index.add(np.array([emb]).astype("float32"))
+                    metadata.append({
                         "filename": filepath.name,
                         "chunk_index": i,
-                        "content": chunks[i][:500],  # Store snippet for reference
-                    }
-                )
+                        "content": chunks[i][:500],
+                        "version": current_version
+                    })
 
-    return index, metadata
-
+        # Save new index
+        faiss.write_index(index, str(index_path))
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f)
+        
+        # Update version
+        increment_index_version()
+        
+        return index, metadata
 
 def search_index(index, metadata, query_embedding, k=5):
     """Search the FAISS index for relevant chunks"""
@@ -507,6 +600,7 @@ def generate_media(
         except Exception as e:
             logger.error(f"Memo generation error: {e}")
             raise RuntimeError(f"Memo generation failed: {str(e)}")
+
 
 def main():
     """Main RAG pipeline execution"""

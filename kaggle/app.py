@@ -1,5 +1,5 @@
-# app.py (Flask backend)
 import os
+import sys
 import logging
 import hashlib
 import json
@@ -7,9 +7,13 @@ import base64
 import subprocess
 import shutil
 import tempfile
+import fcntl
+import zipfile
+import mimetypes
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
+from collections import Counter
 from flask import (
     Flask,
     request,
@@ -21,24 +25,45 @@ from flask import (
     current_app,
 )
 from werkzeug.utils import secure_filename
-from openai import OpenAI
-from fpdf import FPDF
+from celery import Celery
 from docx import Document as DocxWriter
+from docx import Document as DocxDoc
+from pptx import Presentation
+from fpdf import FPDF
 import pytesseract
 from PIL import Image
 import pdfplumber
 import fitz
-from docx import Document as DocxDoc
-from pptx import Presentation
 import pandas as pd
 import numpy as np
 import faiss
-from collections import Counter
-import zipfile
-import mimetypes
+from openai import OpenAI
+import replicate
+from replicate.exceptions import ReplicateError
+from filelock import FileLock
 from rag_pipeline import generate_media
 
+INDEX_VERSION_FILE = "index_version.json"  # For version tracking
+
 print("Starting Crossbar Flask app...")
+
+
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend=app.config["CELERY_RESULT_BACKEND"],
+        broker=app.config["CELERY_BROKER_URL"],
+    )
+    celery.conf.update(app.config)
+    return celery
+
+
+app = Flask(__name__)
+app.config.update(
+    CELERY_BROKER_URL="redis://localhost:6379/0",
+    CELERY_RESULT_BACKEND="redis://localhost:6379/0",
+)
+celery = make_celery(app)
 
 
 def _to_native(o):
@@ -96,53 +121,127 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024  # 100MB limit
 
 
-# FAISS Vector Index
+# FAISS Vector Index with file locking
 class PersistentVectorIndex:
     def __init__(self, path="vector_index"):
         self.path = path
         self.index_path = f"{path}.faiss"
         self.meta_path = f"{path}.json"
+        self.lock_path = f"{path}.lock"
+
+        # Initialize version tracking
+        self._init_index_version()
 
         if os.path.exists(self.index_path):
-            self.index = faiss.read_index(self.index_path)
-            with open(self.meta_path, "r") as f:
-                self.metadata = json.load(f)
+            with self._acquire_lock():
+                self.index = faiss.read_index(self.index_path)
+                with open(self.meta_path, "r") as f:
+                    self.metadata = json.load(f)
         else:
             self.index = faiss.IndexIDMap(faiss.IndexFlatL2(3072))
             self.metadata = {}
 
+    def _init_index_version(self):
+        """Initialize index version tracking"""
+        if not os.path.exists(INDEX_VERSION_FILE):
+            with open(INDEX_VERSION_FILE, "w") as f:
+                json.dump({"version": 1}, f)
+
+    def _acquire_lock(self):
+        """Acquire a file lock for thread-safe operations"""
+        lock = open(self.lock_path, "w")
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        return lock
+
+    def _release_lock(self, lock):
+        """Release the file lock"""
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        lock.close()
+
+    def _increment_version(self):
+        """Increment the index version"""
+        with self._acquire_lock():
+            try:
+                with open(INDEX_VERSION_FILE, "r+") as f:
+                    version_data = json.load(f)
+                    version_data["version"] += 1
+                    f.seek(0)
+                    json.dump(version_data, f)
+                    f.truncate()
+                return version_data["version"]
+            except Exception as e:
+                logger.error(f"Error incrementing index version: {str(e)}")
+                return None
+
+    def get_current_version(self):
+        """Get current index version"""
+        try:
+            with open(INDEX_VERSION_FILE, "r") as f:
+                return json.load(f).get("version", 1)
+        except:
+            return 1
+
     def save(self):
-        faiss.write_index(self.index, self.index_path)
-        with open(self.meta_path, "w") as f:
-            json.dump(self.metadata, f, indent=2)
+        """Save index with version check"""
+        current_version = self.get_current_version()
+        with self._acquire_lock():
+            try:
+                # Check if index needs rebuild
+                if not os.path.exists(self.index_path) or self._needs_rebuild():
+                    faiss.write_index(self.index, self.index_path)
+                    with open(self.meta_path, "w") as f:
+                        json.dump(self.metadata, f, indent=2)
+                    self._increment_version()
+            except Exception as e:
+                logger.error(f"Error saving index: {str(e)}")
+                raise
+
+    def _needs_rebuild(self):
+        """Check if index needs rebuild based on metadata changes"""
+        if not os.path.exists(self.meta_path):
+            return True
+
+        try:
+            with open(self.meta_path, "r") as f:
+                saved_metadata = json.load(f)
+                return saved_metadata != self.metadata
+        except:
+            return True
 
     def add_vector(self, vector, metadata):
-        vector_id = len(self.metadata) + 1
-        self.index.add_with_ids(
-            np.array([vector]).astype("float32"), np.array([vector_id], dtype=np.int64)
-        )
-        self.metadata[vector_id] = metadata
-        return vector_id
+        """Add vector with thread-safe operation"""
+        with self._acquire_lock():
+            vector_id = len(self.metadata) + 1
+            self.index.add_with_ids(
+                np.array([vector]).astype("float32"),
+                np.array([vector_id], dtype=np.int64),
+            )
+            self.metadata[vector_id] = metadata
+            return vector_id
 
     def remove_vector(self, vector_id):
-        self.index.remove_ids(np.array([vector_id], dtype=np.int64))
-        if vector_id in self.metadata:
-            del self.metadata[vector_id]
+        """Remove vector with thread-safe operation"""
+        with self._acquire_lock():
+            self.index.remove_ids(np.array([vector_id], dtype=np.int64))
+            if vector_id in self.metadata:
+                del self.metadata[vector_id]
 
     def search(self, vector, k=5):
-        distances, vector_ids = self.index.search(
-            np.array([vector]).astype("float32"), k
-        )
-        results = []
-        for i in range(len(vector_ids[0])):
-            if vector_ids[0][i] >= 0 and vector_ids[0][i] in self.metadata:
-                results.append(
-                    {
-                        **self.metadata[vector_ids[0][i]],
-                        "similarity": 1 - distances[0][i],
-                    }
-                )
-        return results
+        """Search index with thread-safe operation"""
+        with self._acquire_lock():
+            distances, vector_ids = self.index.search(
+                np.array([vector]).astype("float32"), k
+            )
+            results = []
+            for i in range(len(vector_ids[0])):
+                if vector_ids[0][i] >= 0 and vector_ids[0][i] in self.metadata:
+                    results.append(
+                        {
+                            **self.metadata[vector_ids[0][i]],
+                            "similarity": 1 - distances[0][i],
+                        }
+                    )
+            return results
 
 
 # Initialize the persistent index
@@ -255,99 +354,115 @@ def extract_text_from_zip(zip_path):
 
 
 def extract_text_from_file(filepath, api_key=None):
-    """Extract text from various file types using semantic chunking"""
+    """Extract text from various file types using GPT-4o vision when needed"""
     ext = Path(filepath).suffix.lower()
     text = ""
 
     try:
-        # Handle ZIP files
-        if ext == ".zip":
-            return extract_text_from_zip(filepath)
-
-        # Handle other file types (existing extraction logic)
         if ext == ".pdf":
-            with pdfplumber.open(filepath) as pdf:
-                text = "\n".join(
-                    page.extract_text() for page in pdf.pages if page.extract_text()
-                )
-            if not text.strip() or is_image_heavy_pdf(filepath):
-                doc = fitz.open(filepath)
-                for page in doc:
-                    text += page.get_text() or ""
-
-        elif ext in [".doc", ".docx"]:
-            doc = DocxDoc(filepath)
-            text = "\n".join(p.text for p in doc.paragraphs)
-
-        elif ext in [".ppt", ".pptx"]:
-            prs = Presentation(filepath)
-            text = "\n".join(
-                shape.text
-                for slide in prs.slides
-                for shape in slide.shapes
-                if hasattr(shape, "text")
-            )
-
-        elif ext in [".xls", ".xlsx"]:
-            df = pd.read_excel(filepath, sheet_name=None)
-            text = "\n".join(
-                df[sheet].astype(str).apply(" | ".join, axis=1).str.cat(sep="\n")
-                for sheet in df
-            )
-
-        elif ext in [".csv", ".tsv"]:
-            text = (
-                pd.read_csv(filepath)
-                .astype(str)
-                .apply(" | ".join, axis=1)
-                .str.cat(sep="\n")
-            )
+            if is_image_heavy_pdf(filepath):
+                # Use GPT-4o vision for image-heavy PDFs
+                text = process_pdf_with_vision(filepath, api_key)
+            else:
+                # Use regular text extraction for text-based PDFs
+                text = extract_pdf_text(filepath)
 
         elif ext in [".jpg", ".jpeg", ".png"]:
-            text = pytesseract.image_to_string(Image.open(filepath))
+            # Use GPT-4o vision for images
+            text = analyze_image_with_gpt4o(filepath, api_key)
+
+        elif ext in [".doc", ".docx"]:
+            text = extract_docx_text(filepath)
 
         elif ext == ".txt":
-            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            with open(filepath, "r", encoding="utf-8") as f:
                 text = f.read()
 
     except Exception as e:
-        logger.error(f"[extract_text] {filepath} failed: {str(e)}")
+        logger.error(f"Error extracting text: {str(e)}")
         return ""
 
-    # Apply semantic chunking to the extracted text
-    return semantic_chunk(clean_text(text[:20000]))  # Limit to 20k chars
+    return text
 
 
-def semantic_chunk(text, min_size=500):
-    """Split by paragraphs/sections while respecting min size"""
-    chunks = []
-    current_chunk = []
-    current_len = 0
+def process_pdf_with_vision(pdf_path, api_key):
+    """Use GPT-4o vision to extract text from PDF pages"""
+    client = OpenAI(api_key=api_key)
+    doc = fitz.open(pdf_path)
+    full_text = []
 
-    # First try splitting by double newlines (paragraphs)
-    paragraphs = text.split("\n\n")
+    for page_num in range(len(doc)):
+        # Render page as image
+        pix = doc[page_num].get_pixmap()
+        img_path = f"page_{page_num}.png"
+        pix.save(img_path)
 
-    for para in paragraphs:
-        para = para.strip()
-        if not para:
-            continue
+        # Send to GPT-4o vision
+        with open(img_path, "rb") as img_file:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "Extract all text from this document page, preserving layout, tables and structure.",
+                    },
+                    {"role": "user", "image": img_file.read()},
+                ],
+                max_tokens=2000,
+            )
+            full_text.append(response.choices[0].message.content)
 
-        if current_len + len(para) > min_size and current_chunk:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = []
-            current_len = 0
+        # Clean up
+        os.remove(img_path)
 
-        current_chunk.append(para)
-        current_len += len(para)
+    return "\n\n".join(full_text)
 
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
 
-    # If we got just one chunk that's too large, fall back to sentence splitting
-    if len(chunks) == 1 and len(chunks[0]) > min_size * 2:
-        return chunk_text(text)  # Fall back to original chunking method
+def analyze_image_with_gpt4o(image_path, api_key):
+    """Use GPT-4o vision to analyze images/charts"""
+    client = OpenAI(api_key=api_key)
+    with open(image_path, "rb") as img_file:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Describe this image in detail, including any text, charts, or diagrams.",
+                },
+                {"role": "user", "image": img_file.read()},
+            ],
+            max_tokens=1000,
+        )
+        return response.choices[0].message.content
 
-    return chunks
+
+def gpt_semantic_chunk(text, api_key, max_chunks=10):
+    """Use GPT-4o to split text into coherent semantic chunks"""
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""
+                    Split this document into up to {max_chunks} coherent semantic chunks.
+                    Each chunk should represent a logically self-contained section or idea (~400-600 words).
+                    Preserve all formatting, tables, and layout information.
+                    Return a JSON list of chunks.
+                    
+                    Document:
+                    {text[:6000]}  # Limit context window
+                    """,
+                }
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+        )
+        return json.loads(response.choices[0].message.content)["chunks"]
+    except Exception as e:
+        logger.error(f"GPT chunking failed: {str(e)}")
+        return [text]  # Fallback to original text
 
 
 def update_context_priority(session_id, used_context_ids, positive=True):
@@ -383,50 +498,72 @@ def embed(text, api_key, model="text-embedding-3-large"):
 
 
 def get_enhanced_embeddings(texts, api_key, model="text-embedding-3-large"):
-    """Add cross-chunk context to embeddings - handles both single text and list of texts"""
-    if not api_key or not texts:
-        return []
-
-    # Handle single text input
-    if isinstance(texts, str):
+    """Generate embeddings with cross-chunk context"""
+    if not isinstance(texts, list):
         texts = [texts]
 
     try:
         client = OpenAI(api_key=api_key)
-        prompt = f"""Analyze these text chunks as a cohesive document and return enhanced summaries:
-        {texts}
-        Return a JSON array where each element is an enhanced summary of the corresponding chunk."""
 
-        response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_tokens=2000,
-            temperature=0.3,
+        # First get a global summary of all chunks
+        summary_prompt = f"""
+        Analyze these text chunks as a cohesive document and create a global summary 
+        that captures the main themes and relationships between chunks:
+        {texts}
+        """
+
+        summary = (
+            client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": summary_prompt}],
+                max_tokens=500,
+            )
+            .choices[0]
+            .message.content
         )
 
-        enhanced_data = json.loads(response.choices[0].message.content)
-        if isinstance(enhanced_data, dict) and "chunks" in enhanced_data:
-            enhanced_texts = enhanced_data["chunks"]
-        elif isinstance(enhanced_data, list):
-            enhanced_texts = enhanced_texts
-        else:
-            enhanced_texts = texts  # Fallback to original texts
-
-        # Get embeddings for all enhanced texts
+        # Get embeddings for each chunk + summary
         embeddings = []
-        for text in enhanced_texts:
-            emb = embed(text, api_key, model)
-            embeddings.append(emb)
+        for text in texts:
+            # Combine chunk text with global summary
+            enhanced_text = f"Chunk: {text}\n\nGlobal Context: {summary}"
+            embedding = embed(enhanced_text, api_key, model)
+            embeddings.append(embedding)
 
         return embeddings[0] if len(embeddings) == 1 else embeddings
 
     except Exception as e:
         logger.error(f"Enhanced embeddings failed: {str(e)}")
-        # Fallback to regular embeddings for each text
-        if isinstance(texts, str):
-            return embed(texts, api_key, model)
-        return [embed(text, api_key, model) for text in texts]
+        return embed(texts, api_key, model)  # Fallback to regular embedding
+
+
+def detect_document_type(text, api_key):
+    """Use GPT to classify document type"""
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""
+                    Classify this document into one of these types:
+                    [memo, article, report, slide, code, legal, spreadsheet, general]
+                    
+                    Text:
+                    {text[:2000]}
+                    
+                    Return only the type.
+                    """,
+                }
+            ],
+            max_tokens=10,
+            temperature=0,
+        )
+        return response.choices[0].message.content.strip().lower()
+    except Exception as e:
+        logger.error(f"Document type detection failed: {str(e)}")
+        return "general"
 
 
 def extract_concepts(text, api_key):
@@ -786,26 +923,6 @@ def upload_file():
     return jsonify({"status": "success", "results": results})
 
 
-@app.route("/api/list_contexts", methods=["GET"])
-def list_contexts():
-    session_id = request.args.get("sessionId")
-    if not session_id:
-        return jsonify({"error": "Missing sessionId"}), 400
-
-    contexts = []
-    if os.path.exists(CONTEXT_UPLOADS_FILE):
-        try:
-            with open(CONTEXT_UPLOADS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                contexts = [
-                    entry for entry in data if entry.get("session_id") == session_id
-                ]
-        except Exception as e:
-            logger.error(f"Error loading context uploads: {str(e)}")
-
-    return jsonify({"status": "success", "contexts": contexts})
-
-
 @app.route("/api/upload_context", methods=["POST"])
 def upload_context():
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
@@ -932,6 +1049,26 @@ def upload_context():
     return jsonify({"status": "success", "results": results})
 
 
+@app.route("/api/list_contexts", methods=["GET"])
+def list_contexts():
+    session_id = request.args.get("sessionId")
+    if not session_id:
+        return jsonify({"error": "Missing sessionId"}), 400
+
+    contexts = []
+    if os.path.exists(CONTEXT_UPLOADS_FILE):
+        try:
+            with open(CONTEXT_UPLOADS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                contexts = [
+                    entry for entry in data if entry.get("session_id") == session_id
+                ]
+        except Exception as e:
+            logger.error(f"Error loading context uploads: {str(e)}")
+
+    return jsonify({"status": "success", "contexts": contexts})
+
+
 @app.route("/api/remove_context", methods=["POST"])
 def remove_context():
     data = request.json
@@ -1051,7 +1188,45 @@ def get_qa_stats():
         return jsonify({"error": str(e)}), 500
 
 
-# Replace existing /api/generate route with this:
+# Celery tasks
+@celery.task(bind=True)
+def async_generate_media(
+    self,
+    media_type,
+    text,
+    session_id,
+    api_key=None,
+    template_path=None,
+    aspect_ratio="16:9",
+    style_type=None,
+):
+    """Async task for media generation"""
+    try:
+        # Update task state
+        self.update_state(state="PROGRESS", meta={"status": "Generating..."})
+
+        # Call the actual generation function
+        output_path = generate_media(
+            media_type=media_type,
+            text=text,
+            session_id=session_id,
+            api_key=api_key,
+            template_path=template_path,
+            aspect_ratio=aspect_ratio,
+            style_type=style_type,
+        )
+
+        return {
+            "status": "SUCCESS",
+            "output_path": output_path,
+            "filename": os.path.basename(output_path),
+        }
+    except Exception as e:
+        logger.error(f"Async media generation failed: {str(e)}")
+        return {"status": "FAILURE", "error": str(e)}
+
+
+# Modified API endpoint for async generation
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
     data = request.form
@@ -1074,37 +1249,46 @@ def api_generate():
             template_path = os.path.join(UPLOAD_FOLDER, filename)
             template_file.save(template_path)
 
-        output_path = generate_media(
-            media_type,
-            answer,
-            session_id,
-            api_key,
+        # Start async task
+        task = async_generate_media.delay(
+            media_type=media_type,
+            text=answer,
+            session_id=session_id,
+            api_key=api_key,
             template_path=template_path,
-            aspect_ratio=data.get("aspect_ratio", "16:9"),
-            style_type=data.get("style_type"),
+            aspect_ratio=aspect_ratio,
+            style_type=style_type,
         )
 
-        if not output_path or not os.path.isfile(output_path):
-            current_app.logger.error("Generation succeeded but no file was created")
-            return (
-                jsonify({"error": "Generation succeeded but no file was created"}),
-                500,
-            )
-
-        # Save copy to admin_outputs
-        filename = os.path.basename(output_path)
-        admin_output_path = os.path.join(ADMIN_OUTPUTS, filename)
-        shutil.copy(output_path, admin_output_path)
-
-        # Initialize tags
-        update_tags(filename, [])
-
-        download_url = url_for("download_generated", file=filename, _external=True)
-        return jsonify({"url": download_url})
+        return jsonify({"task_id": task.id}), 202
 
     except Exception as e:
-        current_app.logger.exception("Error generating media")
+        current_app.logger.exception("Error starting generation task")
         return jsonify({"error": str(e)}), 500
+
+
+# Task status endpoint
+@app.route("/api/task/<task_id>", methods=["GET"])
+def get_task_status(task_id):
+    task = async_generate_media.AsyncResult(task_id)
+
+    if task.state == "PENDING":
+        response = {"state": task.state, "status": "Pending..."}
+    elif task.state == "PROGRESS":
+        response = {"state": task.state, "status": task.info.get("status", "")}
+    elif task.state == "SUCCESS":
+        response = {
+            "state": task.state,
+            "result": task.info,
+            "download_url": url_for(
+                "download_generated", file=task.info["filename"], _external=True
+            ),
+        }
+    else:
+        # Something went wrong
+        response = {"state": task.state, "status": str(task.info)}  # Error info
+
+    return jsonify(response)
 
 
 # Admin gallery endpoints
@@ -1227,60 +1411,88 @@ def generate_from_enhanced():
         return jsonify({"error": "Missing API key"}), 401
 
     try:
-        # Handle both JSON and form data
-        if request.is_json:
-            data = request.get_json()
-            media_type = data.get("type")
-            prompt = data.get("prompt")
-            session_id = data.get("sessionId")
-            template_base64 = data.get("template")
-            template_file = None
-        else:
-            media_type = request.form.get("type")
-            prompt = request.form.get("prompt")
-            session_id = request.form.get("sessionId")
-            template_file = request.files.get("template")
-            template_base64 = None
+        # Enhanced parameter validation
+        data = request.get_json() if request.is_json else request.form
+        media_type = data.get("type")
+        prompt = data.get("prompt")
+        session_id = data.get("sessionId")
+        aspect_ratio = data.get("aspect_ratio", "16:9")
+        style_type = data.get("style_type")
 
         if not media_type or not prompt:
             return jsonify({"error": "Missing media type or prompt"}), 400
 
-        # Handle base64 template if provided
-        template_path = None
-        if template_base64:
-            try:
-                # Extract base64 data
-                if "base64," in template_base64:
-                    template_base64 = template_base64.split("base64,")[1]
-                file_bytes = base64.b64decode(template_base64)
-                filename = f"template_{session_id or 'temp'}.pptx"  # Default to pptx
-                template_path = os.path.join(UPLOAD_FOLDER, filename)
+        if aspect_ratio not in VALID_RATIOS:
+            return (
+                jsonify(
+                    {"error": f"Invalid aspect ratio. Must be one of: {VALID_RATIOS}"}
+                ),
+                400,
+            )
 
+        if style_type and style_type.upper() not in VALID_STYLES:
+            return (
+                jsonify(
+                    {"error": f"Invalid style type. Must be one of: {VALID_STYLES}"}
+                ),
+                400,
+            )
+
+        # Handle template file (either base64 or file upload)
+        template_path = None
+        if request.is_json and data.get("template"):
+            try:
+                template_base64 = (
+                    data["template"].split("base64,")[1]
+                    if "base64," in data["template"]
+                    else data["template"]
+                )
+                file_bytes = base64.b64decode(template_base64)
+                filename = f"template_{session_id or 'temp'}.pptx"
+                template_path = os.path.join(UPLOAD_FOLDER, filename)
                 with open(template_path, "wb") as f:
                     f.write(file_bytes)
             except Exception as e:
                 logger.error(f"Error processing base64 template: {str(e)}")
                 return jsonify({"error": "Invalid template file"}), 400
-        elif template_file and allowed_file(template_file.filename):
-            # Handle regular file upload
-            filename = secure_filename(template_file.filename)
-            template_path = os.path.join(UPLOAD_FOLDER, filename)
-            template_file.save(template_path)
+        elif "template" in request.files:
+            template_file = request.files["template"]
+            if template_file and allowed_file(template_file.filename):
+                filename = secure_filename(template_file.filename)
+                template_path = os.path.join(UPLOAD_FOLDER, filename)
+                template_file.save(template_path)
 
-        # Generate media
-        output_path = generate_media(
-            media_type,
-            prompt,
-            session_id,
-            api_key,
-            template_path=template_path,
-            aspect_ratio=data.get("aspect_ratio", "16:9"),
-            style_type=data.get("style_type"),
-        )
+        # Version-pinned retry logic for Replicate models
+        max_retries = 2
+        retry_count = 0
+        last_error = None
+
+        while retry_count <= max_retries:
+            try:
+                output_path = generate_media(
+                    media_type=media_type,
+                    text=prompt,
+                    session_id=session_id,
+                    api_key=api_key,
+                    template_path=template_path,
+                    aspect_ratio=aspect_ratio,
+                    style_type=style_type,
+                )
+                break
+            except ReplicateError as e:
+                if e.status == 422 and retry_count < max_retries:
+                    retry_count += 1
+                    logger.warning(f"Version mismatch, retry attempt {retry_count}")
+                    continue
+                last_error = str(e)
+                break
+            except Exception as e:
+                last_error = str(e)
+                break
 
         if not output_path or not os.path.isfile(output_path):
-            logger.error("Generation failed - no output file created")
-            return jsonify({"error": "Generation failed"}), 500
+            logger.error(f"Generation failed: {last_error}")
+            return jsonify({"error": f"Generation failed: {last_error}"}), 500
 
         # Save to admin outputs
         filename = os.path.basename(output_path)
@@ -1290,7 +1502,18 @@ def generate_from_enhanced():
         # Return download URL
         download_url = url_for("download_generated", file=filename, _external=True)
 
-        return jsonify({"filename": filename, "url": download_url})
+        return jsonify(
+            {
+                "filename": filename,
+                "url": download_url,
+                "metadata": {
+                    "media_type": media_type,
+                    "aspect_ratio": aspect_ratio,
+                    "style_type": style_type,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                },
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error in generate_from_enhanced: {str(e)}")
@@ -1420,73 +1643,144 @@ def debug_vector():
 
 @app.route("/api/generate_preview", methods=["POST"])
 def generate_preview():
-    """Generate preview for enhanced prompts"""
-    data = request.json
-    prompt = data.get("prompt")
-    media_type = data.get("mediaType")
+    """Generate preview for enhanced prompts with improved media generation"""
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
-
-    if not prompt or not api_key:
-        return jsonify({"error": "Missing prompt or API key"}), 400
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
 
     try:
+        data = request.json
+        prompt = data.get("prompt")
+        media_type = data.get("mediaType")
+        aspect_ratio = data.get("aspect_ratio", "16:9")
+        style_type = data.get("style_type")
+
+        if not prompt or not media_type:
+            return jsonify({"error": "Missing prompt or media type"}), 400
+
+        # Enhanced prompt engineering
         client = OpenAI(api_key=api_key)
 
         if media_type == "image":
-            # Generate thumbnail description
+            # Improved image preview with style considerations
+            preview_prompt = f"""
+            Generate a detailed thumbnail description for an image with these characteristics:
+            - Style: {style_type if style_type else 'general'}
+            - Aspect ratio: {aspect_ratio}
+            - Based on this content: {prompt}
+            
+            The description should be 1-2 sentences focusing on key visual elements.
+            """
             response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Describe a thumbnail image for: {prompt}",
-                    }
-                ],
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": preview_prompt}],
+                max_tokens=150,
             )
             return jsonify({"preview": response.choices[0].message.content})
 
         elif media_type == "slides":
-            # Generate slides outline
+            # Enhanced slides outline with structure
+            outline_prompt = f"""
+            Create a detailed slides outline for a presentation with:
+            - Professional structure
+            - Balanced content distribution
+            - Visual elements suggestions
+            - Based on this content: {prompt}
+            
+            Return as a markdown list with slide titles and bullet points.
+            """
             response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Create an outline for slides based on: {prompt}",
-                    }
-                ],
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": outline_prompt}],
+                max_tokens=300,
             )
             return jsonify({"outline": response.choices[0].message.content})
+
+        elif media_type == "video":
+            # Improved video preview with scene breakdown
+            video_prompt = f"""
+            Describe a short video preview with:
+            - Key scenes (3-5)
+            - Suggested visuals
+            - Pacing notes
+            - Based on this content: {prompt}
+            
+            Keep it under 200 words.
+            """
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": video_prompt}],
+                max_tokens=250,
+            )
+            return jsonify({"preview": response.choices[0].message.content})
 
         return jsonify({"preview": "Preview not available for this media type"})
 
     except Exception as e:
+        logger.error(f"Error in generate_preview: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/generate_slides_outline", methods=["POST"])
 def generate_slides_outline():
-    """Generate slides outline for preview"""
-    data = request.json
-    prompt = data.get("prompt")
+    """Generate slides outline with improved JSON structure"""
     api_key = request.headers.get("Authorization", "").replace("Bearer ", "")
-
-    if not prompt or not api_key:
-        return jsonify({"error": "Missing prompt or API key"}), 400
+    if not api_key:
+        return jsonify({"error": "Missing API key"}), 401
 
     try:
+        data = request.json
+        prompt = data.get("prompt")
+        depth = data.get("depth", "detailed")  # 'brief' or 'detailed'
+
+        if not prompt:
+            return jsonify({"error": "Missing prompt"}), 400
+
         client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Create a detailed slides outline for: {prompt}",
-                }
+
+        # Improved structured prompt
+        outline_prompt = f"""
+        Create a {depth} slides outline in JSON format based on: {prompt}
+        
+        Return a JSON object with this structure:
+        {{
+            "title": "Presentation Title",
+            "slides": [
+                {{
+                    "title": "Slide Title",
+                    "content": ["bullet point 1", "bullet point 2"],
+                    "visual_suggestion": "suggested visual element",
+                    "notes": "additional speaker notes"
+                }}
             ],
+            "recommendations": {{
+                "design": "suggested design style",
+                "timing": "estimated presentation duration",
+                "audience": "target audience considerations"
+            }}
+        }}
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "user", "content": outline_prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=1000,
         )
-        return jsonify({"outline": response.choices[0].message.content})
+
+        outline = json.loads(response.choices[0].message.content)
+
+        # Validate and clean the response
+        if not isinstance(outline, dict):
+            raise ValueError("Invalid outline format")
+
+        if "slides" not in outline:
+            outline["slides"] = []
+
+        return jsonify(outline)
+
     except Exception as e:
+        logger.error(f"Error in generate_slides_outline: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -1605,6 +1899,63 @@ def export_feedback():
     return jsonify({"error": "Invalid format"}), 400
 
 
+def fetch_competitor_analysis(api_key):
+    client = OpenAI(api_key=api_key)
+
+    competitors_prompt = """
+You are a competitive intelligence analyst specializing in MPC (Multi-Party Computation) technology. 
+Analyze Crossbar Cramium Lab's MPC SDK and identify at least 4 real competitors with comparable products.
+
+For each competitor, provide:
+1. Their core MPC offering
+2. Supported blockchains (count)
+3. Key differentiating features
+4. Security certifications
+5. Pricing model (if available)
+6. Notable customers/partners
+
+Crossbar Cramium Lab's key features to compare against:
+- Threshold signature schemes
+- Secure key generation
+- Multi-cloud support
+- Hardware security module integration
+- Compliance certifications
+- Developer tools and SDKs
+
+Return only a JSON list like:
+{
+  "competitors": [
+    {
+      "name": "Fireblocks",
+      "blockchains": 24,
+      "features": ["Institutional-grade security", "Policy engine", "DeFi connectivity"],
+      "certifications": ["SOC 2 Type II", "ISO 27001"],
+      "pricing": "Volume-based",
+      "customers": ["Binance", "Crypto.com"],
+      "comparison": "Stronger in institutional features but less flexible in key management"
+    },
+    ...
+  ]
+}
+Only include verifiable information from public sources or reasonable estimates.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "user", "content": competitors_prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=1000,
+        )
+        content = response.choices[0].message.content
+        response_data = json.loads(content)
+        return response_data.get("competitors", [])
+    except Exception as e:
+        logger.error(f"Failed to fetch competitor analysis: {e}")
+        return []
+
+
 @app.route("/api/visualize", methods=["POST"])
 def visualize_data():
     data = request.json
@@ -1615,24 +1966,75 @@ def visualize_data():
         return jsonify({"error": "Missing text or API key"}), 400
 
     try:
+        # Get comprehensive competitor analysis
+        competitors = fetch_competitor_analysis(api_key)
+        if competitors:
+            text += "\n\nCompetitor Analysis:\n"
+            for c in competitors:
+                text += f"\n{c.get('name', 'Unnamed competitor')}:\n"
+                text += f"- Blockchains supported: {c.get('blockchains', 'N/A')}\n"
+                text += f"- Key features: {', '.join(c.get('features', []))}\n"
+                text += f"- Certifications: {', '.join(c.get('certifications', []))}\n"
+                text += f"- Pricing: {c.get('pricing', 'Unknown')}\n"
+                text += f"- Notable customers: {', '.join(c.get('customers', []))}\n"
+                text += (
+                    f"- Comparison: {c.get('comparison', 'No comparison available')}\n"
+                )
+
+        # Updated visualization prompt with specific axis instructions
         client = OpenAI(api_key=api_key)
         prompt = f"""
-        Analyze this text and extract numerical data suitable for visualization.
-        Return a Vega-Lite JSON spec for the most appropriate chart type.
-        Focus on business-oriented visualization (bar, line, pie, etc.).
-        Text: {text}
-        """
+Analyze this competitor comparison data and create a visualization specification.
+The chart should clearly show comparisons between different competitors.
+
+Key requirements:
+1. Competitor names must appear on the x-axis
+2. Use bar charts as the primary visualization
+3. Each bar should represent a different competitor
+4. Include Crossbar Cramium Lab in the comparison if data is available
+5. Possible metrics to visualize:
+   - Number of supported blockchains
+   - Count of security certifications
+   - Number of key features
+   - Count of notable customers
+
+Structure the Vega-Lite spec as follows:
+- x-axis: "name" (competitor names)
+- y-axis: choose the most meaningful quantitative metric
+- color: use a distinct color for each competitor
+- title: "Competitive Analysis: [metric being compared]"
+
+Example structure:
+{{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Competitor comparison",
+  "data": {{"values": [/* competitor data */]}},
+  "mark": "bar",
+  "encoding": {{
+    "x": {{"field": "name", "type": "nominal", "title": "Competitor"}},
+    "y": {{"field": "[metric]", "type": "quantitative", "title": "[Metric Name]"}},
+    "color": {{"field": "name", "legend": null}}
+  }},
+  "title": "Competitive Analysis: [metric]"
+}}
+
+Text to analyze:
+{text}
+"""
 
         response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
-            max_tokens=1000,
+            max_tokens=1500,
         )
 
-        spec = json.loads(response.choices[0].message.content)
+        content = response.choices[0].message.content
+        spec = json.loads(content)
         return jsonify(spec)
+
     except Exception as e:
+        logger.error(f"Error in visualize_data: {e}")
         return jsonify({"error": str(e)}), 500
 
 
